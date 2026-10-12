@@ -4,6 +4,7 @@
 
 - [배터리 시험팀](https://maehwachem.github.io/science-tools/battery/): 실제 실험 기록·판정·성적서 (1차 공통, 2차 통합과학·화학)
 - [배터리 가상 시험동](https://maehwachem.github.io/science-tools/battery/virtual.html): 화면 속 실험대로 측정 절차 연습·평가
+- [산화·환원 가상 실험실](https://maehwachem.github.io/science-tools/redox/): 금속의 반응성, 산화 환원 적정, 화학 전지, 전기분해, 연료 전지를 화면 속 회로판으로 연습·평가
 - [환경 대응팀](https://maehwachem.github.io/science-tools/acid-base/): 하천 오염 대응팀 역할극. 산·염기 실제 실험 기록·액성 판정·중화 반응 분석·종합 대응 보고서
 - [산·염기 가상 실험실](https://maehwachem.github.io/science-tools/acid-base/virtual.html): 지시약 액성 판별과 중화 반응(중학교), 중화 적정(고등학교)을 화면 속 실험대로 연습·평가
 - [마이크로비트 전압 기록기](https://maehwachem.github.io/science-tools/sensor/): 마이크로비트로 셀 전압을 블루투스로 받아 기록 (마이크로비트 코드: `sensor/microbit-voltlog.ts`)
