@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>과학 수업 도구</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* 레이아웃: 사이트 이름 아래 도구 카드 목록. 도구가 늘면 카드만 더함 */
+:root{
+  --bg:#EEF1F2; --paper:#FBFCFC; --ink:#1A1F23; --ink2:#4A555D; --line:#D3D9DD; --accent:#A9531F; --tag:#F3E3D7;
+  --display:'Do Hyeon', 'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --body:'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root{ --bg:#14181B; --paper:#1C2227; --ink:#E5EAED; --ink2:#A3AFB7; --line:#2F383F; --accent:#E08A55; --tag:#3A2A20; color-scheme:dark; } }
+*{ box-sizing:border-box; }
+html{ padding-top:env(safe-area-inset-top, 0px); padding-bottom:env(safe-area-inset-bottom, 0px); }
+body{ margin:0; background:var(--bg); color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.7; word-break:keep-all; }
+.wrap{ max-width:880px; margin:0 auto; padding-inline:20px; padding-block:48px 64px; }
+h1{ margin:0; font-family:var(--display); font-weight:400; font-size:clamp(40px, 8vw, 56px); line-height:1.05; }
+.sub{ margin:10px 0 32px; color:var(--ink2); max-width:60ch; }
+.tools{ display:grid; gap:14px; }
+.tool{ display:grid; gap:6px; background:var(--paper); border:1px solid var(--line); border-radius:12px; padding:20px 22px; color:inherit; text-decoration:none; }
+.tool:hover{ border-color:var(--accent); }
+.tool:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+.tool .row{ display:flex; flex-wrap:wrap; gap:8px 12px; align-items:baseline; }
+.tool h2{ margin:0; font-size:21px; font-weight:700; }
+.tool .tag{ font-size:12.5px; font-weight:600; color:var(--accent); background:var(--tag); border-radius:999px; padding:1px 10px; }
+.tool p{ margin:0; color:var(--ink2); font-size:15px; }
+.group{ margin:0 0 10px; font-size:13px; font-weight:700; letter-spacing:.04em; color:var(--ink2); }
+footer{ margin-top:36px; font-size:14px; color:var(--ink2); display:flex; flex-wrap:wrap; gap:6px 18px; }
+footer a{ color:var(--ink2); text-underline-offset:3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>과학 수업 도구</h1>
+  <p class="sub">고등학교 과학 수업에서 쓰는 웹 도구예요. 설치 없이 태블릿·노트북·휴대폰 브라우저에서 열고, 학생 기록은 그 기기에만 저장돼요.</p>
+
+  <p class="group">배터리 시험팀 · 금속의 반응성과 화학 전지</p>
+  <div class="tools">
+    <a class="tool" href="battery/">
+      <span class="row"><h2>배터리 시험팀</h2><span class="tag">실제 실험</span></span>
+      <p>실험실에서 잰 값을 조별 태블릿에 기록하고, 기록을 근거로 전극판을 식별하고 성적서를 써요. 2차 시험은 통합과학 또는 화학 과정이에요.</p>
+    </a>
+    <a class="tool" href="battery/virtual.html">
+      <span class="row"><h2>배터리 가상 시험동</h2><span class="tag">가상 실험</span></span>
+      <p>화면 속 실험대에서 거름종이, 전극판, 집게, 다이얼을 직접 조작하며 측정 절차를 익혀요. 조별·개별, 연습·평가 모드가 있어요.</p>
+    </a>
+  </div>
+
+  <p class="group" style="margin-top:28px" id="sensor">센서로 재기 · 마이크로비트</p>
+  <div class="tools">
+    <a class="tool" href="sensor/">
+      <span class="row"><h2>마이크로비트 전압 기록기</h2><span class="tag">센서</span></span>
+      <p>마이크로비트로 셀 전압을 0.1초마다 받아 그래프로 그리고, 조건별로 기록해 CSV로 내요. 안드로이드 태블릿·크롬북·윈도 노트북의 크롬에서 블루투스로 연결해요.</p>
+    </a>
+    <a class="tool" href="sensor/temp.html">
+      <span class="row"><h2>마이크로비트 온도 기록기</h2><span class="tag">센서</span></span>
+      <p>방수 온도 센서(DS18B20) 한두 개의 값을 1초마다 받아 그래프로 그리고, 섞은 순간 같은 때를 표시하며 기록해요. 반응열, 용해열, 단열·온실 효과 비교 실험에 써요.</p>
+    </a>
+  </div>
+
+  <footer>
+    <a href="battery/privacy.html">개인정보 처리방침</a>
+    <span>기록은 학생 기기에 저장되고, 선생님께는 결과 파일로 내요.</span>
+  </footer>
+</div>
+</body>
+</html>

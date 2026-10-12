@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect x='2' y='6' width='36' height='28' rx='6' fill='%23B8C6A2'/%3E%3Cpath d='M7 26 C11 26 12 14 16 14 S21 22 24 22 S29 12 33 12' fill='none' stroke='%231C2918' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>마이크로비트 전압 기록기</title>
+<meta name="description" content="마이크로비트로 셀 전압을 받아 그래프로 그리고 조건별로 기록하는 도구">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* 레이아웃: 배터리 시험동과 같은 알루미늄 회색 바닥. 왼쪽은 멀티미터 액정처럼 보이는 지금 값과 30초 그래프,
+   오른쪽은 연결·기록·보정 카드. 아래에 기록 목록과 준비 안내(연결 그림, 마이크로비트 프로그램) */
+:root{
+  --bg:#E5E9EB; --sheet:#F8F9F8; --sheet2:#ECEFF0; --field:#FFFFFF; --ink:#1A1F23; --ink2:#55616A; --line:#C2CACF;
+  --acc:#A9531F; --on-acc:#FFF9F4; --acc-soft:#F3E3D7; --focus:#2C78C8;
+  --good:#24804F; --good-soft:#DDEFE4; --warn:#9A6704; --warn-soft:#F7EBCB; --bad:#C0352D; --bad-soft:#F8DEDB;
+  --lcd:#B8C6A2; --lcd-ink:#1C2918; --lcd-dim:rgba(28,41,24,.14);
+  --grid:rgba(26,31,35,.06); --plot:#A9531F; --plot-grid:#D5DBDF; --plot-rec:rgba(169,83,31,.12);
+  --board:#2B3137; --board-ink:#E8ECEE; --pad:#D3A42C; --cu:#C9703F; --mg:#DCE0E4; --plate-edge:#7D868D; --brine:#A9D3EA; --glass:#7E9AAA;
+  --w-red:#D1342B; --w-blk:#23282C; --w-yel:#D9A400; --res:#E9D7B5; --res-edge:#8A7550;
+  --display:"Do Hyeon","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --num:"Share Tech Mono","IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#13171A; --sheet:#1B2125; --sheet2:#242C31; --field:#10151A; --ink:#E5EAED; --ink2:#9AA7B0; --line:#36424A;
+  --acc:#E0874C; --on-acc:#1C0D04; --acc-soft:#3A271B; --focus:#7DB6EE;
+  --good:#5BC98C; --good-soft:#1C3527; --warn:#E6B44A; --warn-soft:#3A3018; --bad:#FF7A6E; --bad-soft:#3F2220;
+  --lcd:#9FB08A; --lcd-ink:#121C10; --lcd-dim:rgba(18,28,16,.16);
+  --grid:rgba(229,234,237,.05); --plot:#F09A5E; --plot-grid:#2E383F; --plot-rec:rgba(240,154,94,.14);
+  --board:#0E1215; --board-ink:#E5EAED; --pad:#C9A227; --cu:#D07A48; --mg:#AEB6BD; --plate-edge:#6E777E; --brine:#3E7899; --glass:#6E8A9A;
+  --w-red:#F05A4F; --w-blk:#C9D1D6; --w-yel:#E8B830; --res:#4A3F2C; --res-edge:#B8A27A;
+  color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --bg:#13171A; --sheet:#1B2125; --sheet2:#242C31; --field:#10151A; --ink:#E5EAED; --ink2:#9AA7B0; --line:#36424A;
+  --acc:#E0874C; --on-acc:#1C0D04; --acc-soft:#3A271B; --focus:#7DB6EE;
+  --good:#5BC98C; --good-soft:#1C3527; --warn:#E6B44A; --warn-soft:#3A3018; --bad:#FF7A6E; --bad-soft:#3F2220;
+  --lcd:#9FB08A; --lcd-ink:#121C10; --lcd-dim:rgba(18,28,16,.16);
+  --grid:rgba(229,234,237,.05); --plot:#F09A5E; --plot-grid:#2E383F; --plot-rec:rgba(240,154,94,.14);
+  --board:#0E1215; --board-ink:#E5EAED; --pad:#C9A227; --cu:#D07A48; --mg:#AEB6BD; --plate-edge:#6E777E; --brine:#3E7899; --glass:#6E8A9A;
+  --w-red:#F05A4F; --w-blk:#C9D1D6; --w-yel:#E8B830; --res:#4A3F2C; --res-edge:#B8A27A;
+  color-scheme:dark; }
+*{ box-sizing:border-box; }
+body{ background-color:var(--bg); background-image:linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size:32px 32px;
+  color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.6; word-break:keep-all; overflow-wrap:break-word; }
+button, input, select{ font:inherit; color:inherit; }
+:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+.wrap{ max-width:1160px; margin:0 auto; padding-inline:20px; }
+
+header.bar{ border-bottom:1px solid var(--line); background:var(--sheet); }
+header.bar .wrap{ display:flex; align-items:center; justify-content:space-between; gap:10px 18px; flex-wrap:wrap; padding-block:14px; }
+.brand{ display:flex; align-items:center; gap:12px; min-width:0; }
+.brand svg{ width:38px; height:38px; flex:none; }
+.brand h1{ margin:0; font-family:var(--display); font-weight:400; font-size:28px; line-height:1.1; }
+.brand p{ margin:2px 0 0; font-size:14px; color:var(--ink2); }
+.pill{ display:inline-flex; align-items:center; gap:8px; font-size:14px; font-weight:600; padding:6px 12px; border-radius:999px; border:1px solid var(--line); background:var(--sheet2); white-space:nowrap; }
+.pill::before{ content:""; width:9px; height:9px; border-radius:50%; background:var(--ink2); }
+.pill.on{ background:var(--good-soft); border-color:transparent; color:var(--good); }
+.pill.on::before{ background:var(--good); }
+.pill.busy::before{ background:var(--warn); }
+.pill.sim{ background:var(--acc-soft); border-color:transparent; color:var(--acc); }
+.pill.sim::before{ background:var(--acc); }
+
+main.wrap{ display:grid; grid-template-columns:minmax(0, 1.55fr) minmax(0, 1fr); gap:16px; padding-block:18px 40px; align-items:start; }
+.card{ background:var(--sheet); border:1px solid var(--line); border-radius:12px; padding:18px 20px; min-width:0; }
+.card h2{ margin:0 0 10px; font-family:var(--display); font-weight:400; font-size:24px; line-height:1.2; }
+.card h3{ margin:18px 0 8px; font-size:16px; font-weight:700; }
+.side{ display:grid; gap:16px; min-width:0; }
+.full{ grid-column:1 / -1; }
+p{ margin:0; }
+.who{ font-size:14px; color:var(--ink2); }
+.msg{ font-size:14.5px; margin-top:10px; padding:9px 12px; border-radius:8px; }
+.msg:empty{ display:none; }
+.msg.warn{ background:var(--warn-soft); color:var(--ink); border-left:4px solid var(--warn); }
+.msg.bad{ background:var(--bad-soft); color:var(--ink); border-left:4px solid var(--bad); }
+.msg.good{ background:var(--good-soft); color:var(--ink); border-left:4px solid var(--good); }
+
+/* 지금 값 */
+.lcdbox{ background:var(--lcd); color:var(--lcd-ink); border-radius:10px; padding:14px 18px 12px; box-shadow:inset 0 0 0 2px var(--lcd-dim); display:grid; gap:2px; }
+.lcdtop{ display:flex; justify-content:space-between; gap:8px; font-family:var(--num); font-size:15px; opacity:.85; flex-wrap:wrap; }
+.lcdnum{ font-family:var(--num); font-size:clamp(64px, 11vw, 112px); line-height:1; letter-spacing:.02em; display:flex; align-items:baseline; gap:10px; font-variant-numeric:tabular-nums; }
+.lcdnum small{ font-size:.38em; }
+.lcdsub{ font-family:var(--num); font-size:18px; min-height:1.4em; font-variant-numeric:tabular-nums; }
+.chartbox{ margin-top:14px; position:relative; }
+canvas#chart{ width:100%; height:240px; display:block; border-radius:8px; background:var(--field); border:1px solid var(--line); }
+.chartcap{ display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; font-size:13.5px; color:var(--ink2); margin-top:6px; }
+
+/* 입력과 버튼 */
+.row{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.btn{ min-height:44px; padding:0 16px; border-radius:9px; border:1px solid var(--line); background:var(--field); font-weight:600; font-size:15.5px; cursor:pointer; }
+.btn:hover:not(:disabled){ border-color:var(--acc); }
+.btn.primary{ background:var(--acc); color:var(--on-acc); border-color:var(--acc); }
+.btn.primary:hover:not(:disabled){ filter:brightness(1.06); }
+.btn.stop{ background:var(--bad); color:#fff; border-color:var(--bad); }
+.btn.small{ min-height:34px; padding:0 11px; font-size:14px; }
+.btn.danger{ color:var(--bad); }
+.btn:disabled{ opacity:.45; cursor:not-allowed; }
+.field{ display:grid; gap:4px; margin-bottom:12px; }
+.field > span{ font-size:14px; font-weight:600; color:var(--ink2); }
+.field input, .field select{ min-height:44px; padding:0 12px; border-radius:9px; border:1px solid var(--line); background:var(--field); width:100%; min-width:0; }
+.field .pair{ display:flex; gap:8px; align-items:center; }
+.field .pair > *{ flex:1 1 0; min-width:0; }
+.progress{ height:8px; border-radius:99px; background:var(--sheet2); overflow:hidden; margin-top:10px; }
+.progress i{ display:block; height:100%; width:0; background:var(--acc); transition:width .1s linear; }
+.calstate{ font-size:14px; margin-bottom:10px; }
+.calstate b{ font-weight:700; }
+.tag{ display:inline-block; font-size:12.5px; font-weight:700; padding:1px 8px; border-radius:99px; }
+.tag.ok{ background:var(--good-soft); color:var(--good); }
+.tag.no{ background:var(--warn-soft); color:var(--warn); }
+
+/* 기록 목록 */
+.runs-head{ display:flex; justify-content:space-between; align-items:baseline; gap:8px 16px; flex-wrap:wrap; }
+.scroll{ overflow-x:auto; margin-top:10px; }
+table{ border-collapse:collapse; width:100%; min-width:640px; font-size:14.5px; }
+th, td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
+th{ font-size:13px; color:var(--ink2); font-weight:600; white-space:nowrap; }
+td.n{ font-family:var(--num); font-size:16px; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+th.n{ text-align:right; }
+td svg{ display:block; }
+.empty{ padding:18px 4px 6px; color:var(--ink2); font-size:15px; }
+
+/* 준비 안내 */
+.setup-grid{ display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:10px 28px; align-items:start; }
+.setup ol, .setup ul{ margin:0; padding-left:1.3em; display:grid; gap:6px; }
+.setup li{ padding-left:2px; }
+.figure{ background:var(--field); border:1px solid var(--line); border-radius:10px; padding:10px; }
+.figure svg{ width:100%; height:auto; display:block; }
+.svg-t{ fill:var(--ink); font-family:var(--body); }
+.svg-t2{ fill:var(--ink2); font-family:var(--body); }
+pre{ margin:8px 0 0; background:var(--field); border:1px solid var(--line); border-radius:10px; padding:12px 14px; overflow-x:auto; font-family:var(--num); font-size:13.5px; line-height:1.55; }
+code{ font-family:var(--num); }
+.kbd{ font-weight:700; }
+.savebar{ position:sticky; bottom:env(safe-area-inset-bottom, 0px); z-index:5; grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; justify-content:space-between;
+  background:var(--bad-soft); border:1px solid var(--bad); border-radius:10px; padding:10px 14px; }
+footer{ border-top:1px solid var(--line); }
+footer .wrap{ padding-block:16px 28px; font-size:14px; color:var(--ink2); display:flex; flex-wrap:wrap; gap:4px 20px; }
+footer a{ color:var(--ink2); text-underline-offset:3px; }
+
+@media (max-width:900px){
+  main.wrap{ grid-template-columns:minmax(0, 1fr); }
+  .setup-grid{ grid-template-columns:minmax(0, 1fr); }
+}
+@media (max-width:520px){
+  .wrap{ padding-inline:16px; }
+  .card{ padding:16px; }
+  .brand h1{ font-size:24px; }
+  canvas#chart{ height:200px; }
+}
+@media (prefers-reduced-motion: reduce){ .progress i{ transition:none; } }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <rect x="2" y="6" width="36" height="28" rx="6" fill="var(--lcd)" stroke="var(--lcd-ink)" stroke-opacity=".35" stroke-width="1.5"/>
+        <path d="M7 26 C11 26 12 14 16 14 S21 22 24 22 S29 12 33 12" fill="none" stroke="var(--lcd-ink)" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <div><h1>마이크로비트 전압 기록기</h1><p>셀 전압을 0.1초마다 받아 그래프로 그리고, 조건별로 기록해요.</p></div>
+    </div>
+    <span class="pill" id="pill" role="status">연결 안 됨</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card" aria-labelledby="live-h">
+    <h2 id="live-h">지금 값</h2>
+    <div class="lcdbox" aria-live="off">
+      <div class="lcdtop"><span id="lcd-mode">DC V</span><span id="lcd-cal">보정 전</span></div>
+      <div class="lcdnum"><span id="vnow">-.--</span><small>V</small></div>
+      <div class="lcdsub" id="inow"></div>
+    </div>
+    <p class="msg warn" id="warn" role="status"></p>
+    <div class="chartbox">
+      <canvas id="chart" aria-label="최근 30초 동안의 전압 그래프" role="img"></canvas>
+      <div class="chartcap"><span>최근 30초 · 세로축은 전압(V)</span><span id="rate"></span></div>
+    </div>
+  </section>
+
+  <div class="side">
+    <section class="card" aria-labelledby="conn-h">
+      <h2 id="conn-h">연결</h2>
+      <div class="row">
+        <button type="button" class="btn primary" id="btn-conn">마이크로비트 연결</button>
+        <button type="button" class="btn" id="btn-sim">가상 센서로 해 보기</button>
+        <button type="button" class="btn" id="btn-disc" hidden>연결 끊기</button>
+      </div>
+      <p class="msg" id="connmsg"></p>
+    </section>
+
+    <section class="card" aria-labelledby="rec-h">
+      <h2 id="rec-h">기록</h2>
+      <label class="field"><span>조건</span>
+        <input id="cond" list="cond-list" maxlength="40" placeholder="예: 농도 5 %, 깊이 3 cm" autocomplete="off">
+        <datalist id="cond-list">
+          <option value="깊이 1 cm, 농도 5 %"><option value="깊이 2 cm, 농도 5 %"><option value="깊이 3 cm, 농도 5 %"><option value="깊이 4 cm, 농도 5 %">
+          <option value="농도 0 %, 깊이 3 cm"><option value="농도 1 %, 깊이 3 cm"><option value="농도 3 %, 깊이 3 cm"><option value="농도 10 %, 깊이 3 cm">
+        </datalist>
+      </label>
+      <div class="field"><span>두 판 사이에 문 저항</span>
+        <div class="pair">
+          <select id="load" aria-label="부하 저항">
+            <option value="0">없음 (열린 전압)</option><option value="100">100 Ω</option><option value="47">47 Ω</option><option value="x">직접 입력</option>
+          </select>
+          <input id="loadx" type="number" inputmode="decimal" min="1" step="any" placeholder="Ω" aria-label="저항 값(Ω)" hidden>
+        </div>
+      </div>
+      <label class="field"><span>기록 시간</span>
+        <select id="dur"><option value="10">10초</option><option value="30">30초</option><option value="60">60초</option></select>
+      </label>
+      <div class="row"><button type="button" class="btn primary" id="btn-rec" disabled>기록 시작</button><span class="who" id="recstate"></span></div>
+      <div class="progress" aria-hidden="true"><i id="recbar"></i></div>
+      <p class="msg" id="recmsg"></p>
+    </section>
+
+    <section class="card" aria-labelledby="cal-h">
+      <h2 id="cal-h">보정</h2>
+      <p class="calstate" id="calstate"></p>
+      <label class="field"><span>같은 두 판에 함께 물린 멀티미터 값</span>
+        <div class="pair"><input id="calv" inputmode="decimal" placeholder="예: 1.52" aria-label="멀티미터 값(V)"><button type="button" class="btn" id="btn-cal" disabled>이 값으로 맞추기</button></div>
+      </label>
+      <div class="row"><button type="button" class="btn small" id="btn-calx" hidden>보정 지우기</button><span class="who" id="simmeter"></span></div>
+      <p class="msg" id="calmsg"></p>
+    </section>
+  </div>
+
+  <section class="card full" aria-labelledby="runs-h">
+    <div class="runs-head"><h2 id="runs-h">기록 목록</h2><span class="who" id="runcount"></span></div>
+    <div id="runs"></div>
+    <div class="row" style="margin-top:12px">
+      <button type="button" class="btn small" id="btn-csv1">요약 CSV 저장</button>
+      <button type="button" class="btn small" id="btn-csv2">전체 데이터 CSV 저장</button>
+      <button type="button" class="btn small danger" id="btn-clear">모두 지우기</button>
+    </div>
+    <p class="msg" id="runmsg"></p>
+  </section>
+
+  <div class="savebar" id="savebar" hidden>
+    <span>이 기기에 기록을 저장하지 못했어요. 페이지를 닫기 전에 CSV로 저장해 두세요.</span>
+    <button type="button" class="btn small" id="btn-csv3">전체 데이터 CSV 저장</button>
+  </div>
+
+  <section class="card full setup" aria-labelledby="setup-h">
+    <h2 id="setup-h">준비와 연결</h2>
+    <div class="setup-grid">
+      <div>
+        <h3>준비물 (한 조)</h3>
+        <ul>
+          <li>마이크로비트 1개와 전원(USB 케이블이나 건전지 팩)</li>
+          <li>악어 집게 전선 3개 (빨강, 검정, 노랑)</li>
+          <li>10 kΩ 저항 1개: 집게가 거꾸로 물려도 마이크로비트를 보호해요</li>
+          <li>멀티미터 1대: 처음 한 번 보정할 때 써요</li>
+          <li>(전류를 잴 때) 100 Ω 저항 1개</li>
+        </ul>
+        <h3>연결</h3>
+        <ol>
+          <li><b>구리판(+)</b> → 빨간 전선 → 10 kΩ 저항 → 노란 전선 → 마이크로비트 <b>1번</b> 단자</li>
+          <li><b>마그네슘판(−)</b> → 검은 전선 → 마이크로비트 <b>GND</b> 단자</li>
+          <li>마이크로비트를 켜면 마름모가 보여요. 위의 <span class="kbd">마이크로비트 연결</span>을 누르고 목록에서 <b>BBC micro:bit [다섯 글자]</b>를 골라요. 연결되면 체크 표시로 바뀌어요.</li>
+        </ol>
+        <p class="who" style="margin-top:8px">조마다 마이크로비트의 다섯 글자 이름을 스티커로 붙여 두면, 목록에서 자기 조 것을 바로 고를 수 있어요.</p>
+      </div>
+      <div class="figure">
+        <svg viewBox="0 0 560 345" role="img" aria-label="구리판은 10 킬로옴 저항을 거쳐 마이크로비트 1번 단자에, 마그네슘판은 GND 단자에 잇는 연결 그림">
+          <!-- 비커와 소금물 -->
+          <path d="M40 120 L40 300 Q40 312 52 312 L208 312 Q220 312 220 300 L220 120" fill="none" stroke="var(--glass)" stroke-width="3"/>
+          <rect x="43" y="178" width="174" height="131" rx="8" fill="var(--brine)" opacity=".75"/>
+          <text x="130" y="300" text-anchor="middle" font-size="14" class="svg-t2">소금물</text>
+          <!-- 극판 -->
+          <rect x="72" y="92" width="22" height="168" rx="2" fill="var(--mg)" stroke="var(--plate-edge)" stroke-width="1.5"/>
+          <rect x="166" y="92" width="22" height="168" rx="2" fill="var(--cu)" stroke="var(--plate-edge)" stroke-width="1.5"/>
+          <text x="80" y="336" text-anchor="middle" font-size="15" class="svg-t" style="font-weight:700">마그네슘판 (−)</text>
+          <text x="184" y="336" text-anchor="middle" font-size="15" class="svg-t" style="font-weight:700">구리판 (+)</text>
+          <!-- 검은 전선: 마그네슘 → GND -->
+          <path d="M83 92 C83 30 300 20 470 40 C500 44 508 60 508 196" fill="none" stroke="var(--w-blk)" stroke-width="4" stroke-linecap="round"/>
+          <!-- 빨간 전선: 구리 → 저항 -->
+          <path d="M177 92 C177 60 230 120 262 120" fill="none" stroke="var(--w-red)" stroke-width="4" stroke-linecap="round"/>
+          <!-- 저항 -->
+          <line x1="262" y1="120" x2="280" y2="120" stroke="var(--res-edge)" stroke-width="2.5"/>
+          <rect x="280" y="108" width="52" height="24" rx="10" fill="var(--res)" stroke="var(--res-edge)" stroke-width="1.5"/>
+          <rect x="292" y="108" width="5" height="24" fill="var(--res-edge)"/><rect x="304" y="108" width="5" height="24" fill="var(--res-edge)"/><rect x="316" y="108" width="5" height="24" fill="var(--res-edge)"/>
+          <line x1="332" y1="120" x2="350" y2="120" stroke="var(--res-edge)" stroke-width="2.5"/>
+          <text x="306" y="98" text-anchor="middle" font-size="14" class="svg-t" style="font-weight:700">10 kΩ</text>
+          <!-- 노란 전선: 저항 → 1번 -->
+          <path d="M350 120 C376 120 370 170 370 196" fill="none" stroke="var(--w-yel)" stroke-width="4" stroke-linecap="round"/>
+          <!-- 마이크로비트 아래 가장자리 단자 -->
+          <rect x="294" y="186" width="246" height="110" rx="10" fill="var(--board)"/>
+          <text x="418" y="284" text-anchor="middle" font-size="12" fill="var(--board-ink)" opacity=".75" font-family="var(--body)">마이크로비트 아래쪽 단자</text>
+          <g font-family="var(--num)" font-size="16" text-anchor="middle">
+            <rect x="306" y="196" width="36" height="52" rx="5" fill="var(--pad)"/><text x="324" y="266" fill="var(--board-ink)">0</text>
+            <rect x="352" y="196" width="36" height="52" rx="5" fill="var(--pad)" stroke="var(--w-yel)" stroke-width="3"/><text x="370" y="266" fill="var(--board-ink)" font-weight="700">1</text>
+            <rect x="398" y="196" width="36" height="52" rx="5" fill="var(--pad)"/><text x="416" y="266" fill="var(--board-ink)">2</text>
+            <rect x="444" y="196" width="36" height="52" rx="5" fill="var(--pad)"/><text x="462" y="266" fill="var(--board-ink)">3V</text>
+            <rect x="490" y="196" width="36" height="52" rx="5" fill="var(--pad)" stroke="var(--w-blk)" stroke-width="3"/><text x="508" y="266" fill="var(--board-ink)" font-weight="700">GND</text>
+          </g>
+        </svg>
+      </div>
+      <div>
+        <h3>마이크로비트 프로그램 넣기 (선생님이 한 번만)</h3>
+        <ol>
+          <li><b>makecode.microbit.org</b>에서 새 프로젝트를 만들어요.</li>
+          <li><b>확장</b>에서 <b>bluetooth</b>를 추가해요. 라디오를 빼겠냐고 물으면 빼고 추가해요.</li>
+          <li>오른쪽 위 톱니 → <b>프로젝트 설정</b>에서 <b>No Pairing Required</b>(짝 맺기 없이 누구나 연결)를 켜고 저장해요. 이걸 켜야 태블릿에서 따로 짝을 맺지 않고 바로 연결돼요.</li>
+          <li>위쪽 <b>JavaScript</b> 탭에서 원래 코드를 지우고 아래 코드를 붙여 넣어요. 블록 탭으로 돌아가면 블록으로도 보여요.</li>
+          <li><b>다운로드</b>해서 나온 hex 파일 하나를 모든 조의 마이크로비트에 똑같이 넣으면 돼요.</li>
+        </ol>
+      </div>
+      <div>
+        <div class="row" style="justify-content:space-between"><h3 style="margin:18px 0 0">마이크로비트 코드</h3><button type="button" class="btn small" id="btn-copy">코드 복사</button></div>
+        <pre id="mbcode"><code>// 마이크로비트 전압 기록기 — 셀 전압을 블루투스(UART)로 보냄
+// 연결: 구리판(+) → 10 kΩ 저항 → P1,  마그네슘판(−) → GND
+// 한 줄에 보내는 값: 시간(ms),P1 값 32번의 합,P2 값 32번의 합,32
+let connected = false
+bluetooth.startUartService()
+basic.showIcon(IconNames.Diamond)
+bluetooth.onBluetoothConnected(function () {
+    connected = true
+    basic.showIcon(IconNames.Yes)
+})
+bluetooth.onBluetoothDisconnected(function () {
+    connected = false
+    basic.showIcon(IconNames.Diamond)
+})
+basic.forever(function () {
+    let s1 = 0
+    let s2 = 0
+    for (let index = 0; index &lt;= 31; index++) {
+        s1 += pins.analogReadPin(AnalogPin.P1)
+        s2 += pins.analogReadPin(AnalogPin.P2)
+    }
+    if (connected) {
+        bluetooth.uartWriteLine("" + input.runningTime() + "," + s1 + "," + s2 + ",32")
+    }
+    basic.pause(100)
+})</code></pre>
+        <span class="who" id="copied" role="status"></span>
+      </div>
+      <div>
+        <h3>보정 (수업마다 한 번)</h3>
+        <ol>
+          <li>마이크로비트를 이은 채로 멀티미터도 같은 두 판에 물려요. 빨간 리드는 구리판, 검은 리드는 마그네슘판이에요.</li>
+          <li>두 값이 안정되면 멀티미터 값을 <b>보정</b> 칸에 적고 <span class="kbd">이 값으로 맞추기</span>를 눌러요.</li>
+          <li>마이크로비트 전원을 바꾸면(USB ↔ 건전지) 다시 보정해요. 마이크로비트는 전원 전압을 기준으로 재기 때문이에요.</li>
+        </ol>
+        <h3>전류 재기 (선택)</h3>
+        <p>두 판 사이에 100 Ω 저항을 함께 물리고, <b>두 판 사이에 문 저항</b>에서 100 Ω을 골라요. 전류는 <b>전압 ÷ 저항</b>으로 계산해요. 이 값은 LED처럼 부하가 있을 때 흐르는 전류여서, 멀티미터만 이어 재는 단락 전류보다 작아요.</p>
+      </div>
+      <div>
+        <h3>잘 안 될 때</h3>
+        <ul>
+          <li><b>목록에 마이크로비트가 없어요:</b> 프로그램을 넣었는지, 다른 태블릿에 이미 연결돼 있지 않은지 확인해요. 안드로이드 태블릿에서는 위치(GPS)도 켜야 목록이 보이는 기기가 있어요.</li>
+          <li><b>연결하자마자 끊겨요:</b> 프로젝트 설정의 No Pairing Required를 켜고 다시 다운로드해요. 예전에 태블릿 블루투스 설정에서 짝을 맺었다면 그 기기를 지워요.</li>
+          <li><b>값이 0 V 근처예요:</b> 집게가 떨어졌거나 판이 거꾸로 물렸어요. 구리판이 1번 쪽, 마그네슘판이 GND 쪽이에요.</li>
+          <li><b>아이패드·아이폰:</b> 브라우저가 블루투스 연결을 지원하지 않아요. 안드로이드 태블릿, 크롬북, 윈도 노트북의 크롬에서 열어요.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>이름은 받지 않아요. 기록은 이 기기에만 저장되고, CSV로 내보내요.</span>
+    <a href="https://maehwachem.github.io/science-tools/sensor/temp.html">마이크로비트 온도 기록기</a>
+    <a href="https://maehwachem.github.io/science-tools/">과학 수업 도구 모음</a>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+  const UART = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+  const VDD0 = 3.3;          /* 보정 전 기준: USB 전원일 때 마이크로비트 전원 전압 */
+  const WIN = 30, KEEP = 90; /* 그래프 30초, 메모리에는 90초까지 */
+  const K_RUNS = 'mbvolt-runs-v1', K_CAL = 'mbvolt-cal-v1', K_PREF = 'mbvolt-pref-v1';
+  const $ = id => document.getElementById(id);
+  const store = {
+    get(k, d){ try{ const s = localStorage.getItem(k); return s ? JSON.parse(s) : d; }catch(e){ return d; } },
+    set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+  };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  const f2 = x => x == null || !isFinite(x) ? '-' : x.toFixed(2);
+  const S = {
+    src:null, phase:'idle', dev:null, tx:null, name:'', buf:'', offset:0, lastDevT:null,
+    samples:[], lastWall:0, wall:[], rec:null, warn:'', saveFailed:false,
+    runs: store.get(K_RUNS, []), cals: store.get(K_CAL, {}),
+    pref: Object.assign({ cond:'', load:'0', loadx:'', dur:'10' }, store.get(K_PREF, {})),
+    sim:{ timer:null, t:0, lastLoad:0, since:0, trueV:null }, wake:null
+  };
+  if(!Array.isArray(S.runs)) S.runs = [];
+  if(!S.cals || typeof S.cals !== 'object') S.cals = {};
+
+  /* ───────── 저장 ───────── */
+  function persist(){
+    const ok = store.set(K_RUNS, S.runs) && store.set(K_CAL, S.cals);
+    S.saveFailed = !ok; $('savebar').hidden = ok;
+  }
+  const savePref = () => { store.set(K_PREF, S.pref); };
+
+  /* ───────── 받은 줄 해석: 시간(ms),P1 합,P2 합,횟수 ───────── */
+  function parseLine(line){
+    const a = line.trim().split(',');
+    if(a[0] === 'T') return { wrong:true };   /* 온도 기록기 프로그램이 보낸 줄 */
+    if(a.length < 2) return null;
+    const t = Number(a[0]), s1 = Number(a[1]), n = a.length >= 4 ? Number(a[3]) : 32;
+    if(!isFinite(t) || !isFinite(s1) || !(n > 0) || s1 < 0) return null;
+    const adc = s1 / n;
+    if(adc > 1023.5) return null;
+    return { t:t / 1000, adc, raw:adc / 1023 * VDD0 };
+  }
+  function feed(text){
+    S.buf += text;
+    let m;
+    while((m = /\r?\n/.exec(S.buf))){
+      const line = S.buf.slice(0, m.index);
+      S.buf = S.buf.slice(m.index + m[0].length);
+      const p = parseLine(line);
+      if(p) onSample(p);
+    }
+    if(S.buf.length > 200) S.buf = '';
+  }
+
+  const calKey = () => S.src === 'sim' ? '가상 센서' : (S.name || '마이크로비트');
+  const curCal = () => S.cals[calKey()] || null;
+  const kNow = () => { const c = curCal(); return c && c.k > 0 ? c.k : 1; };
+  function loadOhm(){
+    if(S.pref.load === 'x'){ const r = Number(S.pref.loadx); return r >= 1 && r <= 1e6 ? r : 0; }
+    return Number(S.pref.load) || 0;
+  }
+
+  function onSample(p){
+    if(p.wrong){
+      if(!S.wrongProg){ S.wrongProg = true; connMsg('이 마이크로비트에는 온도 기록기 프로그램이 들어 있어요. 아래 전압 기록기 코드로 프로그램을 다시 넣거나, 온도 기록기에서 열어요.', 'bad'); }
+      return;
+    }
+    if(S.lastDevT != null && p.t < S.lastDevT - 0.5) S.offset += S.lastDevT - p.t + 0.11;   /* 마이크로비트가 다시 켜짐 */
+    S.lastDevT = p.t;
+    const s = { t:p.t + S.offset, v:p.raw * kNow(), raw:p.raw, adc:p.adc };
+    S.samples.push(s);
+    const cut = s.t - KEEP;
+    while(S.samples.length && S.samples[0].t < cut) S.samples.shift();
+    const now = performance.now();
+    S.lastWall = now; S.wall.push(now);
+    while(S.wall.length && S.wall[0] < now - 3000) S.wall.shift();
+    if(S.rec && S.rec.on){
+      if(S.rec.t0 == null) S.rec.t0 = s.t;
+      const tt = s.t - S.rec.t0;
+      S.rec.pts.push([Math.round(tt * 100) / 100, Math.round(s.v * 1000) / 1000]);
+      if(tt >= S.rec.dur - 1e-6) finishRec(false);
+    }
+    schedule();
+  }
+  const recent = (sec, f) => { const out = []; const last = S.samples[S.samples.length - 1]; if(!last) return out; for(let i = S.samples.length - 1; i >= 0 && S.samples[i].t >= last.t - sec; i--) out.push(f(S.samples[i])); return out; };
+  const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+
+  /* ───────── 연결 ───────── */
+  const hasBT = () => !!(navigator.bluetooth && navigator.bluetooth.requestDevice);
+  function setPhase(ph){
+    S.phase = ph;
+    const pill = $('pill');
+    pill.className = 'pill' + (ph === 'on' ? (S.src === 'sim' ? ' sim' : ' on') : ph === 'busy' ? ' busy' : '');
+    pill.textContent = ph === 'on' ? (S.src === 'sim' ? '가상 센서' : `연결됨 · ${S.name || '마이크로비트'}`) : ph === 'busy' ? '연결하는 중…' : '연결 안 됨';
+    const on = ph === 'on';
+    $('btn-conn').hidden = on; $('btn-sim').hidden = on; $('btn-disc').hidden = !on;
+    $('btn-conn').disabled = ph === 'busy' || !hasBT();
+    $('btn-sim').disabled = ph === 'busy';
+    $('btn-conn').textContent = S.dev && !on ? '다시 연결' : '마이크로비트 연결';
+    renderControls();
+  }
+  function connMsg(text, kind){ const m = $('connmsg'); m.textContent = text || ''; m.className = 'msg' + (text ? ' ' + (kind || 'warn') : ''); }
+
+  async function connect(){
+    if(!hasBT()){ connMsg(unsupportedText(), 'bad'); return; }
+    let stage = 'pick';
+    try{
+      setPhase('busy'); connMsg('');
+      try{ if(navigator.bluetooth.getAvailability && (await navigator.bluetooth.getAvailability()) === false){ setPhase('idle'); connMsg('이 기기의 블루투스가 꺼져 있어요. 블루투스를 켜고 다시 눌러요.', 'bad'); return; } }catch(e){}
+      if(!S.dev){
+        S.dev = await navigator.bluetooth.requestDevice({ filters:[{ namePrefix:'BBC micro:bit' }], optionalServices:[UART] });
+        S.dev.addEventListener('gattserverdisconnected', onDisconnected);
+      }
+      S.name = (S.dev.name || '').replace(/^BBC micro:bit\s*/, '').replace(/[\[\]]/g, '').trim() || '마이크로비트';
+      stage = 'connect';
+      const server = await S.dev.gatt.connect();
+      stage = 'service';
+      const svc = await server.getPrimaryService(UART);
+      const chars = await svc.getCharacteristics();
+      const tx = chars.find(c => c.properties && (c.properties.indicate || c.properties.notify));
+      if(!tx) throw Object.assign(new Error('no tx'), { name:'NotFoundError' });
+      tx.addEventListener('characteristicvaluechanged', onValue);
+      await tx.startNotifications();
+      S.tx = tx; S.src = 'ble'; S.buf = ''; S.lastDevT = null; S.offset = 0; S.samples = []; S.wall = []; S.wrongProg = false; S.lastWall = performance.now();
+      setPhase('on'); connMsg('연결됐어요. 값이 들어오면 위 액정과 그래프가 움직여요.', 'good');
+      wakeOn();
+    }catch(e){
+      const n = e && e.name;
+      if(stage === 'pick' && n === 'NotFoundError'){ setPhase('idle'); connMsg(''); return; }   /* 목록을 닫음 */
+      if(n === 'SecurityError' || (n === 'NotAllowedError' && stage === 'pick')) connMsg('이 화면에서는 블루투스를 쓸 수 없어요. 깃허브에 올린 주소(https://…github.io)에서 크롬으로 열어요.', 'bad');
+      else if(stage === 'service') connMsg('마이크로비트에 이 기록기용 프로그램이 없어요. 아래 ‘마이크로비트 프로그램 넣기’대로 프로그램을 넣어요.', 'bad');
+      else connMsg('연결하지 못했어요. 마이크로비트 뒷면의 리셋 버튼을 누르고 다시 해 봐요. 계속 안 되면 아래 ‘잘 안 될 때’를 봐요.', 'bad');
+      try{ if(S.dev && S.dev.gatt.connected) S.dev.gatt.disconnect(); }catch(x){}
+      S.dev = null; S.src = null; setPhase('idle');
+    }
+  }
+  function onValue(e){
+    if(S.src !== 'ble' || e.target !== S.tx) return;   /* 끊은 연결에서 늦게 온 값은 버림 */
+    const dv = e.target.value;
+    feed(new TextDecoder().decode(dv.buffer.slice(dv.byteOffset, dv.byteOffset + dv.byteLength)));
+  }
+  function onDisconnected(){
+    if(S.src !== 'ble') return;
+    const was = S.rec && S.rec.on;
+    if(was) abortRec('기록 중에 연결이 끊겨 이번 기록은 저장하지 않았어요.');
+    S.src = null; S.tx = null; wakeOff();
+    setPhase('idle');
+    connMsg('연결이 끊겼어요. 마이크로비트 전원을 확인하고 ‘다시 연결’을 눌러요.', 'warn');
+  }
+  function disconnect(){
+    if(S.rec && S.rec.on) abortRec('기록을 멈췄어요. 이번 기록은 저장하지 않았어요.');
+    if(S.src === 'sim'){ clearInterval(S.sim.timer); S.sim.timer = null; S.src = null; wakeOff(); setPhase('idle'); connMsg(''); return; }
+    const d = S.dev; S.dev = null; S.src = null; S.tx = null; wakeOff();
+    try{ if(d && d.gatt.connected) d.gatt.disconnect(); }catch(e){}
+    setPhase('idle'); connMsg('연결을 끊었어요.', 'good');
+  }
+  function unsupportedText(){
+    return '이 브라우저는 블루투스 연결을 지원하지 않아요. 안드로이드 태블릿, 크롬북, 윈도 노트북의 크롬에서 열어요. 아이패드·아이폰에서는 안 돼요. 연습은 ‘가상 센서로 해 보기’로 할 수 있어요.';
+  }
+
+  /* 가상 센서: 실제 마이크로비트와 같은 형식의 줄을 20바이트씩 쪼개 보냄 */
+  function startSim(){
+    S.src = 'sim'; S.name = ''; S.buf = ''; S.lastDevT = null; S.offset = 0; S.samples = []; S.wall = []; S.lastWall = performance.now();
+    const sim = S.sim; sim.t = 0; sim.lastLoad = loadOhm(); sim.since = 0;
+    const VDD_TRUE = 3.16, R_IN = 32;
+    sim.timer = setInterval(() => {
+      sim.t += 0.11;
+      const R = loadOhm();
+      if(R !== sim.lastLoad){ sim.lastLoad = R; sim.since = sim.t; }
+      const voc = 1.52 + 0.05 * (1 - Math.exp(-sim.t / 6));
+      let v = voc;
+      if(R > 0) v = voc * R / (R + R_IN) * (1 - 0.06 * (1 - Math.exp(-(sim.t - sim.since) / 4)));
+      v += (Math.random() - 0.5) * 0.006;
+      sim.trueV = v;
+      const adc = Math.max(0, Math.min(1023, v / VDD_TRUE * 1023));
+      const s1 = Math.max(0, Math.round(adc * 32 + (Math.random() - 0.5) * 24));
+      const line = `${Math.round(sim.t * 1000)},${s1},${Math.round(410 * 32)},32\r\n`;
+      for(let i = 0; i < line.length; i += 20) feed(line.slice(i, i + 20));
+    }, 110);
+    setPhase('on'); connMsg('가상 센서예요. 실제 마이크로비트 없이 기록과 보정을 연습해요.', 'good');
+    wakeOn();
+  }
+
+  async function wakeOn(){ try{ if(navigator.wakeLock && !S.wake) S.wake = await navigator.wakeLock.request('screen'); }catch(e){ S.wake = null; } }
+  function wakeOff(){ try{ if(S.wake) S.wake.release(); }catch(e){} S.wake = null; }
+  document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible' && S.src){ S.wake = null; wakeOn(); } });
+
+  /* ───────── 기록 ───────── */
+  function startRec(){
+    if(!S.src || S.phase !== 'on') return;
+    if(!S.lastWall || performance.now() - S.lastWall > 2000){ recMsg('값이 들어오지 않아 기록을 시작할 수 없어요.', 'bad'); return; }
+    S.rec = { on:true, t0:null, dur:Number(S.pref.dur) || 10, pts:[], cond:S.pref.cond.trim(), load:loadOhm(), k:kNow(), cal:curCal(), src:S.src, name:calKey() };
+    recMsg(''); renderControls();
+  }
+  function abortRec(text){ S.rec = null; recMsg(text, 'warn'); renderControls(); }
+  function finishRec(){
+    const r = S.rec; if(!r) return;
+    S.rec = null;
+    const pts = r.pts, dur = r.dur;
+    const head = pts.filter(p => p[0] <= 0.5).map(p => p[1]), tail = pts.filter(p => p[0] >= dur - 0.5).map(p => p[1]);
+    const n = S.runs.reduce((m, x) => Math.max(m, x.n || 0), 0) + 1;
+    const run = { n, at:Date.now(), cond:r.cond || `기록 ${n}`, load:r.load, dur, src:r.src, dev:r.name,
+      cal:r.cal ? { ref:r.cal.ref, k:r.k } : null, vStart:mean(head), vEnd:mean(tail), pts };
+    S.runs.push(run); persist();
+    recMsg(`${run.cond}: ${dur}초 때 ${f2(run.vEnd)} V${run.load && run.vEnd != null ? `, ${(run.vEnd / run.load * 1000).toFixed(1)} mA` : ''}를 기록했어요.${r.cal ? '' : ' 보정하기 전 값이에요.'}`, 'good');
+    renderControls(); renderRuns();
+  }
+  function recMsg(text, kind){ const m = $('recmsg'); m.textContent = text || ''; m.className = 'msg' + (text ? ' ' + (kind || 'warn') : ''); }
+
+  /* ───────── 보정 ───────── */
+  function calibrate(){
+    const t = $('calv').value.trim().replace(',', '.'), ref = Number(t);
+    if(!t || !isFinite(ref)){ calMsg('멀티미터 값을 숫자로 적어요. 예: 1.52', 'bad'); return; }
+    if(ref < 0.2 || ref > 3){ calMsg('0.2 V에서 3 V 사이의 값으로 보정해요.', 'bad'); return; }
+    const raws = recent(1.5, s => s.raw), raw = mean(raws);
+    if(!raws.length || raw == null){ calMsg('마이크로비트 값이 들어올 때 보정해요.', 'bad'); return; }
+    if(raw < 0.1){ calMsg('마이크로비트 값이 0에 가까워요. 연결을 먼저 확인해요.', 'bad'); return; }
+    const k = ref / raw;
+    S.cals[calKey()] = { k, ref, at:Date.now() };
+    persist();
+    S.samples.forEach(s => { s.v = s.raw * k; });
+    calMsg(Math.abs(k - 1) > 0.25 ? `맞췄어요. 다만 보정 전 값과 ${Math.round(Math.abs(k - 1) * 100)} % 차이 나요. 멀티미터와 마이크로비트가 같은 두 판에 물렸는지 확인해요.` : '맞췄어요. 이제 액정 값이 멀티미터 값과 같아요.', Math.abs(k - 1) > 0.25 ? 'warn' : 'good');
+    $('calv').value = '';
+    renderCal(); schedule();
+  }
+  function clearCal(){
+    delete S.cals[calKey()]; persist();
+    S.samples.forEach(s => { s.v = s.raw; });
+    calMsg('보정을 지웠어요.', 'good'); renderCal(); schedule();
+  }
+  function calMsg(text, kind){ const m = $('calmsg'); m.textContent = text || ''; m.className = 'msg' + (text ? ' ' + (kind || 'warn') : ''); }
+  function renderCal(){
+    const c = S.src ? curCal() : null;
+    $('calstate').innerHTML = !S.src ? '연결하면 그 마이크로비트의 보정 상태가 보여요.'
+      : c ? `<span class="tag ok">보정됨</span> ${esc(calKey())}: 멀티미터 <b>${f2(c.ref)} V</b> 기준`
+      : `<span class="tag no">보정 전</span> ${esc(calKey())}: 마이크로비트 전원 전압을 ${VDD0} V로 보고 계산한 값이에요.`;
+    $('btn-calx').hidden = !c;
+    $('lcd-cal').textContent = !S.src ? '' : c ? '보정됨' : '보정 전';
+  }
+
+  /* ───────── 화면 ───────── */
+  let raf = 0;
+  function schedule(){ if(!raf) raf = requestAnimationFrame(() => { raf = 0; renderLive(); drawChart(); renderControls(); }); }
+  function renderLive(){
+    const vs = recent(0.6, s => s.v), adcs = recent(0.6, s => s.adc);
+    const v = S.src ? mean(vs) : null, adc = mean(adcs);
+    $('vnow').textContent = v == null ? '-.--' : f2(v);
+    const R = loadOhm();
+    $('lcd-mode').textContent = R ? `DC V · 부하 ${R} Ω` : 'DC V · 열린 전압';
+    $('inow').textContent = v != null && R ? `전류 ${(v / R * 1000).toFixed(1)} mA` : '';
+    let w = '';
+    if(S.src && adc != null){
+      if(adc <= 2) w = '0 V 근처예요. 집게가 떨어졌거나 판이 거꾸로 물렸을 수 있어요. 구리판은 1번 쪽, 마그네슘판은 GND 쪽이에요.';
+      else if(adc >= 1020) w = '마이크로비트가 잴 수 있는 범위(약 3 V)를 넘었어요. 연결을 확인해요.';
+    }
+    if(S.src && S.phase === 'on' && S.lastWall && performance.now() - S.lastWall > 2500) w = '값이 들어오지 않아요. 마이크로비트 전원과 프로그램을 확인해요.';
+    $('warn').textContent = w;
+    const rate = S.src && S.wall.length > 1 ? (S.wall.length - 1) / ((S.wall[S.wall.length - 1] - S.wall[0]) / 1000) : 0;
+    $('rate').textContent = S.src && rate ? `초당 ${rate.toFixed(1)}번 받는 중` : '';
+    const sm = $('simmeter');
+    sm.textContent = S.src === 'sim' && S.sim.trueV != null ? `가상 멀티미터: ${f2(S.sim.trueV)} V` : '';
+  }
+  function renderControls(){
+    const live = S.phase === 'on' && !!S.src, recOn = !!(S.rec && S.rec.on);
+    const b = $('btn-rec');
+    b.disabled = !live;
+    b.textContent = recOn ? '기록 멈추기' : '기록 시작';
+    b.className = 'btn ' + (recOn ? 'stop' : 'primary');
+    ['cond', 'load', 'loadx', 'dur'].forEach(id => { $(id).disabled = recOn; });
+    $('btn-cal').disabled = !live || recOn;
+    const r = S.rec;
+    if(recOn){
+      const tt = r.pts.length ? r.pts[r.pts.length - 1][0] : 0;
+      $('recbar').style.width = Math.min(100, tt / r.dur * 100) + '%';
+      $('recstate').textContent = `${tt.toFixed(1)} / ${r.dur}초`;
+    }else{ $('recbar').style.width = '0'; $('recstate').textContent = live ? '' : '먼저 연결해요.'; }
+    renderCal();
+  }
+
+  function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#888'; }
+  function drawChart(){
+    const cv = $('chart'), dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+    if(!W || !H) return;
+    if(cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)){ cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+    const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+    const L = 40, R = 14, T = 12, B = 26, pw = W - L - R, ph = H - T - B;
+    const last = S.samples.length ? S.samples[S.samples.length - 1].t : 0, x0 = last - WIN;   /* 오른쪽 끝이 늘 '지금' */
+    const pts = S.samples.filter(s => s.t >= x0);
+    const vmax = Math.max(2, ...pts.map(s => s.v)), top = Math.ceil(vmax * 1.08 / 0.5) * 0.5;
+    const X = t => L + (t - x0) / WIN * pw, Y = v => T + ph - Math.max(0, Math.min(top, v)) / top * ph;
+    g.font = `12px ${cssVar('--num').split(',')[0]}, monospace`; g.textBaseline = 'middle';
+    g.strokeStyle = cssVar('--plot-grid'); g.fillStyle = cssVar('--ink2'); g.lineWidth = 1;
+    for(let v = 0; v <= top + 1e-9; v += 0.5){
+      const y = Math.round(Y(v)) + 0.5; g.beginPath(); g.moveTo(L, y); g.lineTo(W - R, y); g.stroke();
+      g.textAlign = 'right'; g.fillText(v.toFixed(1), L - 8, y);
+    }
+    g.textAlign = 'center'; g.textBaseline = 'top';
+    for(let s = 0, step = pw < 380 ? 10 : 5; s <= WIN; s += step){ const x = L + s / WIN * pw; g.fillText(s === WIN ? '지금' : `-${WIN - s}초`, Math.min(Math.max(x, L + 14), W - R - 14), T + ph + 7); }
+    if(S.rec && S.rec.on && S.rec.t0 != null){
+      g.fillStyle = cssVar('--plot-rec'); const xa = X(Math.max(x0, S.rec.t0)); g.fillRect(xa, T, X(last) - xa, ph);
+    }
+    if(pts.length > 1){
+      g.strokeStyle = cssVar('--plot'); g.lineWidth = 2.25; g.lineJoin = 'round'; g.beginPath();
+      pts.forEach((s, i) => { const x = X(s.t), y = Y(s.v); i ? g.lineTo(x, y) : g.moveTo(x, y); });
+      g.stroke();
+      const e = pts[pts.length - 1]; g.fillStyle = cssVar('--plot'); g.beginPath(); g.arc(X(e.t), Y(e.v), 4, 0, Math.PI * 2); g.fill();
+    }else if(!S.src){
+      g.fillStyle = cssVar('--ink2'); g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `15px ${cssVar('--body').split(',')[0]}, sans-serif`;
+      g.fillText('연결하면 여기에 전압 그래프가 그려져요', L + pw / 2, T + ph / 2);
+    }
+  }
+
+  function spark(pts){
+    if(!pts || pts.length < 2) return '';
+    const w = 120, h = 32, t1 = pts[pts.length - 1][0] || 1, vs = pts.map(p => p[1]);
+    let lo = Math.min(...vs), hi = Math.max(...vs); if(hi - lo < 0.02){ const m = (hi + lo) / 2; lo = m - 0.01; hi = m + 0.01; }
+    const d = pts.map((p, i) => `${i ? 'L' : 'M'}${(p[0] / t1 * (w - 4) + 2).toFixed(1)} ${(h - 3 - (p[1] - lo) / (hi - lo) * (h - 6)).toFixed(1)}`).join(' ');
+    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="${d}" fill="none" stroke="var(--plot)" stroke-width="1.8" stroke-linejoin="round"/></svg>`;
+  }
+  const armed = {};
+  function renderRuns(){
+    const box = $('runs'), runs = S.runs;
+    $('runcount').textContent = runs.length ? `${runs.length}개` : '';
+    ['btn-csv1', 'btn-csv2', 'btn-clear'].forEach(id => { $(id).disabled = !runs.length; });
+    if(!runs.length){ box.innerHTML = '<p class="empty">아직 기록이 없어요. 연결한 뒤 조건을 적고 ‘기록 시작’을 눌러요.</p>'; return; }
+    box.innerHTML = `<div class="scroll"><table><thead><tr><th>번호</th><th>조건</th><th>부하</th><th class="n">처음 (V)</th><th class="n">끝 (V)</th><th class="n">끝 전류 (mA)</th><th>변화</th><th>보정</th><th></th></tr></thead><tbody>
+      ${runs.slice().reverse().map(r => `<tr>
+        <td>${r.n}</td><td>${esc(r.cond)}<div class="who">${new Date(r.at).toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' })} · ${r.dur}초${r.src === 'sim' ? ' · 가상' : ''}</div></td>
+        <td>${r.load ? `${r.load} Ω` : '없음'}</td><td class="n">${f2(r.vStart)}</td><td class="n">${f2(r.vEnd)}</td><td class="n">${r.load && r.vEnd != null ? (r.vEnd / r.load * 1000).toFixed(1) : '-'}</td>
+        <td>${spark(r.pts)}</td><td>${r.cal ? `<span class="tag ok">${f2(r.cal.ref)} V</span>` : '<span class="tag no">보정 전</span>'}</td>
+        <td><button type="button" class="btn small danger" data-del="${r.n}">${armed[r.n] ? '정말 지울까요?' : '지우기'}</button></td></tr>`).join('')}
+    </tbody></table></div>`;
+  }
+
+  /* ───────── CSV ───────── */
+  const cell = x => { let s = x == null ? '' : String(x); if(/^[=+@\t]/.test(s)) s = "'" + s; return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const stamp = () => { const d = new Date(), p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; };
+  function csvSummary(){
+    const head = ['번호', '기록 시각', '조건', '부하 저항(Ω)', '기록 시간(초)', '처음 전압(V)', '끝 전압(V)', '끝 전류(mA)', '보정 기준 멀티미터 값(V)', '센서', '받은 값 개수'];
+    const rows = S.runs.map(r => [r.n, new Date(r.at).toLocaleString('ko-KR'), r.cond, r.load || '', r.dur, r.vStart == null ? '' : r.vStart.toFixed(3), r.vEnd == null ? '' : r.vEnd.toFixed(3),
+      r.load && r.vEnd != null ? (r.vEnd / r.load * 1000).toFixed(2) : '', r.cal ? r.cal.ref : '보정 전', r.src === 'sim' ? '가상 센서' : r.dev, r.pts.length]);
+    return '﻿' + [head, ...rows].map(a => a.map(cell).join(',')).join('\r\n');
+  }
+  function csvAll(){
+    const head = ['번호', '조건', '부하 저항(Ω)', '시간(초)', '전압(V)', '전류(mA)'];
+    const rows = [];
+    S.runs.forEach(r => r.pts.forEach(p => rows.push([r.n, r.cond, r.load || '', p[0].toFixed(2), p[1].toFixed(3), r.load ? (p[1] / r.load * 1000).toFixed(2) : ''])));
+    return '﻿' + [head, ...rows].map(a => a.map(cell).join(',')).join('\r\n');
+  }
+  let dl = null;
+  const inClaude = !!(window.claude && typeof window.claude.use === 'function');
+  if(inClaude){ try{ Promise.resolve(window.claude.use('downloads')).then(x => { dl = x; }, () => {}); }catch(e){} }
+  async function saveFile(name, data){
+    if(dl){ try{ await dl.save({ filename:name, data }); return true; }catch(e){ return false; } }
+    try{
+      const url = URL.createObjectURL(new Blob([data], { type:'text/csv;charset=utf-8' }));
+      const a = document.createElement('a'); a.href = url; a.download = name; a.style.display = 'none';
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000);
+      return !inClaude;
+    }catch(e){ return false; }
+  }
+  async function exportCSV(kind){
+    if(!S.runs.length) return;
+    const ok = await saveFile(`전압기록_${kind === 'sum' ? '요약' : '전체'}_${stamp()}.csv`, kind === 'sum' ? csvSummary() : csvAll());
+    const m = $('runmsg'); m.textContent = ok ? 'CSV 파일을 저장했어요.' : '이 화면에서는 파일을 저장할 수 없어요. 깃허브 주소에서 열어 저장해요.'; m.className = 'msg ' + (ok ? 'good' : 'bad');
+  }
+
+  /* ───────── 이벤트 ───────── */
+  $('btn-conn').addEventListener('click', connect);
+  $('btn-sim').addEventListener('click', startSim);
+  $('btn-disc').addEventListener('click', disconnect);
+  $('btn-rec').addEventListener('click', () => { if(S.rec && S.rec.on) abortRec('기록을 멈췄어요. 이번 기록은 저장하지 않았어요.'); else startRec(); });
+  $('btn-cal').addEventListener('click', calibrate);
+  $('calv').addEventListener('keydown', e => { if(e.key === 'Enter') calibrate(); });
+  $('btn-calx').addEventListener('click', clearCal);
+  $('cond').addEventListener('input', e => { S.pref.cond = e.target.value; savePref(); });
+  $('load').addEventListener('change', e => { S.pref.load = e.target.value; $('loadx').hidden = S.pref.load !== 'x'; savePref(); schedule(); });
+  $('loadx').addEventListener('input', e => { S.pref.loadx = e.target.value; savePref(); schedule(); });
+  $('dur').addEventListener('change', e => { S.pref.dur = e.target.value; savePref(); });
+  $('btn-csv1').addEventListener('click', () => exportCSV('sum'));
+  $('btn-csv2').addEventListener('click', () => exportCSV('all'));
+  $('btn-csv3').addEventListener('click', () => exportCSV('all'));
+  let clearArmed = null;
+  $('btn-clear').addEventListener('click', () => {
+    const b = $('btn-clear');
+    if(!clearArmed){ b.textContent = '정말 모두 지울까요?'; clearArmed = setTimeout(() => { clearArmed = null; b.textContent = '모두 지우기'; }, 4000); return; }
+    clearTimeout(clearArmed); clearArmed = null; b.textContent = '모두 지우기';
+    S.runs = []; persist(); renderRuns();
+    const m = $('runmsg'); m.textContent = '기록을 모두 지웠어요.'; m.className = 'msg good';
+  });
+  $('runs').addEventListener('click', e => {
+    const b = e.target.closest('[data-del]'); if(!b) return;
+    const n = Number(b.dataset.del);
+    if(!armed[n]){ armed[n] = setTimeout(() => { delete armed[n]; renderRuns(); }, 4000); renderRuns(); return; }
+    clearTimeout(armed[n]); delete armed[n];
+    S.runs = S.runs.filter(r => r.n !== n); persist(); renderRuns();
+  });
+  $('btn-copy').addEventListener('click', () => {
+    const el = $('mbcode'), out = $('copied'), txt = el.textContent;
+    const sel = () => { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); out.textContent = '코드를 선택했어요. 복사해 쓰세요.'; };
+    try{ navigator.clipboard.writeText(txt).then(() => { out.textContent = '코드를 복사했어요.'; }, sel); }catch(e){ sel(); }
+  });
+  window.addEventListener('resize', schedule);
+  try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', schedule); }catch(e){}
+  new MutationObserver(schedule).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] });
+  setInterval(() => { if(S.src) schedule(); }, 1000);
+
+  /* 처음 화면 */
+  $('cond').value = S.pref.cond; $('load').value = ['0', '100', '47', 'x'].includes(S.pref.load) ? S.pref.load : '0';
+  $('loadx').value = S.pref.loadx; $('loadx').hidden = $('load').value !== 'x'; $('dur').value = ['10', '30', '60'].includes(S.pref.dur) ? S.pref.dur : '10';
+  setPhase('idle');
+  if(!hasBT()) connMsg(unsupportedText(), 'warn');
+  renderRuns(); schedule();
+  window.__voltlog = { S, feed, parseLine };   /* 검사용 */
+})();
+</script>
+</body>
+</html>

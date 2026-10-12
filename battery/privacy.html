@@ -1,0 +1,263 @@
+<!doctype html><html lang="ko"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body><title>배터리 시험팀 개인정보 처리방침</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* 레이아웃: 왼쪽에 조항 목차(넓은 화면에서 따라 내려옴), 오른쪽에 65자 안팎 폭의 본문. 맨 위 '한눈에 보기' 표시, 맨 아래 선정 기준 대응표 */
+:root{
+  --bg:#EEF1F2; --paper:#FBFCFC; --ink:#1A1F23; --ink2:#4A555D; --line:#D3D9DD; --accent:#A9531F; --fill:#FBEFC4; --fill-line:#C9A227;
+  --display:'Do Hyeon', 'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --body:'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#14181B; --paper:#1C2227; --ink:#E5EAED; --ink2:#A3AFB7; --line:#2F383F; --accent:#E08A55; --fill:#43391A; --fill-line:#B8942A; color-scheme:dark; } }
+:root[data-theme="dark"]{ --bg:#14181B; --paper:#1C2227; --ink:#E5EAED; --ink2:#A3AFB7; --line:#2F383F; --accent:#E08A55; --fill:#43391A; --fill-line:#B8942A; color-scheme:dark; }
+*{ box-sizing:border-box; }
+body{ background:var(--bg); color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.75; word-break:keep-all; overflow-wrap:break-word; }
+.wrap{ max-width:1100px; margin:0 auto; padding-inline:20px; padding-block:40px 72px; }
+a{ color:var(--accent); text-underline-offset:3px; }
+a:focus-visible, summary:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:3px; }
+header.top{ display:grid; gap:10px; padding-bottom:28px; border-bottom:2px solid var(--ink); margin-bottom:28px; }
+.eyebrow{ margin:0; font-size:13px; font-weight:600; letter-spacing:.04em; color:var(--accent); }
+h1{ margin:0; font-family:var(--display); font-weight:400; font-size:clamp(40px, 7vw, 60px); line-height:1.05; text-wrap:balance; }
+.meta{ margin:4px 0 0; display:flex; flex-wrap:wrap; gap:6px 20px; font-size:14.5px; color:var(--ink2); }
+.meta b{ color:var(--ink); font-weight:600; }
+.lead{ margin:6px 0 0; max-width:68ch; color:var(--ink2); }
+.fill{ background:var(--fill); border-bottom:1.5px dashed var(--fill-line); padding:0 4px; border-radius:3px; color:var(--ink); white-space:nowrap; }
+.layout{ display:grid; grid-template-columns:220px minmax(0, 1fr); gap:44px; align-items:start; }
+nav.toc{ position:sticky; top:calc(env(safe-area-inset-top, 0px) + 20px); font-size:14px; }
+nav.toc p{ margin:0 0 8px; font-weight:700; font-size:13px; letter-spacing:.04em; color:var(--ink2); }
+nav.toc ol{ list-style:none; margin:0; padding:0; display:grid; gap:2px; }
+nav.toc a{ display:block; padding:4px 8px; border-radius:6px; color:var(--ink); text-decoration:none; line-height:1.45; }
+nav.toc a:hover{ background:var(--paper); }
+nav.toc a span{ color:var(--accent); font-weight:600; margin-right:6px; font-variant-numeric:tabular-nums; }
+details.toc-m{ display:none; }
+article{ min-width:0; max-width:70ch; }
+.labels{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; margin:0 0 40px; }
+.label{ background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:14px 16px; display:grid; gap:4px; align-content:start; }
+.label .k{ font-size:12.5px; font-weight:700; letter-spacing:.04em; color:var(--accent); }
+.label .v{ font-size:15px; line-height:1.55; }
+section.art{ padding-top:8px; margin-bottom:36px; scroll-margin-top:calc(env(safe-area-inset-top, 0px) + 16px); }
+h2{ margin:0 0 10px; font-size:20px; font-weight:700; line-height:1.4; display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; }
+h2 .no{ color:var(--accent); font-variant-numeric:tabular-nums; }
+p{ margin:0 0 12px; }
+ol.items, ul.items{ margin:0 0 12px; padding-left:1.4em; display:grid; gap:6px; }
+.note{ font-size:14.5px; color:var(--ink2); border-left:3px solid var(--line); padding-left:12px; margin:10px 0 12px; }
+.tbl{ overflow-x:auto; margin:4px 0 14px; border:1px solid var(--line); border-radius:10px; background:var(--paper); }
+table{ border-collapse:collapse; width:100%; min-width:520px; font-size:14.5px; line-height:1.6; }
+th, td{ text-align:left; vertical-align:top; padding:10px 14px; border-top:1px solid var(--line); }
+thead th{ border-top:0; font-size:13px; font-weight:700; color:var(--ink2); background:var(--bg); }
+tbody th{ font-weight:600; white-space:nowrap; }
+.case{ font-size:13px; font-weight:700; color:var(--accent); margin:16px 0 6px; letter-spacing:.02em; }
+.contacts{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; margin:6px 0 12px; }
+.contacts div{ background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:10px 14px; font-size:14.5px; line-height:1.55; }
+.contacts b{ display:block; font-weight:600; }
+.contacts span{ color:var(--ink2); font-variant-numeric:tabular-nums; }
+.appendix{ margin-top:48px; padding-top:24px; border-top:2px solid var(--ink); }
+.appendix h2{ font-size:18px; }
+footer{ margin-top:36px; font-size:13.5px; color:var(--ink2); }
+@media (max-width:860px){
+  .layout{ grid-template-columns:minmax(0, 1fr); gap:0; }
+  nav.toc{ display:none; }
+  details.toc-m{ display:block; margin:0 0 24px; background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:10px 14px; font-size:14.5px; }
+  details.toc-m summary{ cursor:pointer; font-weight:600; }
+  details.toc-m ol{ margin:8px 0 2px; padding-left:1.2em; display:grid; gap:4px; }
+  .labels{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width:480px){ .labels, .contacts{ grid-template-columns:minmax(0, 1fr); } .wrap{ padding-inline:16px; padding-block:28px 56px; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">배터리 시험팀 · 배터리 가상 시험동</p>
+    <h1>개인정보 처리방침</h1>
+    <p class="meta"><span>개인정보처리자 <b><span class="fill">[학교명]</span></b></span><span>시행일 <b><span class="fill">[2026년 ○월 ○일]</span></b></span></p>
+    <p class="lead">과학 수업용 웹 도구 ‘배터리 시험팀’과 ‘배터리 가상 시험동’(이하 ‘도구’)이 학생의 개인정보를 어떤 목적으로, 무엇을, 얼마 동안, 어디에 두는지 알려 드립니다.</p>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="조항 목록">
+      <p>조항</p>
+      <ol>
+        <li><a href="#a1"><span>1</span>처리 목적</a></li>
+        <li><a href="#a2"><span>2</span>처리 항목</a></li>
+        <li><a href="#a3"><span>3</span>보유 기간</a></li>
+        <li><a href="#a4"><span>4</span>파기</a></li>
+        <li><a href="#a5"><span>5</span>제3자 제공</a></li>
+        <li><a href="#a6"><span>6</span>처리 위탁</a></li>
+        <li><a href="#a7"><span>7</span>국외 이전</a></li>
+        <li><a href="#a8"><span>8</span>정보주체의 권리</a></li>
+        <li><a href="#a9"><span>9</span>만 14세 미만 아동</a></li>
+        <li><a href="#a10"><span>10</span>안전성 확보 조치</a></li>
+        <li><a href="#a11"><span>11</span>자동 수집과 외부 서비스</a></li>
+        <li><a href="#a12"><span>12</span>보호책임자</a></li>
+        <li><a href="#a13"><span>13</span>권익침해 구제</a></li>
+        <li><a href="#a14"><span>14</span>방침의 변경</a></li>
+        <li><a href="#check">선정 기준 대응표</a></li>
+      </ol>
+    </nav>
+
+    <article>
+      <details class="toc-m">
+        <summary>조항 목록</summary>
+        <ol>
+          <li><a href="#a1">제1조 처리 목적</a></li><li><a href="#a2">제2조 처리 항목</a></li><li><a href="#a3">제3조 보유 기간</a></li><li><a href="#a4">제4조 파기</a></li><li><a href="#a5">제5조 제3자 제공</a></li><li><a href="#a6">제6조 처리 위탁</a></li><li><a href="#a7">제7조 국외 이전</a></li><li><a href="#a8">제8조 정보주체의 권리</a></li><li><a href="#a9">제9조 만 14세 미만 아동</a></li><li><a href="#a10">제10조 안전성 확보 조치</a></li><li><a href="#a11">제11조 자동 수집과 외부 서비스</a></li><li><a href="#a12">제12조 보호책임자</a></li><li><a href="#a13">제13조 권익침해 구제</a></li><li><a href="#a14">제14조 방침의 변경</a></li><li><a href="#check">선정 기준 대응표</a></li>
+        </ol>
+      </details>
+
+      <div class="labels" aria-label="한눈에 보기">
+        <div class="label"><span class="k">수집 항목</span><span class="v">반, 조 또는 번호, 이름, 실험 기록</span></div>
+        <div class="label"><span class="k">처리 목적</span><span class="v">실험 수업 진행, 수행평가 채점과 피드백</span></div>
+        <div class="label"><span class="k">저장 위치</span><span class="v">학생 기기의 브라우저, 교사에게 낸 결과 파일</span></div>
+        <div class="label"><span class="k">보유 기간</span><span class="v"><span class="fill">[해당 학년도 말]</span>까지</span></div>
+        <div class="label"><span class="k">제3자 제공</span><span class="v">하지 않음</span></div>
+        <div class="label"><span class="k">위탁·국외 이전</span><span class="v">하지 않음</span></div>
+      </div>
+
+      <section class="art" id="a1">
+        <h2><span class="no">제1조</span>개인정보의 처리 목적</h2>
+        <p><span class="fill">[학교명]</span>(이하 ‘학교’)은 학교의 교육 업무를 수행하는 데 필요한 범위에서 다음 목적으로만 개인정보를 처리합니다.</p>
+        <ol class="items">
+          <li>과학 실험 수업 진행: 조 편성, 역할 배정, 실험 기록과 시험 성적서 작성</li>
+          <li>수행평가 채점과 피드백: 실험 과정과 기록을 근거로 한 평가와 학생별 피드백</li>
+          <li>수업 개선: 자주 나오는 실험 실수를 반 전체 통계로 살펴 다음 수업에 반영</li>
+        </ol>
+        <p>학교는 이 목적 외에는 개인정보를 이용하지 않습니다. 목적이 바뀌면 미리 알리고 필요한 동의를 받습니다.</p>
+      </section>
+
+      <section class="art" id="a2">
+        <h2><span class="no">제2조</span>처리하는 개인정보 항목</h2>
+        <div class="tbl"><table>
+          <thead><tr><th>구분</th><th>항목</th><th>수집 방법</th></tr></thead>
+          <tbody>
+            <tr><th>조별 참여</th><td>반, 조, 팀원 이름, 맡은 역할</td><td>학생이 도구 첫 화면에 직접 입력</td></tr>
+            <tr><th>개별 참여</th><td>반, 번호, 이름 (배터리 가상 시험동)</td><td>학생이 도구 첫 화면에 직접 입력</td></tr>
+            <tr><th>실험 기록</th><td>측정값, 관찰 기록, 판정과 서술 답안, 진행 단계와 시각, 재확인 이력, 피드백 뒤 다시 고른 횟수, 가상 실험대 조작 기록</td><td>도구를 쓰는 동안 만들어짐</td></tr>
+            <tr><th>교사</th><td>교사 화면 PIN(원래 숫자를 알 수 없는 값으로 바꿔 저장), 수업 설정</td><td>교사가 직접 입력</td></tr>
+          </tbody>
+        </table></div>
+        <p>연락처, 생년월일, 주소, 학번, 계정 정보, 사진, 위치 정보는 수집하지 않습니다. 담당 교사가 정한 경우 이름 칸에 실명 대신 번호를 적어도 도구를 쓰는 데 지장이 없습니다.</p>
+      </section>
+
+      <section class="art" id="a3">
+        <h2><span class="no">제3조</span>개인정보의 처리 및 보유 기간</h2>
+        <ul class="items">
+          <li>학생 기기에 저장된 기록: <span class="fill">[해당 학년도 말]</span>까지 보유합니다. 단원 수업이 끝나면 학생이 기록을 지우도록 안내합니다.</li>
+          <li>교사에게 낸 결과 파일과 교사가 내려받은 기록표(CSV): <span class="fill">[해당 학년도 말]</span>까지 교사의 업무용 기기에 보관합니다.</li>
+        </ul>
+        <p class="note">수행평가 결과에 대한 이의 신청 등으로 근거 자료를 더 보관해야 하면 학교 학업성적관리규정이 정한 기간을 따릅니다.</p>
+      </section>
+
+      <section class="art" id="a4">
+        <h2><span class="no">제4조</span>개인정보의 파기 절차 및 방법</h2>
+        <p>보유 기간이 끝나거나 처리 목적을 이루면 지체 없이 파기합니다.</p>
+        <ul class="items">
+          <li>학생 기기의 기록: 도구 첫 화면의 ‘지우기’로 지우거나, 브라우저 설정에서 해당 사이트 데이터를 삭제합니다.</li>
+          <li>결과 파일과 기록표: 복구할 수 없는 방법으로 삭제합니다.</li>
+          <li>교사 기기에 불러온 기록: 교사 화면의 ‘이 기록 지우기’로 삭제합니다.</li>
+          <li>인쇄한 성적서: 분쇄하거나 소각합니다.</li>
+        </ul>
+      </section>
+
+      <section class="art" id="a5">
+        <h2><span class="no">제5조</span>개인정보의 제3자 제공</h2>
+        <p>학교는 개인정보를 제3자에게 제공하지 않습니다. 다만 법률에 특별한 규정이 있는 경우는 예외로 합니다.</p>
+      </section>
+
+      <section class="art" id="a6">
+        <h2><span class="no">제6조</span>개인정보 처리의 위탁</h2>
+        <p>학교는 개인정보 처리를 위탁하지 않습니다. 학생 기록은 학생 기기의 브라우저에만 저장되고, 교사에게는 결과 파일로 제출됩니다. 깃허브 페이지에서 제공하는 도구는 기록을 외부 서버로 보내지 않습니다.</p>
+      </section>
+
+      <section class="art" id="a7">
+        <h2><span class="no">제7조</span>개인정보의 국외 이전</h2>
+        <p>학교는 개인정보를 국외로 이전하지 않습니다. 도구 페이지를 내려받는 과정에서 전달되는 접속 정보는 제11조에 따릅니다.</p>
+      </section>
+
+      <section class="art" id="a8">
+        <h2><span class="no">제8조</span>정보주체와 법정대리인의 권리·의무 및 행사 방법</h2>
+        <p>학생과 법정대리인은 언제든지 개인정보의 열람, 정정, 삭제, 처리정지를 요구할 수 있습니다. 담당 교사에게 말이나 서면으로 요청하면, 학교는 지체 없이 조치하고 그 결과를 알립니다.</p>
+        <ul class="items">
+          <li>열람: 도구의 시험 성적서 화면에서 자기 조의 기록을 볼 수 있습니다.</li>
+          <li>정정: 성적서에 서명하기 전에는 학생이 기록을 직접 고칠 수 있습니다. 서명 뒤에는 담당 교사에게 요청합니다.</li>
+          <li>삭제: 학생 기기의 기록은 도구 첫 화면의 ‘지우기’로 지울 수 있습니다. 교사가 가진 기록은 담당 교사에게 요청합니다.</li>
+        </ul>
+        <p class="note">채점이 끝난 수행평가 기록의 정정과 삭제는 학교 학업성적관리규정이 정한 범위에서 처리합니다.</p>
+      </section>
+
+      <section class="art" id="a9">
+        <h2><span class="no">제9조</span>만 14세 미만 아동의 개인정보</h2>
+        <p>도구는 고등학교 수업용이므로 원칙적으로 만 14세 미만 아동의 개인정보를 처리하지 않습니다. 중학교 등에서 만 14세 미만 학생이 쓰는 경우 이름 칸에 번호만 적게 합니다. 이름 등을 처리해야 하면 법정대리인의 동의를 먼저 받습니다.</p>
+      </section>
+
+      <section class="art" id="a10">
+        <h2><span class="no">제10조</span>개인정보의 안전성 확보 조치</h2>
+        <ol class="items">
+          <li>최소 수집: 수업과 평가에 필요한 항목만 받고, 연락처나 계정 정보는 받지 않습니다.</li>
+          <li>교사 화면 잠금: 교사 화면은 PIN으로 잠기고, 처음 화면으로 돌아가면 다시 잠깁니다. PIN은 원래 숫자를 알 수 없는 값으로 바꿔 저장합니다.</li>
+          <li>기록 분리: 두 도구의 기록은 서로 다른 저장 공간에 두어 섞이지 않습니다.</li>
+          <li>외부 전송 없음: 학생 기록을 외부 서버로 보내지 않으며, 도구 페이지는 암호화된 통신(HTTPS)으로 제공됩니다.</li>
+          <li>추적 도구 없음: 광고, 방문 분석, 행동 추적 도구를 쓰지 않습니다.</li>
+          <li>결과 파일 관리: 결과 파일과 기록표는 교사의 업무용 기기에만 보관하고 외부에 공유하지 않습니다.</li>
+          <li>공용 기기 관리: 여러 학생이 함께 쓰는 기기는 수업이 끝나면 기록을 결과 파일로 낸 뒤 지우도록 안내합니다.</li>
+        </ol>
+      </section>
+
+      <section class="art" id="a11">
+        <h2><span class="no">제11조</span>자동으로 수집되는 정보와 외부 서비스</h2>
+        <p>도구는 쿠키를 쓰지 않습니다. 기록을 저장하기 위해 브라우저 저장소를 쓰며, 브라우저 설정에서 사이트 데이터를 지우면 함께 삭제됩니다.</p>
+        <p>도구 페이지는 GitHub Pages(GitHub, Inc.)에서 제공되고, 글꼴은 Google Fonts에서 불러옵니다. 이 과정에서 접속 정보(IP 주소, 브라우저 정보 등)가 각 서비스에 전달될 수 있습니다. 학교는 이 정보를 수집하지 않으며, 각 서비스의 처리는 해당 회사의 개인정보 처리방침(<a href="https://docs.github.com/ko/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub</a>, <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google</a>)을 따릅니다.</p>
+      </section>
+
+      <section class="art" id="a12">
+        <h2><span class="no">제12조</span>개인정보 보호책임자</h2>
+        <div class="tbl"><table>
+          <tbody>
+            <tr><th>개인정보 보호책임자</th><td><span class="fill">[직위·성명]</span>, <span class="fill">[학교 연락처]</span></td></tr>
+            <tr><th>담당자 (도구 운영)</th><td><span class="fill">[과학과 담당 교사 성명]</span>, <span class="fill">[연락처]</span></td></tr>
+          </tbody>
+        </table></div>
+        <p>개인정보와 관련한 문의, 불만 처리, 피해 구제는 위 담당자에게 요청할 수 있습니다.</p>
+      </section>
+
+      <section class="art" id="a13">
+        <h2><span class="no">제13조</span>권익침해 구제 방법</h2>
+        <p>개인정보 침해로 인한 구제를 받으려면 다음 기관에 분쟁 해결이나 상담을 신청할 수 있습니다.</p>
+        <div class="contacts">
+          <div><b>개인정보분쟁조정위원회</b><span>1833-6972 · www.kopico.go.kr</span></div>
+          <div><b>개인정보침해신고센터</b><span>국번 없이 118 · privacy.kisa.or.kr</span></div>
+          <div><b>대검찰청</b><span>국번 없이 1301 · www.spo.go.kr</span></div>
+          <div><b>경찰청</b><span>국번 없이 182 · ecrm.police.go.kr</span></div>
+        </div>
+        <p>열람, 정정·삭제, 처리정지 요구에 대한 학교의 처분이나 부작위로 권리나 이익을 침해받은 경우 행정심판을 청구할 수 있습니다(중앙행정심판위원회 국번 없이 110, www.simpan.go.kr).</p>
+      </section>
+
+      <section class="art" id="a14">
+        <h2><span class="no">제14조</span>개인정보 처리방침의 변경</h2>
+        <p>이 처리방침은 <span class="fill">[2026년 ○월 ○일]</span>부터 적용합니다. 내용이 바뀌면 시행 7일 전에 이 페이지와 수업 시간에 알립니다.</p>
+      </section>
+
+      <section class="appendix" id="check">
+        <h2>학습지원 소프트웨어 개인정보보호 기준 대응표</h2>
+        <p>선정 기준표의 ‘증빙’ 칸에 적을 조항입니다.</p>
+        <div class="tbl"><table>
+          <thead><tr><th>기준</th><th>세부 내용</th><th>해당 조항</th></tr></thead>
+          <tbody>
+            <tr><th>1-1</th><td>개인정보가 최소한으로 수집되는가</td><td>제2조, 제10조 1호</td></tr>
+            <tr><th>1-2</th><td>개인정보 수집·이용 목적이 기재되어 있는가</td><td>제1조</td></tr>
+            <tr><th>1-3</th><td>수집 항목, 보유 기간 등이 기재되어 있는가</td><td>제2조, 제3조, 제4조</td></tr>
+            <tr><th>2-1</th><td>안전성 확보에 필요한 조치 사항이 기재되어 있는가</td><td>제10조</td></tr>
+            <tr><th>3-1</th><td>열람·정정·삭제·처리정지 요구 절차가 안내되어 있는가</td><td>제8조</td></tr>
+            <tr><th>4-1</th><td>만 14세 미만 아동의 개인정보 보호 절차가 마련되어 있는가</td><td>제9조 (고등학교 대상이면 해당 없음)</td></tr>
+            <tr><th>5-1</th><td>개인정보 보호책임자 관련 정보가 안내되어 있는가</td><td>제12조</td></tr>
+            <tr><th>5-2</th><td>제3자 제공에 관한 정보가 기재되어 있는가</td><td>제5조 (제공하지 않음)</td></tr>
+            <tr><th>5-3</th><td>위·수탁 관계에 관한 정보가 기재되어 있는가</td><td>제6조 (위탁하지 않음)</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <footer>표시된 칸(<span class="fill">[ ]</span>)은 학교에서 정해 채워 넣을 내용입니다.</footer>
+    </article>
+  </div>
+</div>
+</body></html>
