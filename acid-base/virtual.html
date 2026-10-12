@@ -537,10 +537,14 @@ details summary{cursor:pointer;font-size:13.5px;color:var(--ink-2);padding-block
   <section id="scrLock" hidden>
     <form id="lockForm" class="done">
       <p class="eyebrow">교사 화면</p>
-      <h2>교사 코드를 입력하세요</h2>
-      <p class="small">학생 기록과 정답, 분석 결과는 교사 코드로만 열 수 있어요.</p>
-      <div class="mrow"><input id="lockCode" class="num" type="password" inputmode="numeric" autocomplete="off" aria-label="교사 코드"><button type="submit" class="btn primary">열기</button></div>
+      <h2 id="lockTitle">교사 PIN을 입력하세요</h2>
+      <p class="small" id="lockLead">학생 기록과 정답, 분석 결과는 교사 PIN으로만 열 수 있어요.</p>
+      <div class="mrow"><input id="lockCode" class="num" type="password" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="교사 PIN"></div>
+      <div class="mrow" id="lockRow2" hidden><input id="lockCode2" class="num" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="한 번 더" aria-label="교사 PIN 한 번 더"></div>
+      <div class="tools"><button type="submit" class="btn primary" id="lockGo">열기</button></div>
       <p id="lockMsg" class="small" role="status"></p>
+      <div class="tools" id="lockForgotRow" hidden><button type="button" id="lockForgot" class="btn sm ghost">PIN을 잊었어요</button></div>
+      <p class="small" id="lockForgotTx" hidden>PIN은 되살릴 수 없어요. 대신 이 기기에 모인 학생 기록을 모두 지우고 PIN을 새로 정할 수 있어요. 학생이 낸 제출 글은 웨일 클래스에 남아 있으니 다시 불러오면 돼요.</p>
     </form>
   </section>
 
@@ -763,7 +767,17 @@ function univColor(pH) {
 const wasteClass = pH => pH < 6 ? 'acid' : pH > 8 ? 'base' : 'neutral';
 const BIN = { acid: '산성 폐액통', neutral: '중성 폐액통', base: '염기성 폐액통', sink: '싱크대' };
 MK.overshoot = '색 변화 후 계속 넣음 (과적정)';
-const TEACHER_CODE = '2026';   // 배포 전에 바꿔 쓰세요
+/* 교사 PIN: 기기마다 처음 연 사람이 정하고, 해시만 이 기기에 남긴다. 소스에는 코드가 없다. */
+const PIN_KEY = 'vlab-acidbase-pin';
+async function hashPin(p) {
+  const txt = 'vlab-acidbase:' + p;
+  try {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch (e) { let h = 0; for (const ch of txt) h = (h * 31 + ch.charCodeAt(0)) | 0; return 'x' + (h >>> 0).toString(16); }
+}
+function getPin() { try { return localStorage.getItem(PIN_KEY); } catch (e) { return null; } }
+function setPin(h) { try { localStorage.setItem(PIN_KEY, h); return true; } catch (e) { return false; } }
 
 /* heat and conductivity */
 const DH = 57100, CP = 4.18;                                 // J/mol of water formed, J/(g·K)
@@ -2257,12 +2271,43 @@ $('#btnTeacher').addEventListener('click', () => {
   if (S.screen === 'teacher' || S.screen === 'lock') { show(S.prev || 'start'); return; }
   S.prev = S.screen;
   if (S.teacherOk) { renderTeacher(); show('teacher'); }
-  else { $('#lockCode').value = ''; $('#lockMsg').textContent = ''; show('lock'); $('#lockCode').focus(); }
+  else openLock();
 });
-$('#lockForm').addEventListener('submit', e => {
+let lockMode = 'enter';
+function openLock() {
+  lockMode = getPin() ? 'enter' : 'set';
+  const set = lockMode === 'set';
+  $('#lockTitle').textContent = set ? '교사 PIN을 정하세요' : '교사 PIN을 입력하세요';
+  $('#lockLead').textContent = set
+    ? '이 기기에서 교사 화면을 처음 열었어요. 숫자 4~6자리를 정하면 다음부터 이 PIN으로 열어요. 학생 기기나 공용 기기는 수업 전에 선생님이 미리 정해 두세요.'
+    : '학생 기록과 정답, 분석 결과는 교사 PIN으로만 열 수 있어요.';
+  $('#lockRow2').hidden = !set;
+  $('#lockGo').textContent = set ? '정하고 열기' : '열기';
+  $('#lockForgotRow').hidden = set;
+  const f = $('#lockForgot'); delete f.dataset.armed; f.textContent = 'PIN을 잊었어요';
+  $('#lockForgotTx').hidden = true;
+  $('#lockCode').value = ''; $('#lockCode2').value = ''; $('#lockMsg').textContent = '';
+  show('lock'); $('#lockCode').focus();
+}
+function enterTeacher() { S.teacherOk = true; renderTeacher(); show('teacher'); }
+$('#lockForm').addEventListener('submit', async e => {
   e.preventDefault();
-  if ($('#lockCode').value.trim() === TEACHER_CODE) { S.teacherOk = true; renderTeacher(); show('teacher'); }
-  else { $('#lockMsg').textContent = '코드가 맞지 않아요.'; $('#lockCode').select(); }
+  const p1 = $('#lockCode').value.trim(), p2 = $('#lockCode2').value.trim(), msg = t => { $('#lockMsg').textContent = t; };
+  if (!/^\d{4,6}$/.test(p1)) { msg('숫자 4~6자리로 입력하세요.'); $('#lockCode').select(); return; }
+  if (lockMode === 'set') {
+    if (p1 !== p2) { msg('두 번 입력한 PIN이 달라요.'); $('#lockCode2').select(); return; }
+    if (setPin(await hashPin(p1))) toast('교사 PIN을 정했어요.', 'good');
+    else toast('이 브라우저에는 PIN을 저장할 수 없어서, 이번에만 열어요.');
+    enterTeacher();
+  } else if ((await hashPin(p1)) === getPin()) enterTeacher();
+  else { msg('PIN이 맞지 않아요.'); $('#lockCode').select(); }
+});
+$('#lockForgot').addEventListener('click', () => {
+  const b = $('#lockForgot');
+  if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = '한 번 더 누르면 기록을 지우고 PIN을 새로 정해요'; $('#lockForgotTx').hidden = false; return; }
+  RECS = []; persist();
+  try { localStorage.removeItem(PIN_KEY); } catch (e) { }
+  openLock(); toast('이 기기의 학생 기록을 지웠어요. 새 PIN을 정하세요.');
 });
 $('#tImportBtn').addEventListener('click', () => {
   const box = $('#tImport'), res = importCodes(box.value);
