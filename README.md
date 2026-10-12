@@ -4,6 +4,8 @@
 
 - [배터리 시험팀](https://maehwachem.github.io/science-tools/battery/): 실제 실험 기록·판정·성적서 (1차 공통, 2차 통합과학·화학)
 - [배터리 가상 시험동](https://maehwachem.github.io/science-tools/battery/virtual.html): 화면 속 실험대로 측정 절차 연습·평가
+- [환경 대응팀](https://maehwachem.github.io/science-tools/acid-base/): 하천 오염 대응팀 역할극. 산·염기 실제 실험 기록·액성 판정·중화 반응 분석·종합 대응 보고서
+- [산·염기 가상 실험실](https://maehwachem.github.io/science-tools/acid-base/virtual.html): 지시약 액성 판별과 중화 반응(중학교), 중화 적정(고등학교)을 화면 속 실험대로 연습·평가
 - [마이크로비트 전압 기록기](https://maehwachem.github.io/science-tools/sensor/): 마이크로비트로 셀 전압을 블루투스로 받아 기록 (마이크로비트 코드: `sensor/microbit-voltlog.ts`)
 - [마이크로비트 온도 기록기](https://maehwachem.github.io/science-tools/sensor/temp.html): 방수 온도 센서(DS18B20) 값을 블루투스로 받아 기록 (마이크로비트 코드: `sensor/microbit-templog.ts`)
 - [화학자의 섬](https://maehwachem.github.io/science-tools/chemists-island/): 무인도에서 재료를 모으고 장치를 만들며 푸는 화학 이야기 게임, 5장 (통합과학·화학 단계) · [교사용 매뉴얼](https://maehwachem.github.io/science-tools/chemists-island/manual.html)

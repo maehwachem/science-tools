@@ -1,0 +1,2738 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>환경 대응팀</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* 레이아웃: 한빛천 관제 센터 콘솔. 위엔 상태 표시줄, 왼쪽엔 실험 장비 모니터, 오른쪽엔 기록 패널. 어두운 화면 하나로만 디자인 */
+:root{
+  --paper:#0C171E; --sheet:#13232C; --sheet2:#1B303B; --field:#09131A; --ink:#E3EDF2; --ink2:#93A8B4; --line:#2A4250;
+  --hi:#46C2DA; --on-hi:#04161C; --tape:#F2B705; --stamp:#FF6B5E; --focus:#8EDCFF; --good:#5BC98C;
+  --plate:#1B303B; --plate-edge:#3B5867; --well:#0E1C24;
+  --A:#E8BF2A; --N:#55B865; --B:#4F86E0;
+  --ion-h:#E8BF2A; --ion-o:#4F86E0; --ion-na:#4A3F60; --ion-cl:#2F5040;
+  --water:#22465F; --water-ink:#CDE8FB; --merc:#FF6B6B;
+  --display:"Black Han Sans","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",sans-serif;
+  --body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",sans-serif;
+  --mono:"IBM Plex Mono","IBM Plex Sans KR",ui-monospace,Menlo,monospace;
+  color-scheme: dark;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+*,*::before,*::after{ box-sizing: inherit; }
+html{ height:100%; scroll-padding-top: env(safe-area-inset-top, 0px); -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+body{ margin:0; min-height:100%; background-color:var(--paper); background-image:linear-gradient(rgba(70,194,218,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(70,194,218,.035) 1px, transparent 1px); background-size:44px 44px; color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.55; overflow-x:hidden; }
+body.locked{ overflow:hidden; }
+button{ font:inherit; color:inherit; }
+:focus-visible{ outline:3px solid var(--focus); outline-offset:2px; }
+.disp{ font-family:var(--display); font-weight:800; font-synthesis:none; }
+h1, h2, h3{ text-wrap:balance; }
+
+#app{ max-width:1280px; margin:0 auto; padding-inline:clamp(16px,2.6vw,30px); padding-block:0 40px; }
+
+/* ── header & steps ── */
+.top{ display:flex; align-items:center; flex-wrap:wrap; gap:6px 22px; padding:14px 0 10px; }
+.home{ background:none; border:0; padding:6px 0; cursor:pointer; font-family:var(--display); font-weight:800; font-synthesis:none; font-size:21px; }
+.caseid{ display:flex; flex-wrap:wrap; gap:2px 12px; align-items:baseline; }
+.caseid .no{ font-family:var(--mono); font-weight:600; font-variant-numeric:tabular-nums; }
+.caseid .place{ color:var(--ink2); display:inline-flex; align-items:center; gap:8px; }
+.clock{ margin-left:auto; display:flex; align-items:baseline; gap:8px; }
+.clock-l{ font-size:14px; color:var(--ink2); }
+#timer{ font-family:var(--mono); font-size:22px; font-weight:600; font-variant-numeric:tabular-nums; color:var(--hi); }
+.steps{ position:relative; list-style:none; margin:0 0 20px; padding:10px 0 12px; display:flex; gap:6px; overflow-x:auto; border-top:1.5px solid var(--line); scrollbar-width:thin; }
+.steps li{ flex:none; display:flex; align-items:center; gap:4px; }
+.steps button{ min-height:40px; padding:0 13px; border-radius:999px; border:1.5px solid var(--line); background:transparent; color:var(--ink2); font-size:15px; white-space:nowrap; cursor:pointer; }
+.steps button.done{ color:var(--ink); border-color:var(--ink2); }
+.steps button[aria-current="step"]{ background:var(--hi); color:var(--on-hi); border-color:var(--hi); font-weight:700; }
+.steps button:disabled{ opacity:.42; cursor:default; }
+.steps .grp{ padding:0 8px; margin:0 2px; border-left:1.5px dashed var(--line); border-right:1.5px dashed var(--line); }
+.grp-l{ font-size:13px; color:var(--ink2); margin-right:2px; white-space:nowrap; }
+
+/* ── common blocks ── */
+h1.st{ font-family:var(--display); font-weight:800; font-synthesis:none; font-size:clamp(30px,4vw,42px); line-height:1.12; margin:0 0 8px; }
+.instr{ font-size:18px; max-width:62ch; margin:0 0 10px; }
+.who{ color:var(--ink2); font-size:15px; margin:0 0 14px; max-width:75ch; }
+.who b{ color:var(--ink); font-weight:600; }
+.narrow{ max-width:820px; }
+.say{ display:grid; grid-template-columns:auto 1fr; gap:4px 14px; align-items:baseline; background:var(--sheet); border:1.5px solid var(--line); padding:12px 16px; margin:0 0 18px; border-radius:12px; max-width:70ch; }
+.say b{ font-family:var(--display); font-weight:800; font-synthesis:none; font-size:18px; color:var(--hi); display:inline-flex; align-items:center; gap:8px; white-space:nowrap; }
+.say b::before{ content:""; width:9px; height:9px; border-radius:50%; background:var(--hi); box-shadow:0 0 8px var(--hi); }
+.say p{ margin:0; }
+.actions{ display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:12px 16px; margin-top:24px; }
+.progress{ color:var(--ink2); font-variant-numeric:tabular-nums; margin-right:auto; }
+.primary{ min-height:56px; padding:0 26px; border-radius:12px; border:0; background:var(--hi); color:var(--on-hi); font-size:18px; font-weight:700; cursor:pointer; }
+.primary:disabled{ opacity:.32; cursor:not-allowed; }
+.primary.danger{ background:var(--stamp); color:#1C0705; }
+.secondary{ min-height:50px; padding:0 18px; border-radius:10px; border:1.5px solid var(--ink); background:transparent; font-weight:600; cursor:pointer; }
+.secondary:disabled{ opacity:.45; cursor:default; }
+.ghost{ min-height:50px; padding:0 16px; border-radius:10px; border:1.5px dashed var(--ink2); background:transparent; color:var(--ink2); font-weight:600; cursor:pointer; }
+.ghost:disabled{ opacity:.45; cursor:default; }
+.primary.sm, .secondary.sm, .ghost.sm{ min-height:46px; padding:0 16px; font-size:16px; }
+.banner{ background:var(--sheet); border:2px solid var(--tape); border-radius:8px; padding:10px 14px; margin:0 0 16px; display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; }
+.hint{ list-style:none; padding:0; margin:14px 0 0; color:var(--ink2); font-size:15px; }
+.hint li::before{ content:"· "; }
+h2.sec{ font-family:var(--display); font-weight:800; font-synthesis:none; font-size:23px; margin:28px 0 10px; }
+h3.sub3{ font-size:17px; margin:18px 0 6px; }
+
+/* ── form fields ── */
+label.f{ display:block; font-size:15px; color:var(--ink2); }
+label.f > span{ display:block; margin-bottom:6px; }
+input[type=text], input[type=password], select, textarea{ width:100%; min-height:52px; font:inherit; font-size:18px; padding:0 12px; border-radius:10px; border:1.5px solid var(--line); background:var(--field); color:var(--ink); }
+textarea{ min-height:140px; padding:12px; resize:vertical; line-height:1.6; }
+.field-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:380px; margin:18px 0; }
+fieldset{ border:0; padding:0; margin:0; }
+legend{ font-weight:700; margin-bottom:10px; padding:0; }
+.members{ display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr)); gap:12px; }
+.count{ font-size:14px; color:var(--ink2); text-align:right; margin-top:4px; font-variant-numeric:tabular-nums; }
+
+/* ── evidence tags (sample cards) ── */
+.samples{ display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,255px),1fr)); gap:12px; }
+.tag{ position:relative; background:var(--sheet); border:1.5px solid var(--line); border-radius:6px 14px 14px 6px; padding:12px 14px 14px 30px; min-width:0; }
+.tag::before{ content:""; position:absolute; left:11px; top:20px; width:9px; height:9px; border-radius:50%; background:var(--line); }
+.tag.on::before{ background:var(--hi); box-shadow:0 0 8px var(--hi); }
+.tag.focus{ border-color:var(--focus); box-shadow:0 0 0 3px var(--focus); }
+.tag-head{ display:flex; align-items:center; gap:8px; margin-bottom:8px; min-height:38px; }
+.sno{ font-family:var(--display); font-weight:800; font-synthesis:none; font-size:28px; line-height:1; }
+.tag-head .ok{ margin-left:auto; color:var(--good); font-size:14px; font-weight:600; white-space:nowrap; }
+.sub{ margin-top:8px; }
+.sub-l{ display:block; font-size:14px; color:var(--ink2); margin:10px 0 6px; }
+.sub .sub-l{ margin-top:0; }
+.mini{ margin:0; font-size:14px; color:var(--ink2); }
+.opts{ display:flex; flex-wrap:wrap; gap:8px; }
+.opt{ flex:1 1 auto; display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:52px; padding:0 14px; border-radius:10px; border:1.5px solid var(--line); background:var(--sheet2); font-weight:600; cursor:pointer; }
+.opt[aria-pressed="true"]{ background:var(--hi); color:var(--on-hi); border-color:var(--hi); }
+.opt small{ font-weight:500; font-size:12px; opacity:.75; }
+.sw{ display:inline-block; width:18px; height:18px; border-radius:4px; flex:none; vertical-align:-3px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.2); }
+.sw.round{ border-radius:50%; }
+.ph-pick{ width:100%; min-height:56px; display:flex; align-items:center; gap:12px; padding:0 14px; border-radius:10px; border:1.5px solid var(--line); background:var(--sheet2); font-weight:600; cursor:pointer; text-align:left; }
+.ph-pick .sw{ width:30px; height:30px; border-radius:7px; }
+.ph-pick.empty{ border-style:dashed; color:var(--ink2); }
+
+/* temperature input */
+.tin{ display:flex; align-items:center; gap:8px; }
+.tin input{ width:104px; flex:none; text-align:center; font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; padding:0 6px; }
+.tin .unit{ font-weight:600; color:var(--ink2); }
+.step{ width:52px; min-height:52px; flex:none; border-radius:10px; border:1.5px solid var(--line); background:var(--sheet2); font-size:24px; font-weight:700; line-height:1; cursor:pointer; }
+.terr{ margin:6px 0 0; font-size:14px; color:var(--stamp); }
+.terr:empty{ display:none; }
+
+/* ── work layout with apparatus drawing ── */
+.work{ display:grid; grid-template-columns:1fr; gap:22px; }
+.plate-col{ min-width:0; }
+.plate-col svg{ display:block; width:100%; height:auto; max-width:560px; margin:0 auto; }
+.work > section{ min-width:0; }
+.legend{ font-size:14px; color:var(--ink2); text-align:center; margin:6px 0 0; }
+@media (min-width:900px){
+  .work{ grid-template-columns:minmax(0,5fr) minmax(0,7fr); align-items:start; }
+  .plate-col{ position:sticky; top:calc(env(safe-area-inset-top, 0px) + 12px); }
+}
+@media (max-width:899px){
+  .plate-col svg{ max-width:460px; }
+}
+
+/* plate svg */
+.pl-plate{ fill:var(--plate); stroke:var(--plate-edge); stroke-width:2; }
+.pl-well{ fill:var(--well); stroke:var(--plate-edge); stroke-width:1.5; }
+.pl-num{ fill:var(--ink); font-family:var(--display); font-weight:800; font-size:24px; }
+.pl-label{ fill:var(--ink2); font-size:16px; font-weight:600; font-family:var(--body); }
+.pl-label.on{ fill:var(--ink); font-weight:700; }
+.pl-active{ fill:var(--hi); opacity:.16; }
+.pl-strip-empty{ fill:none; stroke:var(--ink2); stroke-width:1.2; stroke-dasharray:3 3; }
+.pl-strip{ stroke:rgba(0,0,0,.25); stroke-width:1; }
+.pl-ph{ font-size:14px; font-weight:700; fill:#fff; paint-order:stroke; stroke:rgba(0,0,0,.5); stroke-width:2.6px; font-family:var(--body); }
+.pl-mg{ fill:#A3ACB6; stroke:#6E7883; stroke-width:1; }
+.pl-bub{ fill:var(--sheet); fill-opacity:.85; stroke:var(--ink2); stroke-width:1.3; }
+.pl-ring{ fill:none; stroke:var(--focus); stroke-width:3.5; }
+.well{ cursor:pointer; outline:none; }
+.well:hover .pl-well, .well:focus-visible .pl-well{ stroke:var(--focus); stroke-width:3; }
+.pop{ animation:pop .34s ease-out; transform-box:fill-box; transform-origin:center; }
+@keyframes pop{ from{ transform:scale(.8); } to{ transform:scale(1); } }
+
+/* beakers svg */
+.bk-glass{ fill:none; stroke:var(--ink2); stroke-width:2.5; stroke-linejoin:round; }
+.bk-lip{ stroke:var(--ink2); stroke-width:2.5; stroke-linecap:round; }
+.bk-liq{ opacity:.9; }
+.bk-liq.clear{ fill:var(--well); stroke:var(--line); stroke-width:1; opacity:1; }
+.th-tube{ fill:var(--sheet); stroke:var(--ink2); stroke-width:1.2; }
+.th-merc{ fill:var(--merc); }
+.th-bulb{ fill:var(--sheet); stroke:var(--ink2); stroke-width:1.2; }
+.th-bulb.on{ fill:var(--merc); stroke:var(--merc); }
+.bk-temp{ fill:var(--ink); font-weight:700; font-size:19px; font-family:var(--body); }
+.bk-name{ fill:var(--ink); font-family:var(--display); font-size:28px; }
+.bk-vol{ fill:var(--ink2); font-size:15px; font-family:var(--body); }
+.bk-sel{ fill:var(--hi); opacity:.16; }
+.bk{ cursor:pointer; outline:none; }
+.bk:hover .bk-glass, .bk:focus-visible .bk-glass{ stroke:var(--focus); stroke-width:4; }
+
+/* graph */
+.graph{ display:block; width:100%; height:auto; background:var(--sheet); border:1.5px solid var(--line); border-radius:10px; }
+.graph line, .graph text, .graph polyline, .graph circle{ pointer-events:none; }
+.g-col{ fill:transparent; cursor:crosshair; outline:none; }
+.g-col:hover{ fill:var(--sheet2); }
+.g-col.sel{ fill:var(--hi); fill-opacity:.14; }
+.g-col:focus-visible{ stroke:var(--focus); stroke-width:3; }
+.g-grid{ stroke:var(--line); stroke-width:1; }
+.g-axis{ stroke:var(--ink); stroke-width:2; }
+.g-tick{ fill:var(--ink2); font-size:14px; font-family:var(--body); font-variant-numeric:tabular-nums; }
+.g-xl{ fill:var(--ink); font-family:var(--display); font-size:22px; }
+.g-xs{ fill:var(--ink2); font-size:13px; font-family:var(--body); }
+.g-title{ fill:var(--ink2); font-size:14px; font-weight:600; font-family:var(--body); }
+.g-init{ stroke:var(--ink2); stroke-width:1.5; stroke-dasharray:6 5; }
+.g-init-t{ fill:var(--ink2); font-size:13px; font-family:var(--body); }
+.g-line{ fill:none; stroke:var(--hi); stroke-width:2.5; stroke-linejoin:round; }
+.g-pt{ fill:var(--hi); stroke:var(--sheet); stroke-width:2; }
+.g-pt.bad{ fill:var(--sheet); stroke:var(--stamp); stroke-width:3; }
+.g-ring{ fill:none; stroke:var(--focus); stroke-width:3; }
+.g-val{ fill:var(--ink); font-weight:700; font-size:16px; font-family:var(--body); font-variant-numeric:tabular-nums; }
+.bar-w{ fill:var(--water); stroke:var(--water-ink); stroke-width:1.5; }
+.bar-t{ fill:var(--merc); fill-opacity:.75; }
+.gpick{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; margin-top:12px; }
+.gpick .opt, .mtabs .opt{ flex-direction:column; gap:0; min-height:62px; padding:4px 6px; font-family:var(--display); font-size:22px; font-weight:400; }
+.gpick .opt small, .mtabs .opt small{ font-family:var(--body); font-size:13px; font-weight:600; opacity:1; min-height:1.2em; }
+.gpick .opt small.bad{ color:var(--stamp); }
+.gpick .opt[aria-pressed="true"] small.bad{ color:var(--on-hi); }
+.gfine{ display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px; margin-top:12px; background:var(--sheet); border:1.5px solid var(--line); border-radius:10px; padding:10px 14px; }
+.gfine .gf-t{ margin-right:auto; font-variant-numeric:tabular-nums; }
+
+/* prep: volume table */
+.vol-head, .vol-row{ display:grid; grid-template-columns:44px minmax(0,1fr) minmax(0,1fr) 70px; gap:10px; align-items:center; }
+.vol-head{ font-size:14px; color:var(--ink2); margin-bottom:6px; }
+.vol-row{ margin-bottom:8px; }
+.vin{ display:flex; align-items:center; gap:6px; min-width:0; }
+.vin input{ text-align:center; font-weight:600; min-width:0; }
+.vin span{ color:var(--ink2); font-size:15px; }
+.sum{ text-align:right; color:var(--ink2); font-variant-numeric:tabular-nums; }
+.t0-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:6px; }
+@media (max-width:520px){
+  .t0-row{ grid-template-columns:1fr; }
+  .vol-head, .vol-row{ grid-template-columns:36px minmax(0,1fr) minmax(0,1fr); }
+  .vol-head span:last-child{ display:none; }
+  .sum{ display:none; }
+}
+
+/* ion model */
+.mtabs{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; margin:6px 0 16px; }
+.mwork{ display:grid; gap:18px; }
+.mviz, .mside{ min-width:0; }
+@media (min-width:900px){ .mwork{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:start; } }
+.ionsvg{ display:block; width:100%; max-width:520px; height:auto; margin:0 auto; }
+.m-glass{ fill:none; stroke:var(--ink2); stroke-width:3; stroke-linejoin:round; stroke-linecap:round; }
+.m-liq{ fill:var(--water); opacity:.4; }
+.ion{ cursor:pointer; outline:none; }
+.ion .c{ stroke:rgba(0,0,0,.28); stroke-width:1.2; }
+.ion-h .c{ fill:var(--ion-h); }
+.ion-o .c{ fill:var(--ion-o); }
+.ion-na .c{ fill:var(--ion-na); }
+.ion-cl .c{ fill:var(--ion-cl); }
+.ion text{ font-family:var(--body); font-weight:700; font-size:15px; pointer-events:none; }
+.ion-h text{ fill:#16202A; }
+.ion-o text{ fill:#FFFFFF; }
+.ion-na text, .ion-cl text{ fill:var(--ink); }
+.ion-ch{ font-size:12px; }
+.ion .ring{ fill:none; stroke:var(--focus); stroke-width:4; }
+.ion:focus-visible .c{ stroke:var(--focus); stroke-width:3; }
+.water rect{ fill:var(--water); stroke:var(--water-ink); stroke-width:1.5; }
+.water text{ fill:var(--water-ink); font-weight:700; font-size:14px; font-family:var(--body); }
+.sub2{ font-size:10px; }
+.ilegend{ list-style:none; padding:0; margin:0 0 12px; display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px 12px; font-size:15px; }
+.ilegend li{ display:flex; align-items:center; gap:8px; }
+.ichip{ display:inline-block; flex:none; min-width:46px; height:30px; line-height:30px; text-align:center; padding:0 8px; border-radius:15px; font-weight:700; font-size:14px; box-shadow:inset 0 0 0 1px rgba(0,0,0,.2); }
+.ichip sup, .ichip sub{ line-height:0; font-size:11px; }
+.ichip.ion-h{ background:var(--ion-h); color:#16202A; }
+.ichip.ion-o{ background:var(--ion-o); color:#fff; }
+.ichip.ion-na{ background:var(--ion-na); color:var(--ink); }
+.ichip.ion-cl{ background:var(--ion-cl); color:var(--ink); }
+.ichip.water{ background:var(--water); color:var(--water-ink); border-radius:8px; }
+.wcount{ font-size:18px; margin:6px 0 10px; }
+.wcount b{ font-family:var(--display); font-weight:400; font-size:30px; margin:0 4px; }
+.mmsg{ color:var(--stamp); font-size:15px; margin:8px 0; }
+.cmp{ margin:12px 0 0; padding:10px 14px; border-radius:8px; background:var(--sheet); border:1.5px solid var(--line); font-size:15px; }
+.cmp.same{ border-color:var(--good); }
+.cmp.diff{ border-color:var(--tape); }
+.msum svg{ display:block; width:100%; max-width:720px; height:auto; background:var(--sheet); border:1.5px solid var(--line); border-radius:10px; }
+
+/* ── roles & checks ── */
+.role{ background:var(--sheet); border:1.5px solid var(--line); border-radius:10px; padding:14px 16px; margin-bottom:12px; }
+.role h2{ font-family:var(--display); font-weight:800; font-synthesis:none; font-size:22px; margin:0; }
+.duty{ margin:4px 0 12px; color:var(--ink2); font-size:15px; }
+.role.fixed{ background:transparent; border-style:dashed; }
+.fixed-name{ margin:0; font-weight:700; font-size:19px; }
+.check{ display:grid; grid-template-columns:34px 1fr; gap:2px 14px; width:100%; text-align:left; background:var(--sheet); border:1.5px solid var(--line); border-radius:10px; padding:14px 16px; margin-bottom:10px; cursor:pointer; min-height:64px; align-items:center; }
+.box{ grid-row:span 2; width:32px; height:32px; border:2.5px solid var(--ink2); border-radius:6px; display:grid; place-items:center; }
+.check[aria-checked="true"]{ border-color:var(--hi); }
+.check[aria-checked="true"] .box{ background:var(--hi); border-color:var(--hi); }
+.check[aria-checked="true"] .box::after{ content:""; width:9px; height:16px; border:solid var(--on-hi); border-width:0 3px 3px 0; transform:translate(0,-2px) rotate(45deg); }
+.who-l{ font-size:14px; color:var(--ink2); }
+
+/* ── case document ── */
+.doc{ background:var(--sheet); border:1.5px solid var(--line); border-radius:4px; padding:22px clamp(14px,3vw,30px); max-width:920px; margin-bottom:18px; }
+.doc-title{ text-align:center; font-family:var(--display); font-weight:800; font-synthesis:none; font-size:28px; margin:0; }
+.doc-sub{ text-align:center; color:var(--ink2); margin:0 0 16px; }
+.scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+table.form{ width:100%; border-collapse:collapse; margin-bottom:14px; font-size:16px; }
+.form th, .form td{ border:1px solid var(--line); padding:9px 12px; vertical-align:top; text-align:left; }
+.form th{ background:var(--sheet2); white-space:nowrap; width:1%; text-align:center; }
+.form caption{ font-weight:700; padding:8px; background:var(--sheet2); border:1px solid var(--line); border-bottom:0; }
+table.roster{ max-width:620px; background:var(--sheet); }
+.roster thead th{ width:auto; }
+.roster td{ text-align:center; }
+
+/* ── judge ── */
+.bins{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:0 0 18px; }
+.bin{ background:var(--sheet); border:1.5px solid var(--line); border-top:7px solid var(--c); border-radius:8px; padding:10px 12px; min-height:86px; }
+.bin h3{ margin:0 0 6px; font-family:var(--display); font-weight:800; font-synthesis:none; font-size:20px; }
+.tokens{ display:flex; flex-wrap:wrap; gap:4px 8px; }
+.token{ font-family:var(--display); font-weight:800; font-synthesis:none; font-size:26px; line-height:1.1; }
+.empty{ color:var(--ink2); font-size:14px; }
+.jgrid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr)); gap:12px; }
+.chips{ display:flex; flex-wrap:wrap; gap:8px; }
+.chip{ min-height:46px; padding:0 14px; border-radius:999px; border:1.5px dashed var(--ink2); background:transparent; font-size:15px; cursor:pointer; }
+.chip[aria-pressed="true"]{ border-style:solid; border-color:var(--hi); background:var(--sheet2); font-weight:700; box-shadow:inset 0 0 0 1.5px var(--hi); }
+.chip.common{ color:var(--ink2); }
+.msgs{ list-style:none; padding:0; margin:12px 0 0; font-size:15px; }
+.msgs li{ margin-top:4px; }
+.msgs .err{ color:var(--stamp); }
+.msgs .note{ color:var(--ink2); }
+.jfoot{ display:flex; justify-content:flex-end; margin-top:12px; }
+.stamp{ display:inline-block; margin-left:auto; font-family:var(--display); font-weight:800; font-synthesis:none; color:var(--sc, var(--tape)); border:2px solid var(--sc, var(--tape)); border-radius:8px; padding:3px 12px 1px; font-size:22px; line-height:1.25; letter-spacing:.06em; white-space:nowrap; box-shadow:0 0 14px -4px var(--sc, var(--tape)), inset 0 0 12px -8px var(--sc, var(--tape)); }
+.stamp.ok{ --sc:var(--good); }
+.stamp.slam{ animation:lockin .35s ease-out both; }
+@keyframes lockin{ from{ transform:scale(1.25); opacity:0; } to{ transform:scale(1); opacity:1; } }
+
+/* ── reply ── */
+.rule{ border:2px solid var(--tape); background:var(--sheet); padding:12px 16px; border-radius:4px; margin:0 0 16px; max-width:70ch; }
+.rule b{ display:block; font-family:var(--display); font-weight:800; font-synthesis:none; font-size:18px; margin-bottom:2px; color:var(--tape); }
+.rule p{ margin:0; }
+.rrow{ display:grid; grid-template-columns:52px minmax(0,1fr) auto; align-items:center; gap:8px 14px; background:var(--sheet); border:1.5px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:8px; }
+.rrow .meta{ color:var(--ink2); font-size:15px; }
+.rrow .meta b{ color:var(--ink); font-size:17px; margin-right:8px; }
+.rrow .opts{ flex-wrap:nowrap; }
+.rrow .msgs{ grid-column:1 / -1; margin:0; }
+@media (max-width:640px){
+  .rrow{ grid-template-columns:44px minmax(0,1fr); }
+  .rrow .opts{ grid-column:1 / -1; }
+}
+.missing{ list-style:none; padding:0; margin:0 auto 0 0; color:var(--ink2); font-size:15px; }
+.missing li::before{ content:"· "; }
+.pickrow .opt{ flex:1 1 120px; flex-direction:column; gap:2px; min-height:64px; }
+.pickrow .opt b{ font-family:var(--display); font-weight:400; font-size:22px; display:flex; align-items:center; gap:6px; }
+.pickrow .opt small{ font-size:13px; }
+.ex-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:640px){ .ex-row{ grid-template-columns:1fr; } }
+
+/* ── report ── */
+.report{ max-width:1060px; }
+.rep-head{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px 24px; margin-bottom:14px; }
+.seal{ display:flex; align-items:center; gap:14px; }
+.seal .stamp{ font-size:30px; margin:0; }
+.seal .sig{ font-weight:700; }
+.meta-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr)); gap:6px 20px; background:var(--sheet); border:1.5px solid var(--line); padding:14px 16px; border-radius:8px; margin:0; }
+.meta-grid div{ min-width:0; }
+.meta-grid dt{ font-size:14px; color:var(--ink2); }
+.meta-grid dd{ margin:0; font-weight:600; }
+table.rt{ border-collapse:collapse; width:100%; min-width:900px; background:var(--sheet); font-size:15px; }
+.rt th, .rt td{ border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:middle; }
+.rt thead th{ background:var(--sheet2); font-weight:700; white-space:nowrap; }
+.rt td:not(:last-child){ white-space:nowrap; }
+.rt td.num{ font-variant-numeric:tabular-nums; text-align:right; }
+.rt .c{ text-align:center; font-family:var(--display); font-weight:800; font-synthesis:none; font-size:20px; }
+.rt .sw{ margin-right:6px; }
+.rt2{ min-width:820px; }
+.reply-sum{ display:grid; grid-template-columns:max-content 1fr; gap:6px 18px; background:var(--sheet); border:1.5px solid var(--line); padding:14px 16px; border-radius:8px; margin:0; max-width:820px; }
+.reply-sum dt{ color:var(--ink2); }
+.reply-sum dd{ margin:0; font-weight:600; min-width:0; }
+.note-text{ background:var(--sheet); border-left:4px solid var(--ink2); padding:12px 16px; margin:10px 0 0; max-width:75ch; overflow-wrap:anywhere; }
+.history{ list-style:none; padding:0; margin:0; }
+.history li{ background:var(--sheet); border:1.5px solid var(--line); border-radius:8px; padding:10px 14px; margin-bottom:8px; }
+.history .t{ font-variant-numeric:tabular-nums; color:var(--ink2); margin-right:8px; }
+.history .ph{ display:inline-block; font-size:13px; font-weight:700; border:1.5px solid var(--ink2); border-radius:6px; padding:0 6px; margin-right:8px; color:var(--ink2); }
+.history .res{ display:block; font-size:15px; margin-top:2px; }
+.history .res.fixed{ color:var(--good); }
+.history .res.kept{ color:var(--ink2); }
+.graph-box{ max-width:none; }
+.twin{ display:grid; gap:16px; }
+@media (min-width:1000px){ .twin{ grid-template-columns:1fr 1fr; align-items:start; } }
+
+/* ── title ── */
+.title-screen{ margin:0 calc(-1 * clamp(16px,2.6vw,30px)); padding:clamp(28px,6vw,64px) clamp(16px,2.6vw,30px) 20px; overflow:hidden; }
+.tape{ background:var(--tape); color:#16202A; border-top:3px solid #16202A; border-bottom:3px solid #16202A; transform:rotate(-2.2deg); margin:10px -60px 40px; padding:7px 0 5px; white-space:nowrap; overflow:hidden; font-family:var(--display); font-weight:800; font-synthesis:none; font-size:19px; letter-spacing:.06em; }
+.title-grid{ display:grid; gap:28px; align-items:start; }
+.title-grid > div{ min-width:0; }
+@media (min-width:900px){ .title-grid{ grid-template-columns:1.05fr 1fr; } }
+.title-screen h1{ font-family:var(--display); font-weight:800; font-synthesis:none; font-size:clamp(54px,9.5vw,112px); line-height:.98; margin:0 0 14px; }
+.title-screen .sub{ font-size:clamp(20px,2.4vw,26px); font-weight:700; margin:0 0 14px; }
+.intro{ max-width:46ch; color:var(--ink2); margin:0 0 28px; font-size:18px; }
+.title-actions{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+.title-plate svg{ display:block; width:100%; max-width:520px; height:auto; margin:0 auto; }
+.slots{ list-style:none; padding:0; margin:0; max-width:600px; }
+.slot{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; background:var(--sheet); border:1.5px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:8px; }
+.slot-info{ display:flex; flex-direction:column; min-width:0; }
+.slot .lbl{ font-family:var(--display); font-weight:400; font-size:24px; line-height:1.2; }
+.slot .meta{ color:var(--ink2); font-size:14px; }
+.slot-act{ margin-left:auto; display:flex; gap:8px; }
+
+/* ── modal ── */
+.scrim{ position:fixed; inset:0; z-index:20; background:rgba(10,14,18,.58); display:flex; align-items:center; justify-content:center; padding:calc(env(safe-area-inset-top, 0px) + 16px) 12px calc(env(safe-area-inset-bottom, 0px) + 16px); }
+.modal{ background:var(--sheet); color:var(--ink); width:min(720px,100%); max-height:100%; overflow:auto; border-radius:14px; padding-bottom:18px; box-shadow:0 24px 70px rgba(0,0,0,.4); }
+.modal-in{ padding:18px 20px 0; }
+.modal h2{ font-family:var(--display); font-weight:800; font-synthesis:none; font-size:27px; margin:0 0 6px; }
+.mlead{ margin:0 0 6px; color:var(--ink2); }
+.tapebar{ height:4px; background:var(--tape); border-radius:14px 14px 0 0; }
+.flag{ border:1.5px solid var(--line); border-radius:10px; padding:12px 14px; margin-top:12px; }
+.flag-s{ font-family:var(--display); font-weight:800; font-synthesis:none; font-size:21px; margin-bottom:6px; }
+.flag-lead{ margin:0 0 8px; }
+.obs-pair{ display:grid; grid-template-columns:1fr auto 1fr; gap:8px; align-items:stretch; }
+.obs-row{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; }
+.obs{ background:var(--sheet2); border-radius:8px; padding:10px 12px; }
+.obs b{ display:block; font-size:17px; }
+.obs p{ margin:4px 0 0; font-size:15px; color:var(--ink2); }
+.vs{ align-self:center; font-size:14px; font-weight:700; color:var(--stamp); text-align:center; }
+@media (max-width:560px){ .obs-pair{ grid-template-columns:1fr; } }
+.flag-act{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.keepwhy{ flex-basis:100%; margin-top:4px; }
+.mfoot{ display:flex; justify-content:flex-end; gap:10px; margin-top:16px; }
+.phgrid{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px; margin-top:12px; }
+.phchip{ min-height:54px; border-radius:10px; border:3px solid transparent; background:var(--c); color:#fff; font-family:var(--display); font-weight:800; font-synthesis:none; font-size:24px; text-shadow:0 1px 2px rgba(0,0,0,.55); cursor:pointer; }
+.phchip[aria-pressed="true"]{ border-color:var(--ink); box-shadow:inset 0 0 0 3px var(--sheet); }
+
+/* ── console bits ── */
+.lamp{ display:inline-block; flex:none; width:10px; height:10px; border-radius:50%; background:var(--tape); box-shadow:0 0 10px var(--tape); }
+.lamp.pulse{ animation:pulse 1.6s ease-in-out infinite; }
+@keyframes pulse{ 50%{ opacity:.3; box-shadow:none; } }
+.org{ display:flex; align-items:center; gap:10px; color:var(--ink2); font-weight:600; margin:0 0 12px; }
+.monitor{ background:var(--sheet); border:1.5px solid var(--line); border-radius:14px; overflow:hidden; }
+.mon-head{ display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1.5px solid var(--line); font-weight:600; }
+.mon-alert{ margin-left:auto; display:inline-flex; align-items:center; gap:8px; color:var(--tape); font-weight:700; }
+.monitor svg{ display:block; width:100%; height:auto; }
+.mon-band{ fill:var(--hi); fill-opacity:.12; }
+.mon-bt{ fill:var(--hi); font-size:13px; font-weight:600; font-family:var(--body); }
+.mon-grid{ stroke:var(--line); stroke-width:1; }
+.mon-t{ fill:var(--ink2); font-size:12px; font-family:var(--mono); }
+.mon-ok{ fill:none; stroke:var(--hi); stroke-width:2.5; stroke-linejoin:round; stroke-linecap:round; }
+.mon-bad{ fill:none; stroke:var(--stamp); stroke-width:2.5; stroke-linejoin:round; stroke-linecap:round; }
+.mon-dot{ fill:var(--stamp); }
+.mon-tiles{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin:0; border-top:1.5px solid var(--line); }
+.mon-tiles div{ padding:12px 16px; border-left:1.5px solid var(--line); min-width:0; }
+.mon-tiles div:first-child{ border-left:0; }
+.mon-tiles dt{ font-size:13px; color:var(--ink2); }
+.mon-tiles dd{ margin:0; font-family:var(--mono); font-size:22px; font-weight:600; font-variant-numeric:tabular-nums; }
+.mon-tiles dd.txt{ font-family:var(--body); font-size:18px; }
+.mon-tiles dd.bad{ color:var(--stamp); }
+@media (max-width:520px){ .mon-tiles dd{ font-size:18px; } .mon-tiles dd.txt{ font-size:15px; } }
+
+/* ── sync, toast, teacher ── */
+#toast{ position:fixed; left:50%; bottom:calc(env(safe-area-inset-bottom, 0px) + 18px); transform:translateX(-50%); z-index:30; background:var(--ink); color:var(--sheet); padding:10px 16px; border-radius:10px; font-weight:600; max-width:calc(100% - 32px); opacity:0; pointer-events:none; transition:opacity .2s; }
+#toast.on{ opacity:1; }
+.linkbtn{ background:none; border:0; padding:8px 0; min-height:44px; color:var(--ink2); text-decoration:underline; text-underline-offset:3px; cursor:pointer; font-size:15px; }
+.sync-note{ margin:10px 0 0; }
+.sync-note:empty{ display:none; }
+.title-foot{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 16px; margin-top:20px; }
+.title-foot .sync-note{ margin:0; }
+.tmode{ font-family:var(--display); font-size:18px; background:var(--tape); color:#16202A; padding:2px 10px 0; border-radius:6px; }
+.tsync{ margin:0 0 0 auto; color:var(--ink2); font-size:14px; }
+.ttabs{ display:flex; gap:6px; border-top:1.5px solid var(--line); padding:10px 0 12px; margin-bottom:4px; overflow-x:auto; }
+.ttab{ min-height:46px; padding:0 18px; border-radius:999px; border:1.5px solid var(--line); background:transparent; font-weight:600; cursor:pointer; white-space:nowrap; }
+.ttab[aria-selected="true"]{ background:var(--hi); color:var(--on-hi); border-color:var(--hi); }
+.tcls{ margin:0 0 16px; }
+.tcls .opt{ flex:0 0 auto; min-height:44px; }
+.tcards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr)); gap:12px; }
+.tcard{ display:flex; flex-direction:column; gap:6px; text-align:left; background:var(--sheet); border:1.5px solid var(--line); border-radius:10px; padding:12px 14px; cursor:pointer; min-width:0; }
+.tcard:hover{ border-color:var(--ink2); }
+.tc-head{ display:flex; align-items:baseline; gap:8px; }
+.tcard .lbl, .grow .lbl{ font-family:var(--display); font-size:24px; line-height:1.2; }
+.ago{ margin-left:auto; color:var(--ink2); font-size:14px; font-variant-numeric:tabular-nums; }
+.tc-names{ color:var(--ink2); font-size:14px; }
+.tc-stage b{ font-weight:700; }
+.bar{ display:block; height:8px; border-radius:4px; background:var(--sheet2); overflow:hidden; box-shadow:inset 0 0 0 1px var(--line); }
+.bar i{ display:block; height:100%; background:var(--hi); }
+.pills{ display:flex; flex-wrap:wrap; gap:6px; }
+.pill{ font-size:13px; font-weight:600; border:1.5px solid var(--line); border-radius:999px; padding:1px 9px; color:var(--ink2); }
+.pill.done{ border-color:var(--good); color:var(--good); }
+.pill.warn{ border-color:var(--tape); color:var(--ink); background:var(--sheet2); }
+.tempty{ background:var(--sheet); border:1.5px dashed var(--line); border-radius:10px; padding:18px; }
+.tempty .instr, .tempty .who{ margin:0; }
+.ttools{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin-top:28px; padding-top:16px; border-top:1.5px dashed var(--line); }
+.ttools .who{ margin:0; }
+.filebtn{ display:inline-flex; align-items:center; cursor:pointer; }
+.keyrow{ display:grid; grid-template-columns:44px minmax(0,1.3fr) minmax(0,1fr) auto; gap:10px 14px; align-items:end; background:var(--sheet); border:1.5px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:8px; }
+.keyrow .sno{ align-self:center; }
+.kstat{ align-self:center; color:var(--ink2); font-size:14px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+@media (max-width:700px){ .keyrow{ grid-template-columns:44px minmax(0,1fr); } .keyrow .opts, .keyrow .kname, .keyrow .kstat{ grid-column:2 / -1; } }
+.gtools{ display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; margin-bottom:12px; }
+.gtools .progress{ margin-right:auto; }
+.grow{ background:var(--sheet); border:1.5px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px; }
+.grow.open{ border-color:var(--ink2); }
+.gr-head{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 14px; margin-bottom:10px; }
+.gr-head .names{ color:var(--ink2); font-size:14px; }
+.gtot{ margin-left:auto; font-weight:700; font-variant-numeric:tabular-nums; }
+.gr-items{ display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr)); gap:12px 18px; }
+.gitem{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+.gi-l{ font-size:14px; font-weight:600; }
+.gi-l small{ color:var(--ink2); font-weight:500; }
+.gbtns{ display:flex; gap:6px; }
+.gb{ flex:1 1 0; min-width:44px; min-height:48px; border-radius:8px; border:1.5px solid var(--line); background:var(--sheet2); font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.1; }
+.gb small{ font-size:11px; font-weight:500; color:var(--ink2); }
+.gb[aria-pressed="true"]{ background:var(--hi); color:var(--on-hi); border-color:var(--hi); }
+.gb[aria-pressed="true"] small{ color:var(--on-hi); }
+.gb:disabled{ cursor:default; }
+.gb:disabled:not([aria-pressed="true"]){ opacity:.4; }
+.gb.sm{ flex:0 0 44px; min-height:44px; }
+.sugg{ align-self:flex-start; min-height:36px; padding:0 12px; border-radius:999px; border:1.5px dashed var(--ink2); background:transparent; font-size:14px; font-weight:600; cursor:pointer; }
+.gnote{ font-size:13px; color:var(--ink2); }
+.gpanel{ display:grid; gap:14px 28px; margin-top:14px; padding-top:14px; border-top:1.5px dashed var(--line); }
+@media (min-width:900px){ .gpanel{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); } .gpanel > .flag-act{ grid-column:1 / -1; } }
+.gp{ min-width:0; }
+.gp .sub3{ margin-top:0; }
+h4.hm{ margin:12px 0 4px; font-size:14px; font-weight:700; color:var(--ink2); }
+.marks{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 8px; }
+.mk{ font-size:14px; border:1.5px solid var(--line); border-radius:6px; padding:2px 8px; }
+.mk.ok{ border-color:var(--good); }
+.mk.no{ border-color:var(--stamp); color:var(--stamp); }
+.kws{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 6px; }
+.kw{ font-size:13px; border:1.5px dashed var(--line); border-radius:999px; padding:1px 9px; color:var(--ink2); }
+.kw.on{ border-style:solid; border-color:var(--ink); color:var(--ink); font-weight:700; }
+.prow{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; padding:8px 0; border-top:1px solid var(--line); }
+.pn{ font-weight:700; min-width:4em; }
+.pr{ color:var(--ink2); font-size:14px; flex:1 1 180px; }
+.gpanel .check{ min-height:56px; padding:10px 12px; }
+.csvbox{ width:100%; min-height:220px; font-size:13px; font-family:ui-monospace,Menlo,Consolas,monospace; }
+.rt .kc{ white-space:nowrap; }
+.rt .kc.no{ color:var(--stamp); font-weight:700; }
+
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{ animation:none !important; transition:none !important; scroll-behavior:auto !important; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ───────── 설정 ───────── */
+const PREFIX = 'chem-forensics-slot-v1:';
+const LEGACY = 'chem-forensics-1st-v1';
+const SAMPLES = [1,2,3,4,5,6];
+const CIRC = ['', '①','②','③','④','⑤','⑥'];
+const LIQ = { A:'산성', N:'중성', B:'염기성' };
+const PH_COLORS = {1:'#D9262E',2:'#E8462B',3:'#F07428',4:'#F39C22',5:'#EEC21C',6:'#C3CB2B',7:'#76B83C',8:'#2E9B57',9:'#1F8A8A',10:'#2B6DB2',11:'#2F4E9F',12:'#4A3A96',13:'#5C2C82',14:'#471E63'};
+const BTB_COLORS = { Y:'#EDCB2E', G:'#4FAE57', B:'#2F68C8' };
+const BTB_NAME = { Y:'노란색', G:'초록색', B:'파란색' };
+const LIT = { blue:'#5876C9', blueChanged:'#D6475F', red:'#E88A99', redChanged:'#4D6CC4' };
+const CONDS = { 2:'전류 흐름', 1:'전류 약하게 흐름', 0:'전류 흐르지 않음' };
+const ROW_LABELS = ['리트머스', 'BTB', '전도성·pH', '마그네슘'];
+const ROW_OF = { lb:0, lr:0, btb:1, cond:2, ph:2, mg:3 };
+
+const CASE = {
+  place: '한빛천 하류 배수로',
+  summary: '새벽 순찰 중 한빛천 하류에서 물고기 수백 마리가 떼죽음한 채 발견되었다. 근처 배수로에서 라벨이 지워진 폐액 통 6개가 수거되었고, 배수로 주변 풀이 누렇게 말라 있었다.',
+  request: '각 시료의 액성을 규명하고, 하천 방류 수질 기준 가운데 pH 기준을 충족하는지 판단하라.',
+  evidence: '정체불명 폐액 시료 6점 (점적병 ①~⑥)',
+  ruleTitle: '하천 방류 수질 기준 (pH 항목)',
+  ruleNote: 'pH는 여러 수질 항목 가운데 하나예요. pH 기준을 충족한 시료도 다른 오염물질을 더 조사해야 방류 여부를 정할 수 있어요.',
+  rule: '공장과 시설에서 하천으로 내보내는 폐수는 pH 5.8 이상 8.6 이하여야 한다.',
+  lo: 5.8, hi: 8.6
+};
+const CASE2 = {
+  name: '산성·염기성 폐수 혼합 시 온도·액성 변화',
+  summary: '1차 분석 결과 pH 기준을 벗어난 폐수가 확인되었다. 센터는 그중 산성 폐수와 염기성 폐수를 섞어 중화한 뒤 처리하기로 했다. 그런데 처리 탱크에서 두 폐수를 섞던 작업자가 탱크를 만져 보더니 이상하다며 작업을 멈췄다.',
+  request: '두 폐수를 여러 비율로 섞어 온도와 액성 변화를 분석하고, 가장 안전하게 처리할 수 있는 혼합 비율과 섞을 때 주의할 점을 보고하라.',
+  evidence: '재현 시료 2점: 산성 폐수(묽은 염산), 염기성 폐수(수산화 나트륨 수용액). 센터에서 두 시료의 농도를 같게 맞춰 보냈다.'
+};
+
+const TESTS = [
+  { id:'lit', name:'리트머스 종이', short:'리트머스', row:0,
+    instr:'첫 번째 줄의 각 시료에 푸른색과 붉은색 리트머스 종이를 대고 색 변화를 관찰해요.',
+    tip:'리트머스 종이 색이 헷갈리지 않게 바로바로 기록해. 손에 묻은 시료가 종이에 닿지 않게 조심하고.' },
+  { id:'btb', name:'BTB 용액', short:'BTB', row:1,
+    instr:'두 번째 줄의 각 시료에 BTB 용액을 1~2방울 떨어뜨리고 색 변화를 관찰해요.',
+    tip:'BTB 용액은 현장 안전관이 가져와서 떨어뜨리고, 끝나면 바로 다음 조로 넘겨.' },
+  { id:'cond', name:'전기 전도성', short:'전도성', row:2,
+    instr:'세 번째 줄의 각 시료에 전기 전도성 측정기를 넣어 전류가 흐르는지 관찰해요.',
+    tip:'시료를 바꿀 때마다 전극을 증류수로 씻고 실험용 티슈로 물기를 닦아. 안 씻으면 앞 시료가 섞이고, 물기가 남으면 시료가 묽어져.' },
+  { id:'ph', name:'pH 시험지', short:'pH', row:2,
+    instr:'세 번째 줄의 각 시료에 pH 시험지를 대고 표준 색표와 비교해서 대략적인 pH 값을 정해요.',
+    tip:'시험지 색을 통에 있는 표준 색표와 나란히 놓고 비교해. 앱에 나오는 색은 참고용이야.' },
+  { id:'mg', name:'마그네슘 리본', short:'마그네슘', row:3,
+    instr:'네 번째 줄의 각 시료에 마그네슘 리본을 넣고 변화를 관찰해요.',
+    tip:'원래 용액에 있던 거품이랑 헷갈리지 마. 리본 표면에서 새로 생겨 올라오는 기포인지 봐.' }
+];
+const FIELDS_OF = { lit:['lb','lr'], btb:['btb'], cond:['cond'], ph:['ph'], mg:['mg'] };
+
+const BK = ['A','B','C','D','E'];
+const IDX5 = [0,1,2,3,4];
+const DEFAULT_COND = [[5,25],[10,20],[15,15],[20,10],[25,5]];
+const RANK = { B:0, G:1, Y:2 };
+const BTB_LIQ = { Y:'A', G:'N', B:'B' };
+const ION = {
+  h:{ base:'H', ch:'+', name:'수소 이온' },
+  cl:{ base:'Cl', ch:'−', name:'염화 이온' },
+  na:{ base:'Na', ch:'+', name:'나트륨 이온' },
+  o:{ base:'OH', ch:'−', name:'수산화 이온' }
+};
+const TXT = { change:20, why:30, ex1:5, ex2:5, brief:40 };
+const TXT_LABEL = { change:'액성 변화', why:'중화 반응의 원리', ex1:'생활 속 사례 1', ex2:'생활 속 사례 2', brief:'상황 종료 브리핑' };
+
+const STAGES = ['team','roles','case','check','t0','t1','t2','t3','t4','judge','reply','report','case2','roles2','prep2','m2','g2','model','reply2','final'];
+const STAGE_LABEL = { team:'팀 편성', roles:'역할 배정', case:'출동 지령', check:'출동 점검', judge:'판정', reply:'대응 보고', report:'1차 보고서',
+  case2:'2차 출동 지령', roles2:'역할 교대', prep2:'2차 준비', m2:'2차 측정', g2:'그래프', model:'이온 모형', reply2:'결론', final:'종합 보고서' };
+const SHORT2 = { case2:'출동 지령', roles2:'역할 교대', prep2:'준비', m2:'측정', g2:'그래프', model:'이온 모형' };
+const sIdx = st => STAGES.indexOf(st);
+const P2 = sIdx('case2');
+
+const ROLES = [
+  { id:'chief', name:'대응팀장', duty:'미션 상황과 안전 수칙 확인, 절차 준수 확인, 시간 관리, 의견 충돌 중재, 결과 검토' },
+  { id:'insp1', name:'수질 분석관', duty:'시료를 정확한 양만큼 덜기, 기기 조작, 교차 오염 방지(기구 세척)' },
+  { id:'insp2', name:'수질 분석관(부)', duty:'수질 분석관(정)과 함께 시료 처리와 기기 조작', only5:true },
+  { id:'rec', name:'데이터 기록관', duty:'기록표에 측정값 입력, 애매한 값은 분석관에게 재확인 요청, 분석 소견 정리' },
+  { id:'keep', name:'현장 안전관', duty:'시약과 기구 세팅, 보안경·장갑 착용 확인, 폐수 처리, 뒷정리 주도' }
+];
+const CHECKS = [
+  { r:'keep', t:'전원 보안경과 니트릴 장갑을 착용했다.' },
+  { r:'keep', t:'6구 홈판 4개를 그림처럼 놓고, 시료 ①~⑥ 점적병을 확인했다.' },
+  { r:'keep', t:'증류수 세척병을 가득 채우고 실험용 티슈를 준비했다.' },
+  { r:'chief', t:'안전 수칙을 알렸다. 시료가 피부나 눈에 닿지 않게 하고, 남은 시료는 폐액통에 모은다.' },
+  { r:'insp1', t:'홈판 세로줄마다 해당 시료를 2방울씩 떨어뜨렸다.' }
+];
+const CHECKS2 = [
+  { r:'keep', t:'전원 보안경과 니트릴 장갑을 착용했다.' },
+  { r:'keep', t:'비커 A~E에 이름표를 붙이고 눈금실린더, 온도계, 유리 막대, BTB 용액, 증류수 세척병, 실험용 티슈를 준비했다.' },
+  { r:'insp1', t:'혼합 조건표의 부피대로 산성 폐수를 비커 A~E에 나눠 담았다.' },
+  { r:'chief', t:'안전 수칙을 알렸다. 염기성 폐수는 천천히 부으며 유리 막대로 젓고, 비커는 손으로 감싸 쥐지 않는다.' }
+];
+
+/* ───────── 상태 & 저장 ───────── */
+const per = f => Object.fromEntries(SAMPLES.map(s => [s, f()]));
+const blankRec = () => ({ lb:null, lr:null, btb:null, cond:null, ph:null, mg:null });
+const EMPTY_REC = per(blankRec);
+function fresh2(){
+  return {
+    roles:{ insp1:null, insp2:null, rec:null, keep:null },
+    cond: DEFAULT_COND.map(([a,b]) => ({ a:String(a), b:String(b) })),
+    t0a:'', t0b:'',
+    checks: CHECKS2.map(() => false),
+    startAt:null, endAt:null,
+    data: IDX5.map(() => ({ t:'', color:null })),
+    plot: IDX5.map(() => null),
+    peak:null,
+    flags:[],
+    model: IDX5.map(() => ({ sig:'', pairs:[], done:false, liq:null })),
+    concl:{ pick:null, change:'', why:'', ex1:'', ex2:'', brief:'', signed:false }
+  };
+}
+function fresh(){
+  const now = Date.now();
+  return {
+    v:1, id: now.toString(36) + Math.random().toString(36).slice(2,6), created:now, updated:now,
+    stage:'team', furthest:-1,
+    team:{ cls:'', grp:'', m:['','','','',''] },
+    roles:{ chief:null, insp1:null, insp2:null, rec:null, keep:null },
+    checks: CHECKS.map(() => false),
+    startAt:null, endAt:null,
+    rec: per(blankRec),
+    flags:[],
+    judge: per(() => ({ liq:null, chips:[], ok:false, sig:'' })),
+    reply:{ mix: per(() => null), sus:[], none:false, note:'', signed:false },
+    r2: fresh2()
+  };
+}
+function upgrade(d){
+  if(!d || d.v !== 1 || !d.rec || !d.team || !d.judge || !d.reply) return null;
+  if(!d.id) d.id = String(d.created || Date.now());
+  if(!STAGES.includes(d.stage)) d.stage = STAGES.includes(d.last) ? d.last : 'team';
+  delete d.last;
+  const c = Array.isArray(d.checks) ? d.checks : [];
+  d.checks = c.length === 4 && CHECKS.length === 5 ? [c[0], c[1], false, c[2], c[3]] : CHECKS.map((_, i) => !!c[i]);
+  const f = fresh2();
+  if(!d.r2) d.r2 = f;
+  else {
+    for(const k in f) if(d.r2[k] === undefined) d.r2[k] = f[k];
+    for(const k in f.concl) if(d.r2.concl[k] === undefined) d.r2.concl[k] = f.concl[k];
+  }
+  return d;
+}
+function listSlots(){
+  const out = [];
+  try{
+    for(let i = 0; i < localStorage.length; i++){
+      const k = localStorage.key(i);
+      if(!k || !k.startsWith(PREFIX)) continue;
+      try{ const d = upgrade(JSON.parse(localStorage.getItem(k))); if(d) out.push(d); }catch(e){}
+    }
+  }catch(e){}
+  return out.sort((a, b) => (b.updated || 0) - (a.updated || 0));
+}
+function loadSlot(id){
+  try{ return upgrade(JSON.parse(localStorage.getItem(PREFIX + id))); }catch(e){ return null; }
+}
+function removeSlot(id){ try{ localStorage.removeItem(PREFIX + id); }catch(e){} }
+function migrate(){
+  try{
+    const raw = localStorage.getItem(LEGACY);
+    if(!raw) return;
+    const d = upgrade(JSON.parse(raw));
+    if(d) localStorage.setItem(PREFIX + d.id, JSON.stringify(d));
+    localStorage.removeItem(LEGACY);
+  }catch(e){}
+}
+function save(){
+  if(!S) return;
+  if(!S.team.cls && !S.team.grp && !memberIdx().length) return;
+  S.updated = Date.now();
+  try{ localStorage.setItem(PREFIX + S.id, JSON.stringify(S)); }catch(e){}
+  queuePush();
+}
+
+let S = null;
+const ui = { view:'title', modal:null, pending:null, focus:null, scrollTo:null, scrollSel:null, pop:null, stamp:null, tried:{},
+  gsel:null, mb:0, msel:null, mmsg:'', mpop:null, kbd:false,
+  tTab:'live', tCls:null, tOpen:null, tDetail:null, teacherOk:false, pendingRender:false };
+
+/* ───────── 도우미 ───────── */
+const $ = q => document.querySelector(q);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const sw = (c, round) => `<span class="sw${round ? ' round' : ''}" style="background:${c}"></span>`;
+const pad = n => String(n).padStart(2,'0');
+function fmt(ms){
+  if(ms == null || ms < 0) return '--:--';
+  const t = Math.floor(ms/1000), h = Math.floor(t/3600), m = Math.floor(t%3600/60), s = t%60;
+  return h ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+const clockOf = ts => { const d = new Date(ts); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const dayOf = ts => { const d = new Date(ts); return `${d.getMonth()+1}월 ${d.getDate()}일`; };
+const whenStr = ts => ts ? `${dayOf(ts)} ${clockOf(ts)}` : '';
+function timeRange(st, en){
+  if(!st) return '-';
+  return en ? `${dayOf(st)} ${clockOf(st)} ~ ${clockOf(en)} (${fmt(en - st)})` : `${dayOf(st)} ${clockOf(st)} 시작 (진행 중)`;
+}
+function josa(w, a, b){
+  const c = String(w || '').trim().slice(-1).charCodeAt(0);
+  if(c >= 0xAC00 && c <= 0xD7A3) return w + ((c - 0xAC00) % 28 ? a : b);
+  return w + a + '(' + b + ')';
+}
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const r1 = v => Math.round(v * 10) / 10;
+const gcd = (a, b) => b ? gcd(b, a % b) : a;
+
+const memberIdx = () => S.team.m.map((n,i) => [String(n||'').trim(), i]).filter(([n]) => n).map(([,i]) => i);
+const is5 = () => memberIdx().length === 5;
+const nm = i => (i == null || !String(S.team.m[i]||'').trim()) ? '미정' : S.team.m[i].trim();
+const ph2 = () => sIdx(S.stage) >= P2;
+const rolesOf = ph => ph === 2 ? Object.assign({}, S.r2.roles, { chief:S.roles.chief }) : S.roles;
+const who = (id, ph) => nm(rolesOf(ph || (ph2() ? 2 : 1))[id]);
+const inspNames = ph => is5() ? `${who('insp1', ph)}, ${who('insp2', ph)}` : who('insp1', ph);
+function roleDefs(){
+  const five = is5();
+  return ROLES.filter(r => !r.only5 || five).map(r => ({ ...r, label: r.id === 'insp1' && five ? '수질 분석관(정)' : r.name }));
+}
+const roleLabel = id => (roleDefs().find(r => r.id === id) || {}).label || '';
+function caseNo(){
+  if(!S.team.cls || !S.team.grp) return '지령 번호 배정 전';
+  const d = new Date(S.created || Date.now());
+  return `ENV-${d.getFullYear()}${pad(d.getMonth()+1)}-${S.team.cls}-${S.team.grp}`;
+}
+const testName = id => (TESTS.find(t => t.id === id) || {}).name || '';
+const stageName = st => STAGE_LABEL[st] || (st && st[0] === 't' ? TESTS[Number(st.slice(1))].name : '');
+const filled = (s, tid) => FIELDS_OF[tid].every(f => S.rec[s][f] != null);
+const testDone = i => SAMPLES.every(s => filled(s, TESTS[i].id));
+const recSig = s => JSON.stringify(S.rec[s]);
+
+function unsign2(){ if(S.r2.concl.signed){ S.r2.concl.signed = false; S.r2.endAt = null; } }
+function unsign1(){ if(S.reply.signed){ S.reply.signed = false; S.endAt = null; } unsign2(); }
+
+/* ───────── 1차 검증 ───────── */
+function teamIssues(){
+  const t = S.team, out = [];
+  if(!t.cls) out.push('반을 고르세요.');
+  if(!t.grp) out.push('조를 고르세요.');
+  const names = memberIdx().map(i => t.m[i].trim());
+  if(names.length < 4) out.push(`팀원 이름을 4명 이상 적어요. 지금 ${names.length}명이에요.`);
+  if(new Set(names).size !== names.length) out.push('같은 이름이 두 번 있어요. 동명이인이면 이름 뒤에 번호를 붙여요.');
+  return out;
+}
+function dupNote(){
+  if(!S.team.cls || !S.team.grp) return '';
+  const d = listSlots().find(x => x.id !== S.id && x.team.cls === S.team.cls && x.team.grp === S.team.grp);
+  return d ? `이 기기에 ${S.team.cls}반 ${S.team.grp}조 기록이 이미 있어요. 그 기록을 이어서 하려면 처음 화면에서 고르세요.` : '';
+}
+function roleIssues(){
+  const out = [], used = new Set();
+  for(const r of roleDefs()){
+    const i = S.roles[r.id];
+    if(i == null || !String(S.team.m[i]||'').trim()){ out.push(`${r.label} 담당을 정하세요.`); continue; }
+    if(used.has(i)) out.push(`${nm(i)}에게 역할이 두 개 있어요.`);
+    used.add(i);
+  }
+  return out;
+}
+function roleIssues2(){
+  const out = [], used = new Set(), chief = S.roles.chief;
+  for(const r of roleDefs()){
+    if(r.id === 'chief') continue;
+    const i = S.r2.roles[r.id];
+    if(i == null || i === chief || !String(S.team.m[i]||'').trim()){ out.push(`${r.label} 담당을 정하세요.`); continue; }
+    if(used.has(i)) out.push(`${nm(i)}에게 역할이 두 개 있어요.`);
+    used.add(i);
+  }
+  return out;
+}
+
+/* ───────── 1차: 관찰 사이의 일관성 검사 (정답과 비교하지 않음) ───────── */
+function observations(s){
+  const r = S.rec[s], o = [];
+  if(r.lb != null && r.lr != null){
+    if(r.lb === 1 && r.lr === 1) o.push({ t:'lit', v:'11', self:true, label:'리트머스 두 종이 모두 변함', why:'한 시료에서 푸른 리트머스가 붉게, 붉은 리트머스가 푸르게 동시에 변할 수는 없어요.' });
+    else if(r.lb === 1) o.push({ t:'lit', v:'10', lo:0, hi:6.5, label:'푸른 리트머스 붉게 변함', why:'산성일 때 나타나요.' });
+    else if(r.lr === 1) o.push({ t:'lit', v:'01', lo:7.5, hi:14, label:'붉은 리트머스 푸르게 변함', why:'염기성일 때 나타나요.' });
+    else o.push({ t:'lit', v:'00', lo:4, hi:9, label:'리트머스 변화 없음', why:'강한 산성이나 강한 염기성이라면 리트머스 색이 변해야 해요.' });
+  }
+  if(r.btb){
+    const m = { Y:[0,6.4,'산성일 때 나타나요.'], G:[5.8,8,'중성 부근(대략 pH 6~7.6)일 때 나타나요.'], B:[7.2,14,'염기성일 때 나타나요.'] }[r.btb];
+    o.push({ t:'btb', v:r.btb, lo:m[0], hi:m[1], label:'BTB '+BTB_NAME[r.btb], why:m[2] });
+  }
+  if(r.cond != null){
+    if(r.cond === 0) o.push({ t:'cond', v:'0', lo:3.5, hi:10.5, label:'전류 흐르지 않음', why:'강한 산성이나 강한 염기성 용액은 이온이 많아서 전류가 흘러야 해요. 전극이 시료에 잘 잠겼는지 보세요.' });
+    else o.push({ t:'cond', v:String(r.cond), lo:0, hi:14, label:CONDS[r.cond], why:'' });
+  }
+  if(r.ph != null){
+    o.push({ t:'ph', v:String(r.ph), lo:r.ph-1, hi:r.ph+1, label:'pH '+r.ph, why: r.ph < 7 ? '산성 범위예요.' : r.ph > 7 ? '염기성 범위예요.' : '중성이에요.' });
+  }
+  if(r.mg != null){
+    if(r.mg === 1) o.push({ t:'mg', v:'1', lo:0, hi:6.5, label:'마그네슘 기포 발생', why:'산이 마그네슘과 반응할 때 나타나요.' });
+    else o.push({ t:'mg', v:'0', lo:3.5, hi:14, label:'마그네슘 변화 없음', why:'강한 산이라면 기포가 생겨야 해요. 리본을 넣고 충분히 기다렸는지 보세요.' });
+  }
+  return o;
+}
+function conflicts(){
+  const out = [];
+  for(const s of SAMPLES){
+    const o = observations(s);
+    for(const a of o) if(a.self) out.push({ s, k:`${s}|${a.t}|self`, sig:a.v, a, b:null, self:true });
+    for(let i = 0; i < o.length; i++){
+      for(let j = i+1; j < o.length; j++){
+        const a = o[i], b = o[j];
+        if(a.self || b.self) continue;
+        if(a.hi < b.lo || b.hi < a.lo) out.push({ s, k:`${s}|${a.t}|${b.t}`, sig:`${a.v}|${b.v}`, a, b, self:false });
+      }
+    }
+  }
+  return out;
+}
+const pickObs = o => o ? { t:o.t, label:o.label, why:o.why } : null;
+function describeFix(f){
+  const now = observations(f.s), parts = [];
+  for(const side of [f.a, f.b].filter(Boolean)){
+    const cur = now.find(x => x.t === side.t);
+    const nl = cur ? cur.label : '기록 없음';
+    if(nl !== side.label) parts.push(`${side.label} → ${nl}`);
+  }
+  return parts.join(', ');
+}
+const newId = () => 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+function runCheck(){
+  const cur = conflicts(), now = Date.now();
+  for(const f of S.flags){
+    if(f.st !== 'open') continue;
+    if(!cur.some(c => c.k === f.k && c.sig === f.sig)){ f.st = 'fixed'; f.done = now; f.note = describeFix(f); }
+  }
+  for(const c of cur){
+    const known = S.flags.some(f => f.k === c.k && f.sig === c.sig && (f.st === 'open' || f.st === 'kept'));
+    if(!known) S.flags.push({ id:newId(), k:c.k, sig:c.sig, s:c.s, a:pickObs(c.a), b:pickObs(c.b), self:c.self, st:'open', at:now, done:null, note:'' });
+  }
+  save();
+  return S.flags.filter(f => f.st === 'open');
+}
+
+/* ───────── 1차: 판정 근거 ───────── */
+function chipsOf(s){
+  const r = S.rec[s], c = [];
+  if(r.lb === 1) c.push({ id:'lb', label:'푸른 리트머스 붉게 변함', compat:['A'], dec:true });
+  if(r.lr === 1) c.push({ id:'lr', label:'붉은 리트머스 푸르게 변함', compat:['B'], dec:true });
+  if(r.lb === 0 && r.lr === 0) c.push({ id:'l0', label:'리트머스 변화 없음', compat:['N'], dec:false });
+  if(r.btb) c.push({ id:'btb', label:'BTB '+BTB_NAME[r.btb], compat:[{Y:'A',G:'N',B:'B'}[r.btb]], dec:true });
+  if(r.ph != null) c.push({ id:'ph', label:'pH '+r.ph, compat:[r.ph < 7 ? 'A' : r.ph > 7 ? 'B' : 'N'], dec:true });
+  if(r.mg === 1) c.push({ id:'mg', label:'마그네슘 기포 발생', compat:['A'], dec:true });
+  if(r.mg === 0) c.push({ id:'mg', label:'마그네슘 변화 없음', compat:['N','B'], dec:false });
+  if(r.cond === 2 || r.cond === 1) c.push({ id:'cond', label:CONDS[r.cond], compat:['A','N','B'], dec:false, common:true });
+  if(r.cond === 0) c.push({ id:'cond', label:'전류 흐르지 않음', compat:['N'], dec:false });
+  return c;
+}
+function syncJudge(s){
+  const j = S.judge[s], ids = chipsOf(s).map(c => c.id);
+  j.chips = j.chips.filter(id => ids.includes(id));
+  if(j.ok && j.sig !== recSig(s)) j.ok = false;
+}
+function judgeMsgs(s){
+  const j = S.judge[s], cs = chipsOf(s), sel = cs.filter(c => j.chips.includes(c.id));
+  const errors = [], notes = [];
+  if(!j.liq) errors.push('액성을 고르세요.');
+  if(!sel.length) errors.push('근거를 하나 이상 고르세요.');
+  if(j.liq){
+    for(const c of sel) if(!c.common && !c.compat.includes(j.liq)) errors.push(`‘${c.label}’: ${LIQ[j.liq]}의 근거가 될 수 없어요.`);
+    if(sel.length && !sel.some(c => c.dec && c.compat.includes(j.liq))) errors.push('액성을 직접 가리키는 근거가 필요해요. 리트머스나 BTB의 색 변화, pH 값, 마그네슘 기포 가운데에서 고르세요.');
+  }
+  if(sel.some(c => c.common)) notes.push('전류는 산과 염기 수용액에서 모두 흘러서, 액성을 가르는 근거는 되지 않아요.');
+  if(j.liq && sel.some(c => c.id === 'l0') && j.liq === 'N') notes.push('리트머스는 약한 산성·염기성에서 잘 변하지 않아요. BTB나 pH 근거도 함께 고르면 더 확실해요.');
+  if(j.liq === 'N' && sel.some(c => c.id === 'btb') && !sel.some(c => c.id === 'ph')) notes.push('BTB 초록색은 대략 pH 6~7.6에서 나타나서, 정확히 pH 7이라는 뜻은 아니에요. pH 값도 함께 근거로 고르면 더 확실해요.');
+  return { errors, notes };
+}
+
+/* ───────── 1차: 대응 보고 ───────── */
+function replyMsg(s){
+  const p = S.rec[s].ph, m = S.reply.mix[s];
+  if(m == null || p == null) return null;
+  const out = p < CASE.lo || p > CASE.hi;
+  if(m === 'ok' && out) return { err:true, t:`기록한 pH ${p}: 기준(pH ${CASE.lo}~${CASE.hi})을 벗어나요.` };
+  if(m === 'no' && !out) return { err:true, t:`기록한 pH ${p}: 기준(pH ${CASE.lo}~${CASE.hi}) 안이에요.` };
+  return null;
+}
+function replyIssues(){
+  const out = [];
+  if(!SAMPLES.every(s => S.judge[s].ok)) out.push('확정되지 않은 판정이 있어요.');
+  const un = SAMPLES.filter(s => S.reply.mix[s] == null);
+  if(un.length) out.push(`pH 기준 판단이 남은 시료: ${un.map(s => CIRC[s]).join(' ')}`);
+  if(SAMPLES.some(s => (replyMsg(s) || {}).err)) out.push('기록한 pH와 맞지 않는 기준 판단이 있어요.');
+  if(!S.reply.sus.length && !S.reply.none) out.push('떼죽음 원인 의심 시료를 고르거나 ‘의심 시료 없음’을 고르세요.');
+  const n = S.reply.note.trim().length;
+  if(n < 20) out.push(`분석 소견을 20자 이상 써요. 지금 ${n}자예요.`);
+  return out;
+}
+
+/* ───────── 2차: 값 읽기 ───────── */
+function vval(s){ const t = String(s ?? '').trim(); if(!/^\d{1,3}$/.test(t)) return null; const v = Number(t); return v >= 1 && v <= 100 ? v : null; }
+function tval(s){ const t = String(s ?? '').trim().replace(',', '.'); if(!/^\d{1,2}(\.\d)?$/.test(t)) return null; const v = Number(t); return v <= 60 ? v : null; }
+const cleanT = v => String(v).replace(',', '.').replace(/[^\d.]/g, '').slice(0, 4);
+const fmtT = v => v == null ? '-' : `${v.toFixed(1)}℃`;
+const signT = v => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}℃`;
+const tErr = s => s && tval(s) == null ? '0~60 사이의 숫자로 적어요. 소수점 아래는 한 자리까지 적어요.' : '';
+const rowDone = i => tval(S.r2.data[i].t) != null && !!S.r2.data[i].color;
+function frac(i){ const a = vval(S.r2.cond[i].a), b = vval(S.r2.cond[i].b); return a && b ? a / (a + b) : null; }
+function initT(i){
+  const a = vval(S.r2.cond[i].a), b = vval(S.r2.cond[i].b), ta = tval(S.r2.t0a), tb = tval(S.r2.t0b);
+  return a && b && ta != null && tb != null ? (a*ta + b*tb) / (a + b) : null;
+}
+function sumText(i){ const a = vval(S.r2.cond[i].a), b = vval(S.r2.cond[i].b); return a && b ? `${a + b} mL` : '-'; }
+function tRange(){
+  const v = [];
+  S.r2.data.forEach(d => { const t = tval(d.t); if(t != null) v.push(t); });
+  [S.r2.t0a, S.r2.t0b].forEach(x => { const t = tval(x); if(t != null) v.push(t); });
+  if(!v.length) return [15, 35];
+  let lo = Math.floor(Math.min(...v)) - 1, hi = Math.ceil(Math.max(...v)) + 1;
+  if(hi - lo < 6){ const add = 6 - (hi - lo); lo -= Math.floor(add/2); hi += Math.ceil(add/2); }
+  if(lo < 0){ hi -= lo; lo = 0; }
+  return [lo, hi];
+}
+function prepWarn(){
+  const ta = tval(S.r2.t0a), tb = tval(S.r2.t0b);
+  if(ta == null || tb == null || Math.abs(ta - tb) <= 1) return [];
+  return [`두 폐수의 처음 온도가 ${Math.abs(ta - tb).toFixed(1)}℃ 차이 나요. 같은 곳에 잠시 두어 온도를 비슷하게 맞춘 뒤 다시 재면 비교가 더 정확해요.`];
+}
+function prepIssues(){
+  const out = [], r = S.r2;
+  const badV = IDX5.filter(i => vval(r.cond[i].a) == null || vval(r.cond[i].b) == null);
+  if(badV.length) out.push(`부피를 1~100 사이의 정수로 적어요: 비커 ${badV.map(i => BK[i]).join(', ')}`);
+  else {
+    const tots = IDX5.map(i => vval(r.cond[i].a) + vval(r.cond[i].b));
+    if(new Set(tots).size > 1) out.push(`다섯 비커의 합계 부피를 같게 맞춰요. 합계가 다르면 온도 변화를 비교할 수 없어요. 지금 ${IDX5.map(i => BK[i] + ' ' + tots[i]).join(', ')} mL`);
+  }
+  if(tval(r.t0a) == null || tval(r.t0b) == null) out.push('두 폐수의 처음 온도를 적어요. 예: 24.5');
+  if(!r.checks.every(Boolean)) out.push('출동 점검을 모두 체크하세요.');
+  return out;
+}
+const plotOk = i => { const T = tval(S.r2.data[i].t), p = S.r2.plot[i]; return T != null && p != null && Math.abs(p - T) < 0.05; };
+function isPeak(i){
+  const T = IDX5.map(k => tval(S.r2.data[k].t));
+  if(T.some(v => v == null)) return false;
+  return T[i] >= Math.max(...T) - 0.05;
+}
+const graphOk = () => IDX5.every(plotOk) && S.r2.peak != null && isPeak(S.r2.peak);
+
+/* ───────── 2차: 기록 사이의 일관성 검사 (정답과 비교하지 않음) ───────── */
+function conflicts2(){
+  const r = S.r2, out = [];
+  const T = IDX5.map(i => tval(r.data[i].t)), I = IDX5.map(initT);
+  IDX5.forEach(i => {
+    if(T[i] == null || I[i] == null || T[i] >= I[i] - 0.2) return;
+    out.push({ k:`low|${i}`, sig:`${r.data[i].t}|${r.t0a}|${r.t0b}|${r.cond[i].a}|${r.cond[i].b}`, kind:'low', bks:[i],
+      lead:`비커 ${BK[i]}의 최고 온도가 섞기 전 온도보다 낮게 기록됐어요.`,
+      boxes:[
+        { label:`섞기 전 온도 ${fmtT(I[i])}`, why:`산성 폐수 ${fmtT(tval(r.t0a))}와 염기성 폐수 ${fmtT(tval(r.t0b))}를 부피 비율대로 계산한 값이에요.` },
+        { label:`비커 ${BK[i]} 최고 온도 ${fmtT(T[i])}`, why:'섞은 뒤 가장 높이 올라간 온도로 기록한 값이에요.' }
+      ],
+      acts:[{ label:`비커 ${BK[i]} 다시 측정`, target:'m2', i }, { label:'처음 온도 다시 측정', target:'prep2', i:null }] });
+  });
+  const ord = IDX5.filter(i => frac(i) != null).sort((x, y) => frac(x) - frac(y));
+  const col = ord.filter(i => r.data[i].color);
+  for(let k = 0; k < col.length - 1; k++){
+    const i = col[k], j = col[k+1];
+    if(!(frac(i) < frac(j) && RANK[r.data[i].color] > RANK[r.data[j].color])) continue;
+    const box = x => ({ label:`비커 ${BK[x]} BTB ${BTB_NAME[r.data[x].color]}`, why:`산 ${r.cond[x].a} mL + 염기 ${r.cond[x].b} mL, 산성 폐수 비율 ${Math.round(frac(x)*100)}%` });
+    out.push({ k:`ord|${i}|${j}`, sig:`${r.data[i].color}|${r.data[j].color}|${r.cond[i].a}:${r.cond[i].b}|${r.cond[j].a}:${r.cond[j].b}`, kind:'ord', bks:[i, j],
+      lead:`산성 폐수 비율이 더 큰 비커 ${BK[j]}가 비커 ${BK[i]}보다 덜 산성 쪽 색으로 기록됐어요.`,
+      boxes:[box(i), box(j)],
+      acts:[{ label:`비커 ${BK[i]} 다시 측정`, target:'m2', i }, { label:`비커 ${BK[j]} 다시 측정`, target:'m2', i:j }] });
+  }
+  const tt = ord.filter(i => T[i] != null);
+  for(let k = 1; k < tt.length - 1; k++){
+    const p = tt[k-1], i = tt[k], n = tt[k+1];
+    if(!(T[p] - T[i] >= 1 && T[n] - T[i] >= 1)) continue;
+    out.push({ k:`dip|${i}`, sig:`${r.data[p].t}|${r.data[i].t}|${r.data[n].t}`, kind:'dip', bks:[p, i, n],
+      lead:`비커 ${BK[i]}만 양옆 비커보다 1℃ 넘게 낮아요. 측정하는 동안 최고점을 놓쳤는지 확인해요.`,
+      boxes:[p, i, n].map(x => ({ label:`비커 ${BK[x]} ${fmtT(T[x])}`, why:`산 ${r.cond[x].a} mL + 염기 ${r.cond[x].b} mL` })),
+      acts:[{ label:`비커 ${BK[i]} 다시 측정`, target:'m2', i }] });
+  }
+  return out;
+}
+function snap2(bks){
+  const r = S.r2;
+  return { t0a:r.t0a, t0b:r.t0b, b: bks.map(i => ({ i, t:r.data[i].t, color:r.data[i].color, a:r.cond[i].a, v:r.cond[i].b })) };
+}
+function describeFix2(f){
+  const r = S.r2, parts = [];
+  if(f.snap.t0a !== r.t0a || f.snap.t0b !== r.t0b) parts.push('처음 온도 수정');
+  for(const o of f.snap.b){
+    const d = r.data[o.i], B = BK[o.i];
+    if(o.t !== d.t) parts.push(`비커 ${B} 최고 온도 ${o.t || '-'}℃ → ${d.t || '-'}℃`);
+    if(o.color !== d.color) parts.push(`비커 ${B} BTB ${o.color ? BTB_NAME[o.color] : '-'} → ${d.color ? BTB_NAME[d.color] : '-'}`);
+    if(o.a !== r.cond[o.i].a || o.v !== r.cond[o.i].b) parts.push(`비커 ${B} 혼합 조건 수정`);
+  }
+  return parts.join(', ') || '다른 기록 수정';
+}
+function runCheck2(){
+  const cur = conflicts2(), now = Date.now(), fl = S.r2.flags;
+  for(const f of fl){
+    if(f.st !== 'open') continue;
+    if(!cur.some(c => c.k === f.k && c.sig === f.sig)){ f.st = 'fixed'; f.done = now; f.note = describeFix2(f); }
+  }
+  for(const c of cur){
+    const known = fl.some(f => f.k === c.k && f.sig === c.sig && (f.st === 'open' || f.st === 'kept'));
+    if(!known) fl.push({ id:newId(), k:c.k, sig:c.sig, kind:c.kind, bks:c.bks, lead:c.lead, boxes:c.boxes, acts:c.acts, snap:snap2(c.bks), st:'open', at:now, done:null, note:'' });
+  }
+  save();
+  return fl.filter(f => f.st === 'open');
+}
+
+/* ───────── 2차: 이온 모형 ───────── */
+function units(){
+  const vs = [];
+  for(const c of S.r2.cond){ const a = vval(c.a), b = vval(c.b); if(a == null || b == null) return null; vs.push(a, b); }
+  let g = vs.reduce(gcd), approx = false;
+  if(Math.max(...vs) / g > 6){ g = Math.max(...vs) / 6; approx = true; }
+  return { g, approx, n: S.r2.cond.map(c => {
+    const a = vval(c.a), b = vval(c.b);
+    let na = Math.max(1, Math.round(a / g)), nb = Math.max(1, Math.round(b / g));
+    if(a > b && na <= nb) na = nb + 1;
+    else if(b > a && nb <= na) nb = na + 1;
+    else if(a === b) nb = na;
+    return { a: na, b: nb };
+  }) };
+}
+function mstate(i){
+  const U = units();
+  if(!U) return null;
+  const u = U.n[i], st = S.r2.model[i], sig = `${u.a}:${u.b}`;
+  if(st.sig !== sig) Object.assign(st, { sig, pairs:[], done:false, liq:null });
+  const h = u.a - st.pairs.length, o = u.b - st.pairs.length;
+  return { u, st, h, o, exp: h > 0 ? 'A' : o > 0 ? 'B' : 'N' };
+}
+const modelOk = i => { const m = mstate(i); return !!m && m.st.done && m.st.liq === m.exp; };
+function rng(seed){
+  return () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+}
+function cellsFor(i, u){
+  const R = rng(1000 + i*97 + u.a*13 + u.b*7), c = Array.from({ length:30 }, (_, k) => k);
+  for(let k = c.length - 1; k > 0; k--){ const j = Math.floor(R() * (k + 1)); [c[k], c[j]] = [c[j], c[k]]; }
+  return c;
+}
+
+/* ───────── 2차: 결론 ───────── */
+function pickMsg(){
+  const p = S.r2.concl.pick;
+  if(p == null) return null;
+  const greens = IDX5.filter(i => S.r2.data[i].color === 'G'), col = S.r2.data[p].color;
+  if(greens.length && col !== 'G') return { err:true, t:`비커 ${BK[p]}는 BTB가 ${col ? BTB_NAME[col] + '으로' : '기록 없이'} 기록됐어요. 초록색으로 기록된 비커는 ${greens.map(i => BK[i]).join(', ')}예요.` };
+  if(!greens.length) return { err:false, t:'초록색으로 기록된 비커가 없어요. 이 비율이 가장 안전하다고 본 까닭을 브리핑에 적어요.' };
+  return null;
+}
+const cntText = f => `${S.r2.concl[f].trim().length}자 / ${TXT[f]}자 이상`;
+function issues2(){
+  const out = [], c = S.r2.concl;
+  if(!S.reply.signed) out.push('1차 대응 보고 서명이 풀려 있어요. 1차 대응 보고에서 다시 서명하세요.');
+  if(!IDX5.every(rowDone)) out.push('2차 측정 기록이 비어 있어요.');
+  else if(!graphOk()) out.push('그래프를 기록표와 맞게 완성하세요.');
+  if(!IDX5.every(modelOk)) out.push('이온 모형을 끝내지 않은 비커가 있어요.');
+  if(c.pick == null) out.push('처리에 쓸 혼합 비율을 고르세요.');
+  else { const m = pickMsg(); if(m && m.err) out.push('고른 혼합 비율이 BTB 기록과 맞지 않아요.'); }
+  for(const f in TXT){
+    const n = c[f].trim().length;
+    if(n < TXT[f]) out.push(`${TXT_LABEL[f]}: ${TXT[f]}자 이상 써요. 지금 ${n}자예요.`);
+  }
+  return out;
+}
+
+/* ───────── 그림: 홈판 ───────── */
+const PL = { x0:104, colGap:248, w:228, h:196, y0:52, rowGap:214, cx:[40,114,188], cy:[50,146] };
+function wellPos(r, s){
+  const pc = s <= 3 ? 0 : 1, c = (s-1) % 3, pr = Math.floor(r/2), rr = r % 2;
+  return [PL.x0 + pc*PL.colGap + PL.cx[c], PL.y0 + pr*PL.rowGap + PL.cy[rr]];
+}
+const strip = (x, c) => c
+  ? `<rect class="pl-strip" x="${x}" y="-20" width="10" height="40" rx="2" fill="${c}"/>`
+  : `<rect class="pl-strip-empty" x="${x}" y="-20" width="10" height="40" rx="2"/>`;
+const BOLT = 'M3,-19 L-8,-4 L-1,-4 L-4,8 L8,-8 L1,-8 Z';
+function wellSVG(r, s, inter, act, recs){
+  const [x, y] = wellPos(r, s), rec = recs[s];
+  let inner = `<circle class="pl-well" r="31"/>`, aria = `시료 ${s} ${ROW_LABELS[r]}`;
+  if(r === 0){
+    const bc = rec.lb == null ? null : rec.lb ? LIT.blueChanged : LIT.blue;
+    const rc = rec.lr == null ? null : rec.lr ? LIT.redChanged : LIT.red;
+    inner += strip(-15, bc) + strip(5, rc);
+    aria += `: 푸른 리트머스 ${rec.lb == null ? '기록 전' : rec.lb ? '붉게 변함' : '변화 없음'}, 붉은 리트머스 ${rec.lr == null ? '기록 전' : rec.lr ? '푸르게 변함' : '변화 없음'}`;
+  } else if(r === 1){
+    if(rec.btb) inner += `<circle r="31" fill="${BTB_COLORS[rec.btb]}" fill-opacity=".88"/>`;
+    aria += rec.btb ? `: ${BTB_NAME[rec.btb]}` : ': 기록 전';
+  } else if(r === 2){
+    const hasPh = rec.ph != null;
+    if(hasPh) inner += `<circle r="31" fill="${PH_COLORS[rec.ph]}" fill-opacity=".9"/>`;
+    if(rec.cond != null){
+      const fillC = hasPh ? '#FFFFFF' : 'var(--ink)';
+      const strokeC = hasPh ? 'rgba(0,0,0,.55)' : 'var(--ink)';
+      const ty = hasPh ? -2 : 6;
+      if(rec.cond === 2) inner += `<path d="${BOLT}" transform="translate(0 ${ty})" fill="${fillC}" stroke="${strokeC}" stroke-width="1.2"/>`;
+      else if(rec.cond === 1) inner += `<path d="${BOLT}" transform="translate(0 ${ty})" fill="${fillC}" fill-opacity=".35" stroke="${strokeC}" stroke-width="1.4"/>`;
+      else inner += `<g transform="translate(0 ${ty})"><path d="${BOLT}" fill="none" stroke="${strokeC}" stroke-width="1.6"/><line x1="-11" y1="7" x2="11" y2="-17" stroke="${hasPh ? '#fff' : 'var(--ink)'}" stroke-width="2.4"/></g>`;
+    }
+    if(hasPh) inner += `<text class="pl-ph" y="23" text-anchor="middle">pH ${rec.ph}</text>`;
+    aria += `: ${rec.cond == null ? '전도성 기록 전' : CONDS[rec.cond]}, ${hasPh ? 'pH '+rec.ph : 'pH 기록 전'}`;
+  } else {
+    if(rec.mg != null){
+      inner += `<rect class="pl-mg" x="-17" y="4" width="34" height="6" rx="1.5" transform="rotate(-20)"/>`;
+      if(rec.mg === 1) inner += `<circle class="pl-bub" cx="-8" cy="-8" r="3.4"/><circle class="pl-bub" cx="5" cy="-15" r="2.8"/><circle class="pl-bub" cx="11" cy="-4" r="3"/><circle class="pl-bub" cx="-2" cy="-22" r="2.2"/>`;
+    }
+    aria += rec.mg == null ? ': 기록 전' : rec.mg ? ': 기포 발생' : ': 변화 없음';
+  }
+  const ring = inter && ui.focus === s && act === r ? `<circle class="pl-ring" r="37"/>` : '';
+  const pop = ui.pop && ui.pop.s === s && ui.pop.row === r ? ' pop' : '';
+  const attrs = inter
+    ? `class="well${pop}" data-act="well" data-s="${s}" data-r="${r}" role="button" tabindex="0" aria-label="${esc(aria)}"`
+    : `aria-label="${esc(aria)}"`;
+  return `<g transform="translate(${x} ${y})"><g ${attrs}>${inner}${ring}</g></g>`;
+}
+function plateSVG(o = {}){
+  const act = o.active == null ? null : o.active, inter = !!o.interactive, recs = o.rec || S.rec;
+  let out = `<svg viewBox="0 0 600 476" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="6구 홈판 4개 배치도">`;
+  for(const s of SAMPLES){ const [x] = wellPos(0, s); out += `<text class="pl-num" x="${x}" y="38" text-anchor="middle">${CIRC[s]}</text>`; }
+  for(let pr = 0; pr < 2; pr++) for(let pc = 0; pc < 2; pc++)
+    out += `<rect class="pl-plate" x="${PL.x0 + pc*PL.colGap}" y="${PL.y0 + pr*PL.rowGap}" width="${PL.w}" height="${PL.h}" rx="16"/>`;
+  if(act != null){ const y = wellPos(act, 1)[1]; out += `<rect class="pl-active" x="97" y="${y-42}" width="490" height="84" rx="14"/>`; }
+  ROW_LABELS.forEach((l, r) => { const y = wellPos(r, 1)[1]; out += `<text class="pl-label${r === act ? ' on' : ''}" x="92" y="${y+6}" text-anchor="end">${l}</text>`; });
+  for(let r = 0; r < 4; r++) for(const s of SAMPLES) out += wellSVG(r, s, inter, act, recs);
+  return out + `</svg>`;
+}
+
+/* ───────── 그림: 비커 5개 ───────── */
+function beakersSVG(o = {}){
+  const r = S.r2, inter = !!o.interactive, [lo, hi] = tRange();
+  const tots = r.cond.map(c => (vval(c.a) || 0) + (vval(c.b) || 0)), mx = Math.max(30, ...tots);
+  let s = `<svg viewBox="0 0 600 340" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="비커 A~E">`;
+  IDX5.forEach(i => {
+    const B = BK[i], x = 18 + i*118, d = r.data[i], T = tval(d.t), tot = tots[i];
+    const by = 116, bw = 74, bh = 150;
+    const lh = tot ? Math.max(10, (bh - 18) * 0.8 * tot / mx) : 0;
+    let g = '';
+    if(inter && ui.focus === i) g += `<rect class="bk-sel" x="${x-10}" y="${by-62}" width="${bw+46}" height="${bh+118}" rx="14"/>`;
+    if(lh) g += d.color
+      ? `<rect class="bk-liq" x="${x+3}" y="${by+bh-lh}" width="${bw-6}" height="${lh-3}" rx="4" fill="${BTB_COLORS[d.color]}"/>`
+      : `<rect class="bk-liq clear" x="${x+3}" y="${by+bh-lh}" width="${bw-6}" height="${lh-3}" rx="4"/>`;
+    g += `<path class="bk-glass" d="M${x},${by} L${x},${by+bh-8} Q${x},${by+bh} ${x+8},${by+bh} L${x+bw-8},${by+bh} Q${x+bw},${by+bh} ${x+bw},${by+bh-8} L${x+bw},${by}"/>`;
+    g += `<line class="bk-lip" x1="${x-6}" y1="${by}" x2="${x}" y2="${by}"/><line class="bk-lip" x1="${x+bw}" y1="${by}" x2="${x+bw+6}" y2="${by}"/>`;
+    const tx = x + bw + 20, t1 = by - 34, t2 = by + bh - 12;
+    const fr = T == null ? 0 : clamp((T - lo) / (hi - lo), 0, 1), mh = fr * (t2 - t1 - 6);
+    g += `<rect class="th-tube" x="${tx-4}" y="${t1}" width="8" height="${t2-t1}" rx="4"/>`;
+    if(T != null) g += `<rect class="th-merc" x="${tx-2}" y="${t2-mh}" width="4" height="${mh}" rx="2"/>`;
+    g += `<circle class="th-bulb${T != null ? ' on' : ''}" cx="${tx}" cy="${t2+5}" r="8"/>`;
+    g += `<text class="bk-temp" x="${x+bw/2}" y="${by-18}" text-anchor="middle">${T == null ? '' : T.toFixed(1) + '℃'}</text>`;
+    g += `<text class="bk-name" x="${x+bw/2}" y="${by+bh+34}" text-anchor="middle">${B}</text>`;
+    g += `<text class="bk-vol" x="${x+bw/2}" y="${by+bh+56}" text-anchor="middle">${esc(r.cond[i].a)} : ${esc(r.cond[i].b)}</text>`;
+    const aria = `비커 ${B}: 산 ${r.cond[i].a} mL, 염기 ${r.cond[i].b} mL, 최고 온도 ${T == null ? '기록 전' : T.toFixed(1) + '도'}, BTB ${d.color ? BTB_NAME[d.color] : '기록 전'}`;
+    s += inter
+      ? `<g class="bk" data-act="bk" data-i="${i}" role="button" tabindex="0" aria-label="${esc(aria)}">${g}</g>`
+      : `<g aria-label="${esc(aria)}">${g}</g>`;
+  });
+  return s + '</svg>';
+}
+
+/* ───────── 그림: 온도 그래프 ───────── */
+const G = { W:600, H:376, L:64, R:584, T:24, B:288 };
+function graphSVG(o = {}){
+  const r = S.r2, [lo, hi] = tRange(), inter = !!o.interactive;
+  const cw = (G.R - G.L) / 5, xc = i => G.L + cw * (i + 0.5), yv = t => G.B - (clamp(t, lo, hi) - lo) / (hi - lo) * (G.B - G.T);
+  const step = hi - lo > 10 ? 2 : 1;
+  let s = `<svg class="graph" viewBox="0 0 ${G.W} ${G.H}" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="비커별 최고 온도 그래프">`;
+  if(inter) IDX5.forEach(i => {
+    s += `<rect class="g-col${ui.gsel === i ? ' sel' : ''}" data-act="gcol" data-i="${i}" x="${G.L + cw*i + 3}" y="${G.T}" width="${cw - 6}" height="${G.B - G.T}" rx="8" role="button" tabindex="0" aria-label="비커 ${BK[i]} 칸에 점 찍기"/>`;
+  });
+  for(let t = Math.ceil(lo); t <= hi; t += step){
+    const y = yv(t);
+    s += `<line class="g-grid" x1="${G.L}" x2="${G.R}" y1="${y}" y2="${y}"/><text class="g-tick" x="${G.L - 10}" y="${y + 5}" text-anchor="end">${t}</text>`;
+  }
+  s += `<line class="g-axis" x1="${G.L}" y1="${G.T}" x2="${G.L}" y2="${G.B}"/><line class="g-axis" x1="${G.L}" y1="${G.B}" x2="${G.R}" y2="${G.B}"/>`;
+  const ia = tval(r.t0a), ib = tval(r.t0b);
+  if(ia != null && ib != null){
+    const avg = (ia + ib) / 2, y = yv(avg);
+    s += `<line class="g-init" x1="${G.L}" x2="${G.R}" y1="${y}" y2="${y}"/><text class="g-init-t" x="${G.R - 4}" y="${y + 18}" text-anchor="end">섞기 전 평균 ${avg.toFixed(1)}℃</text>`;
+  }
+  IDX5.forEach(i => {
+    s += `<text class="g-xl" x="${xc(i)}" y="${G.B + 28}" text-anchor="middle">${BK[i]}</text><text class="g-xs" x="${xc(i)}" y="${G.B + 48}" text-anchor="middle">${esc(r.cond[i].a)} : ${esc(r.cond[i].b)}</text>`;
+  });
+  s += `<text class="g-title" x="${(G.L + G.R) / 2}" y="${G.H - 6}" text-anchor="middle">비커 (산성 폐수 : 염기성 폐수, mL)</text>`;
+  s += `<text class="g-title" transform="translate(18 ${(G.T + G.B) / 2}) rotate(-90)" text-anchor="middle">최고 온도(℃)</text>`;
+  const pts = IDX5.map(i => r.plot[i] == null ? null : [xc(i), yv(r.plot[i])]);
+  const seq = pts.filter(Boolean);
+  if(seq.length >= 2) s += `<polyline class="g-line" points="${seq.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ')}"/>`;
+  pts.forEach((p, i) => {
+    if(!p) return;
+    s += `<circle class="g-pt${plotOk(i) ? '' : ' bad'}" cx="${p[0]}" cy="${p[1]}" r="7"/>`;
+    if(inter && ui.gsel === i) s += `<circle class="g-ring" cx="${p[0]}" cy="${p[1]}" r="13"/><text class="g-val" x="${p[0]}" y="${p[1] - 20}" text-anchor="middle">${r.plot[i].toFixed(1)}</text>`;
+  });
+  return s + '</svg>';
+}
+
+/* ───────── 그림: 이온 모형 ───────── */
+const CELL = k => [70 + (k % 6) * 48, 104 + Math.floor(k / 6) * 46];
+function ionSVG(i){
+  const m = mstate(i), u = m.u, cells = cellsFor(i, u);
+  const pH = new Set(m.st.pairs.map(p => p[0])), pO = new Set(m.st.pairs.map(p => p[1]));
+  const list = [];
+  let g = 0;
+  for(let x = 0; x < u.a; x++) list.push(['h', x, cells[g++]]);
+  for(let x = 0; x < u.a; x++) list.push(['cl', x, cells[g++]]);
+  for(let x = 0; x < u.b; x++) list.push(['na', x, cells[g++]]);
+  for(let x = 0; x < u.b; x++) list.push(['o', x, cells[g++]]);
+  let s = `<svg class="ionsvg" viewBox="0 0 380 340" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="비커 ${BK[i]} 이온 모형">
+    <rect class="m-liq" x="34" y="74" width="312" height="244" rx="10"/>
+    <path class="m-glass" d="M30,30 L30,306 Q30,322 46,322 L334,322 Q350,322 350,306 L350,30"/>
+    <line class="m-glass" x1="18" y1="30" x2="30" y2="30"/><line class="m-glass" x1="350" y1="30" x2="362" y2="30"/>`;
+  for(const [k, x, cell] of list){
+    const [cx, cy] = CELL(cell);
+    if(k === 'o' && pO.has(x)) continue;
+    if(k === 'h' && pH.has(x)){
+      const pop = ui.mpop && ui.mpop.b === i && ui.mpop.h === x ? ' pop' : '';
+      s += `<g transform="translate(${cx} ${cy})"><g class="water${pop}" aria-label="물 분자"><rect x="-22" y="-15" width="44" height="30" rx="15"/><text text-anchor="middle" y="5">H<tspan class="sub2" dy="4">2</tspan><tspan dy="-4">O</tspan></text></g></g>`;
+      continue;
+    }
+    const sel = !!(ui.msel && ui.msel.b === i && ui.msel.k === k && ui.msel.x === x);
+    s += `<g transform="translate(${cx} ${cy})"><g class="ion ion-${k}" data-act="ion" data-b="${i}" data-k="${k}" data-x="${x}" role="button" tabindex="0" aria-pressed="${sel}" aria-label="${ION[k].name}"><circle class="c" r="20"/>${sel ? '<circle class="ring" r="25"/>' : ''}<text text-anchor="middle" y="5">${ION[k].base}<tspan class="ion-ch" dy="-8">${ION[k].ch}</tspan></text></g></g>`;
+  }
+  return s + '</svg>';
+}
+function modelSummarySVG(){
+  const W = IDX5.map(i => { const m = mstate(i); return m ? m.st.pairs.length : 0; });
+  const D = IDX5.map(i => { const T = tval(S.r2.data[i].t), I = initT(i); return T != null && I != null ? T - I : null; });
+  const mw = Math.max(1, ...W), md = Math.max(0.5, ...D.map(v => v ?? 0));
+  const L = 40, cw = 104, xc = i => L + cw * (i + 0.5), b1 = 142, b2 = 302, h = 90;
+  let s = `<svg viewBox="0 0 600 346" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="비커별 물 분자 수와 온도 변화 비교">`;
+  s += `<text class="g-title" x="${L}" y="20">만들어진 물 분자 수 (이온 모형)</text>`;
+  s += `<line class="g-axis" x1="${L}" x2="${L + cw*5}" y1="${b1}" y2="${b1}"/>`;
+  W.forEach((w, i) => {
+    const bh = w / mw * h;
+    if(bh) s += `<rect class="bar-w" x="${xc(i) - 22}" y="${b1 - bh}" width="44" height="${bh}" rx="4"/>`;
+    s += `<text class="g-val" x="${xc(i)}" y="${b1 - bh - 8}" text-anchor="middle">${w}개</text>`;
+  });
+  s += `<text class="g-title" x="${L}" y="180">온도 변화 (최고 온도 − 섞기 전 온도)</text>`;
+  s += `<line class="g-axis" x1="${L}" x2="${L + cw*5}" y1="${b2}" y2="${b2}"/>`;
+  D.forEach((d, i) => {
+    const bh = d == null ? 0 : Math.max(0, d) / md * h;
+    if(bh) s += `<rect class="bar-t" x="${xc(i) - 22}" y="${b2 - bh}" width="44" height="${bh}" rx="4"/>`;
+    s += `<text class="g-val" x="${xc(i)}" y="${b2 - bh - 8}" text-anchor="middle">${d == null ? '-' : signT(d)}</text>`;
+  });
+  IDX5.forEach(i => { s += `<text class="g-xl" x="${xc(i)}" y="${b2 + 32}" text-anchor="middle">${BK[i]}</text>`; });
+  return s + '</svg>';
+}
+
+/* ───────── 화면: 처음 ───────── */
+function monitorHTML(){
+  const L = 52, R = 540, T = 30, B = 196, y = v => B - v / 14 * (B - T);
+  const ph = [7.3, 7.1, 7.4, 7.2, 7.0, 7.3, 7.1, 6.9, 7.2, 7.0, 6.8, 5.1, 3.0, 2.3, 2.1];
+  const pts = ph.map((v, i) => [L + i / (ph.length - 1) * (R - L), y(v)]);
+  const line = a => a.map(p => p.map(n => n.toFixed(1)).join(',')).join(' ');
+  const last = pts[pts.length - 1];
+  const grid = [0, 7, 14].map(v => `<line class="mon-grid" x1="${L}" x2="${R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/><text class="mon-t" x="${L - 10}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${v}</text>`).join('');
+  const times = ['00:00', '01:00', '02:00', '03:00', '04:00'].map((t, i) => `<text class="mon-t" x="${(L + i * (R - L) / 4).toFixed(1)}" y="222" text-anchor="middle">${t}</text>`).join('');
+  return `<section class="monitor" aria-label="한빛천 하류 수질 모니터">
+    <div class="mon-head"><span>한빛천 하류 수질 모니터</span><span class="mon-alert"><span class="lamp pulse" aria-hidden="true"></span>경보</span></div>
+    <svg viewBox="0 0 560 236" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="새벽 3시 이후 하류 pH가 7 부근에서 2.1까지 떨어진 그래프">
+      <rect class="mon-band" x="${L}" y="${y(8.6).toFixed(1)}" width="${R - L}" height="${(y(5.8) - y(8.6)).toFixed(1)}"/>
+      ${grid}
+      <text class="mon-bt" x="${R - 6}" y="${(y(8.6) - 7).toFixed(1)}" text-anchor="end">pH 기준 5.8~8.6</text>
+      <text class="mon-t" x="${L - 10}" y="14" text-anchor="end">pH</text>
+      <polyline class="mon-ok" points="${line(pts.slice(0, 11))}"/>
+      <polyline class="mon-bad" points="${line(pts.slice(10))}"/>
+      <circle class="mon-dot" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="6"/>
+      ${times}
+    </svg>
+    <dl class="mon-tiles">
+      <div><dt>하류 pH</dt><dd class="bad">2.1</dd></div>
+      <div><dt>pH 기준</dt><dd>5.8~8.6</dd></div>
+      <div><dt>현장 신고</dt><dd class="txt">물고기 떼죽음</dd></div>
+    </dl>
+  </section>`;
+}
+function viewTitle(){
+  const slots = listSlots();
+  const list = slots.length ? `<h2 class="sec">이 기기에 저장된 출동 기록</h2><ul class="slots">${slots.map(d => {
+    const lbl = d.team.cls && d.team.grp ? `${d.team.cls}반 ${d.team.grp}조` : '반·조 미정';
+    return `<li class="slot"><div class="slot-info"><span class="lbl">${esc(lbl)}</span><span class="meta">${esc(stageName(d.stage))} 단계, ${esc(whenStr(d.updated))}</span></div>
+      <div class="slot-act"><button type="button" class="primary sm" data-act="open" data-id="${esc(d.id)}">이어서 하기</button><button type="button" class="ghost sm" data-act="delask" data-id="${esc(d.id)}" aria-label="${esc(lbl)} 기록 지우기">지우기</button></div></li>`;
+  }).join('')}</ul>` : '';
+  return `<div class="title-screen">
+    <div class="title-grid">
+      <div>
+        <p class="org"><span class="lamp" aria-hidden="true"></span>국립환경위기대응센터 산·염기 대응팀</p>
+        <h1>환경<br>대응팀</h1>
+        <p class="sub">산과 염기의 성질부터 중화 반응까지</p>
+        <p class="intro">출동 임무는 두 가지예요. 1차 분석에서 하천에서 걷어 온 정체불명의 폐액 여섯 개의 액성을 밝히고, 2차 분석에서 산성 폐수와 염기성 폐수를 섞었을 때 일어나는 일을 데이터로 잡아내요.</p>
+        <div class="title-actions"><button type="button" class="${slots.length ? 'secondary' : 'primary'}" data-act="new">새 출동 시작</button></div>
+        ${list}
+        <div class="title-foot"><p class="sync-note who">${esc(syncText())}</p><button type="button" class="linkbtn" data-act="tgate">교사 화면</button></div>
+      </div>
+      <div>${monitorHTML()}</div>
+    </div>
+  </div>`;
+}
+
+/* ───────── 화면: 공통 머리 ───────── */
+function viewHeader(){
+  const p2 = ph2(), st = p2 ? S.r2.startAt : S.startAt, en = p2 ? S.r2.endAt : S.endAt;
+  return `<header class="top">
+    <button type="button" class="home" data-act="home" aria-label="처음 화면으로">환경 대응팀</button>
+    <div class="caseid"><span class="no" id="caseno">${esc(caseNo())}</span><span class="place"><span class="lamp" aria-hidden="true"></span>${CASE.place}</span></div>
+    <div class="clock">${st ? `<span class="clock-l">${p2 ? '2차 ' : ''}${en ? '소요 시간' : '경과'}</span>` : ''}<span id="timer">${st ? fmt((en || Date.now()) - st) : (p2 ? '2차 분석 전' : '분석 전')}</span></div>
+  </header>${viewSteps()}`;
+}
+function viewSteps(){
+  const cur = sIdx(S.stage);
+  const btn = (st, label) => {
+    const i = sIdx(st);
+    return `<button type="button" data-act="go" data-stage="${st}" class="${i <= S.furthest && i !== cur ? 'done' : ''}" ${i === cur ? 'aria-current="step"' : ''} ${i > S.furthest ? 'disabled' : ''}>${label}</button>`;
+  };
+  return `<nav aria-label="진행 단계"><ol class="steps">
+    ${['team','roles','case','check'].map(st => `<li>${btn(st, STAGE_LABEL[st])}</li>`).join('')}
+    <li class="grp"><span class="grp-l">1차 분석</span>${TESTS.map((t, i) => btn('t'+i, t.short)).join('')}</li>
+    ${['judge','reply','report'].map(st => `<li>${btn(st, STAGE_LABEL[st])}</li>`).join('')}
+    <li class="grp"><span class="grp-l">2차 분석</span>${['case2','roles2','prep2','m2','g2','model'].map(st => btn(st, SHORT2[st])).join('')}</li>
+    ${['reply2','final'].map(st => `<li>${btn(st, STAGE_LABEL[st])}</li>`).join('')}
+  </ol></nav>`;
+}
+
+/* ───────── 화면: 1차 ───────── */
+function viewTeam(){
+  const t = S.team, iss = teamIssues(), dup = dupNote();
+  const opt = (n, v) => `<option value="${n}" ${String(v) === String(n) ? 'selected' : ''}>${n}</option>`;
+  return `<section class="narrow">
+    <h1 class="st">팀 편성</h1>
+    <p class="instr">반과 조, 팀원 이름을 적어요. 4명인 조와 5명인 조 모두 할 수 있어요.</p>
+    <div class="field-row">
+      <label class="f"><span>반</span><select id="team-cls" data-in="cls"><option value="">선택</option>${Array.from({length:12},(_,k)=>opt(k+1,t.cls)).join('')}</select></label>
+      <label class="f"><span>조</span><select id="team-grp" data-in="grp"><option value="">선택</option>${Array.from({length:8},(_,k)=>opt(k+1,t.grp)).join('')}</select></label>
+    </div>
+    <fieldset><legend>팀원</legend>
+      <div class="members">${[0,1,2,3,4].map(i => `<label class="f"><span>${i < 4 ? `팀원 ${i+1}` : '팀원 5 (5명인 조만)'}</span><input type="text" id="member-${i}" data-in="m${i}" value="${esc(t.m[i])}" maxlength="12" autocomplete="off"></label>`).join('')}</div>
+    </fieldset>
+    <ul class="hint" id="team-hint">${iss.map(x => `<li>${x}</li>`).join('')}${dup ? `<li>${esc(dup)}</li>` : ''}</ul>
+    <div class="actions"><button type="button" class="primary" id="next" data-act="next" ${iss.length ? 'disabled' : ''}>역할 정하기</button></div>
+  </section>`;
+}
+
+function viewRoles(){
+  const idx = memberIdx(), defs = roleDefs(), iss = roleIssues();
+  const holder = i => { const d = defs.find(r => S.roles[r.id] === i); return d ? d.label : null; };
+  return `<section class="narrow">
+    <h1 class="st">역할 배정</h1>
+    <p class="instr">역할 카드를 보고 한 사람에게 역할 하나씩 맡겨요.${is5() ? ' 5명인 조는 수질 분석관을 정과 부로 나눠요.' : ''} 2차 분석에서는 대응팀장만 그대로 두고 나머지 역할을 바꿔요.</p>
+    ${defs.map(r => `<div class="role">
+      <h2>${r.label}</h2><p class="duty">${r.duty}</p>
+      <div class="opts">${idx.map(i => { const h = holder(i), mine = S.roles[r.id] === i;
+        return `<button type="button" class="opt" data-act="role" data-role="${r.id}" data-i="${i}" aria-pressed="${mine}">${esc(nm(i))}${h && !mine ? ` <small>${h}</small>` : ''}</button>`; }).join('')}</div>
+    </div>`).join('')}
+    <ul class="hint">${iss.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <div class="actions"><button type="button" class="primary" data-act="next" ${iss.length ? 'disabled' : ''}>출동 지령 열기</button></div>
+  </section>`;
+}
+
+function viewCase(){
+  return `<section>
+    <h1 class="st">출동 지령</h1>
+    <div class="doc">
+      <p class="doc-title">출동 지령서</p>
+      <p class="doc-sub">(산과 염기의 성질 관찰)</p>
+      <div class="scroll"><table class="form">
+        <tr><th>지령자</th><td>국립환경위기대응센터장</td><th>담당자</th><td>대응팀장 ${esc(who('chief'))}</td></tr>
+        <tr><th>지령 번호</th><td>${esc(caseNo())}</td><th>상황명</th><td>하천 오염 시료 액성 판별</td></tr>
+        <tr><th>판정 기준</th><td colspan="3">[1차] 리트머스 종이, BTB 용액, 전기 전도성 측정기, pH 시험지, 마그네슘 리본 관찰 결과</td></tr>
+      </table></div>
+      <table class="form"><caption>상황 개요</caption>
+        <tr><th>출동 장소</th><td>${CASE.place}</td></tr>
+        <tr><th>상황 개요</th><td>${CASE.summary}</td></tr>
+        <tr><th>지령 내용</th><td>${CASE.request}</td></tr>
+        <tr><th>수거 시료</th><td>${CASE.evidence}</td></tr>
+      </table>
+    </div>
+    <div class="say"><b>김 센터장</b><p>${esc(who('chief'))} 팀장, 이번 출동은 너희 팀이 맡아. 배수로에서 걷어 온 시료 여섯 개의 액성부터 밝혀내. 판정은 반드시 기록한 데이터로만 해야 해.</p></div>
+    <div class="actions"><button type="button" class="primary" data-act="next">출동 준비</button></div>
+  </section>`;
+}
+
+function viewCheck(){
+  const all = S.checks.every(Boolean);
+  const whoTxt = r => r === 'insp1' ? `수질 분석관 ${inspNames(1)}` : `${roleLabel(r)} ${who(r, 1)}`;
+  return `<div class="work">
+    <div class="plate-col">${plateSVG({})}<p class="legend">홈판 배치: 세로줄이 시료, 가로줄이 실험이에요.</p></div>
+    <section>
+      <h1 class="st">출동 점검</h1>
+      <p class="instr">분석을 시작하기 전에 맡은 사람이 직접 확인하고 체크해요.</p>
+      ${CHECKS.map((c, i) => `<button type="button" class="check" role="checkbox" aria-checked="${S.checks[i]}" data-act="chk" data-i="${i}">
+        <span class="box"></span><span class="who-l">${esc(whoTxt(c.r))}</span><span>${c.t}</span></button>`).join('')}
+      <div class="actions"><button type="button" class="primary" data-act="start" ${all ? '' : 'disabled'}>${S.startAt ? '분석 이어 하기' : '분석 시작'}</button></div>
+    </section>
+  </div>`;
+}
+
+function sampleInput(i, s){
+  const t = TESTS[i], r = S.rec[s];
+  const opt = (f, v, label, swatch) => `<button type="button" class="opt" data-act="set" data-f="${f}" data-s="${s}" data-v="${v}" aria-pressed="${r[f] === v}">${swatch || ''}${label}</button>`;
+  let body = '';
+  if(t.id === 'lit'){
+    body = `<div class="sub"><span class="sub-l">푸른 리트머스</span><div class="opts">${opt('lb',0,'변화 없음',sw(LIT.blue))}${opt('lb',1,'붉게 변함',sw(LIT.blueChanged))}</div></div>
+            <div class="sub"><span class="sub-l">붉은 리트머스</span><div class="opts">${opt('lr',0,'변화 없음',sw(LIT.red))}${opt('lr',1,'푸르게 변함',sw(LIT.redChanged))}</div></div>`;
+  } else if(t.id === 'btb'){
+    body = `<div class="opts">${['Y','G','B'].map(k => opt('btb',k,BTB_NAME[k],sw(BTB_COLORS[k],true))).join('')}</div>`;
+  } else if(t.id === 'cond'){
+    body = `<div class="opts">${opt('cond',2,'흐름')}${opt('cond',1,'약하게 흐름')}${opt('cond',0,'흐르지 않음')}</div>`;
+  } else if(t.id === 'ph'){
+    body = r.ph != null
+      ? `<button type="button" class="ph-pick" data-act="phsheet" data-s="${s}">${sw(PH_COLORS[r.ph])}<span>pH ${r.ph}</span><span style="margin-left:auto;color:var(--ink2);font-weight:500">바꾸기</span></button>`
+      : `<button type="button" class="ph-pick empty" data-act="phsheet" data-s="${s}">pH 값 고르기</button>`;
+  } else {
+    body = `<div class="opts">${opt('mg',1,'기포 발생')}${opt('mg',0,'변화 없음')}</div>`;
+  }
+  return `<div class="tag${ui.focus === s ? ' focus' : ''}${filled(s, t.id) ? ' on' : ''}" id="tag-${s}">
+    <div class="tag-head"><span class="sno">${CIRC[s]}</span><span>시료 ${s}</span>${filled(s, t.id) ? '<span class="ok">기록됨</span>' : ''}</div>
+    ${body}
+  </div>`;
+}
+function viewTest(i){
+  const t = TESTS[i], done = testDone(i), n = SAMPLES.filter(s => filled(s, t.id)).length;
+  const back = S.furthest > sIdx('t'+i);
+  return `<div class="work">
+    <div class="plate-col">${plateSVG({ active:t.row, interactive:true })}<p class="legend">홈판 칸을 누르면 그 칸의 기록으로 이동해요.</p></div>
+    <section>
+      <h1 class="st">${t.name}</h1>
+      <p class="instr">${t.instr}</p>
+      <p class="who">조작 <b>수질 분석관 ${esc(inspNames(1))}</b>&nbsp;&nbsp; 기록 <b>데이터 기록관 ${esc(who('rec', 1))}</b></p>
+      <div class="say"><b>김 센터장</b><p>${t.tip}</p></div>
+      <div class="samples">${SAMPLES.map(s => sampleInput(i, s)).join('')}</div>
+      <div class="actions"><span class="progress">${n}/6 기록</span>
+        <button type="button" class="primary" data-act="testnext" ${done ? '' : 'disabled'}>${back ? '확인하고 돌아가기' : (i < 4 ? '다음 실험' : '판정하러 가기')}</button></div>
+    </section>
+  </div>`;
+}
+
+function judgeCard(s){
+  const j = S.judge[s], cs = chipsOf(s), m = judgeMsgs(s);
+  const show = ui.tried[s] || (j.liq && j.chips.length);
+  const msgs = show && (m.errors.length || m.notes.length)
+    ? `<ul class="msgs">${m.errors.map(e => `<li class="err">${esc(e)}</li>`).join('')}${m.notes.map(x => `<li class="note">${esc(x)}</li>`).join('')}</ul>` : '';
+  return `<div class="tag${j.ok ? ' on' : ''}" id="tag-${s}">
+    <div class="tag-head"><span class="sno">${CIRC[s]}</span><span>시료 ${s}</span>${j.ok ? `<span class="stamp${ui.stamp === s ? ' slam' : ''}" style="--sc:var(--${j.liq})">${LIQ[j.liq]}</span>` : ''}</div>
+    <span class="sub-l">액성</span>
+    <div class="opts">${['A','N','B'].map(l => `<button type="button" class="opt" data-act="jliq" data-s="${s}" data-v="${l}" aria-pressed="${j.liq === l}">${sw(`var(--${l})`, true)}${LIQ[l]}</button>`).join('')}</div>
+    <span class="sub-l">근거로 쓸 기록</span>
+    <div class="chips">${cs.map(c => `<button type="button" class="chip${c.common ? ' common' : ''}" data-act="jchip" data-s="${s}" data-id="${c.id}" aria-pressed="${j.chips.includes(c.id)}">${esc(c.label)}</button>`).join('')}</div>
+    ${msgs}
+    <div class="jfoot"><button type="button" class="secondary" data-act="jok" data-s="${s}" ${j.ok ? 'disabled' : ''}>${j.ok ? '확정됨' : '판정 확정'}</button></div>
+  </div>`;
+}
+function viewJudge(){
+  SAMPLES.forEach(syncJudge);
+  const okN = SAMPLES.filter(s => S.judge[s].ok).length;
+  const bins = ['A','N','B'].map(l => {
+    const ss = SAMPLES.filter(s => S.judge[s].ok && S.judge[s].liq === l);
+    return `<div class="bin" style="--c:var(--${l})"><h3>${LIQ[l]}</h3><div class="tokens">${ss.length ? ss.map(s => `<span class="token">${CIRC[s]}</span>`).join('') : '<span class="empty">아직 없음</span>'}</div></div>`;
+  }).join('');
+  return `<section>
+    <h1 class="st">판정</h1>
+    <p class="instr">시료마다 액성을 고르고, 그렇게 판단한 근거를 기록에서 골라 확정해요.</p>
+    <div class="say"><b>김 센터장</b><p>감으로 찍지 마. 기록에 없는 건 근거가 될 수 없어.</p></div>
+    <div class="bins">${bins}</div>
+    <div class="jgrid">${SAMPLES.map(judgeCard).join('')}</div>
+    <div class="actions"><span class="progress">${okN}/6 확정</span><button type="button" class="primary" data-act="next" ${okN === 6 ? '' : 'disabled'}>대응 보고 쓰기</button></div>
+  </section>`;
+}
+
+function viewReply(){
+  SAMPLES.forEach(syncJudge);
+  const allOk = SAMPLES.every(s => S.judge[s].ok), iss = replyIssues(), n = S.reply.note.trim().length;
+  const rows = SAMPLES.map(s => {
+    const j = S.judge[s], p = S.rec[s].ph, m = S.reply.mix[s], msg = replyMsg(s);
+    return `<div class="rrow">
+      <span class="sno">${CIRC[s]}</span>
+      <div class="meta"><b>${j.ok ? LIQ[j.liq] : '미확정'}</b>기록한 pH ${p ?? '-'}</div>
+      <div class="opts"><button type="button" class="opt" data-act="mix" data-s="${s}" data-v="ok" aria-pressed="${m === 'ok'}">pH 기준 충족</button><button type="button" class="opt" data-act="mix" data-s="${s}" data-v="no" aria-pressed="${m === 'no'}">pH 기준 미충족</button></div>
+      ${msg ? `<ul class="msgs"><li class="${msg.err ? 'err' : 'note'}">${msg.t}</li></ul>` : ''}
+    </div>`;
+  }).join('');
+  return `<section class="narrow">
+    <h1 class="st">대응 보고</h1>
+    ${allOk ? '' : `<div class="banner">기록이 바뀌어 다시 확정해야 하는 판정이 있어요.<button type="button" class="secondary" data-act="go" data-stage="judge">판정으로 가기</button></div>`}
+    <p class="instr">${CASE.request}</p>
+    <div class="rule"><b>${CASE.ruleTitle}</b><p>${CASE.rule}</p><p class="who">${CASE.ruleNote}</p></div>
+    ${rows}
+    <h2 class="sec">떼죽음 원인 의심 시료</h2>
+    <p class="who">물고기 떼죽음의 원인으로 의심되는 시료를 모두 골라요.</p>
+    <div class="opts">${SAMPLES.map(s => `<button type="button" class="opt" data-act="sus" data-s="${s}" aria-pressed="${S.reply.sus.includes(s)}" aria-label="시료 ${s}"><span class="disp" style="font-size:24px">${CIRC[s]}</span></button>`).join('')}<button type="button" class="opt" data-act="susnone" aria-pressed="${S.reply.none}">의심 시료 없음</button></div>
+    <h2 class="sec"><label for="note">분석 소견</label></h2>
+    <p class="who">팀이 토의한 내용을 데이터 기록관 <b>${esc(josa(who('rec', 1),'이','가'))}</b> 정리해요. 어떤 근거로 판정했는지, pH 기준 판단과 떼죽음 원인을 어떻게 연결했는지, 무엇을 더 조사해야 하는지 적어요.</p>
+    <textarea id="note" data-in="note" placeholder="예: 리트머스, BTB, pH 결과가 모두 같은 쪽을 가리켜서 ○○성으로 판정했다. 기준을 벗어난 시료는…">${esc(S.reply.note)}</textarea>
+    <div class="count" id="note-count">${n}자</div>
+    <div class="actions">
+      <ul class="missing" id="missing">${iss.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+      <button type="button" class="primary" id="sign" data-act="sign" ${iss.length ? 'disabled' : ''}>대응팀장 ${esc(who('chief'))} 서명</button>
+    </div>
+  </section>`;
+}
+
+function litCell(v, kind){
+  if(v == null) return '-';
+  if(kind === 'b') return v ? sw(LIT.blueChanged)+'붉게 변함' : sw(LIT.blue)+'변화 없음';
+  return v ? sw(LIT.redChanged)+'푸르게 변함' : sw(LIT.red)+'변화 없음';
+}
+function table1(withKey){
+  SAMPLES.forEach(syncJudge);
+  const kc = withKey && hasKey();
+  const rows = SAMPLES.map(s => {
+    const r = S.rec[s], j = S.judge[s];
+    const basis = chipsOf(s).filter(c => j.chips.includes(c.id)).map(c => c.label).join(', ');
+    return `<tr><th scope="row" class="c">${CIRC[s]}</th>
+      <td>${litCell(r.lb,'b')}</td><td>${litCell(r.lr,'r')}</td>
+      <td>${r.btb ? sw(BTB_COLORS[r.btb], true)+BTB_NAME[r.btb] : '-'}</td>
+      <td>${r.cond != null ? CONDS[r.cond].replace('전류 ', '') : '-'}</td>
+      <td>${r.ph != null ? sw(PH_COLORS[r.ph])+'pH '+r.ph : '-'}</td>
+      <td>${r.mg == null ? '-' : r.mg ? '기포 발생' : '변화 없음'}</td>
+      <td><b>${j.ok ? LIQ[j.liq] : '미확정'}</b></td>
+      ${kc ? (TS.key[s] ? `<td class="kc${j.ok && j.liq === TS.key[s] ? '' : ' no'}">${LIQ[TS.key[s]]}${TS.names[s] ? ` (${esc(TS.names[s])})` : ''} ${j.ok && j.liq === TS.key[s] ? '✓' : '✗'}</td>` : '<td>-</td>') : ''}
+      <td>${esc(basis) || '-'}</td></tr>`;
+  }).join('');
+  return `<div class="scroll"><table class="rt">
+    <thead><tr><th>시료</th><th>푸른 리트머스</th><th>붉은 리트머스</th><th>BTB</th><th>전기 전도성</th><th>pH 시험지</th><th>마그네슘</th><th>판정</th>${kc ? '<th>정답</th>' : ''}<th>판정 근거</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+function replySum1(){
+  const list = v => { const ss = SAMPLES.filter(s => S.reply.mix[s] === v); return ss.length ? ss.map(s => CIRC[s]).join(' ') : '없음'; };
+  return `<dl class="reply-sum">
+      <dt>pH 기준 충족</dt><dd>${list('ok')}</dd>
+      <dt>pH 기준 미충족</dt><dd>${list('no')}</dd>
+      <dt>떼죽음 원인 의심</dt><dd>${S.reply.none ? '의심 시료 없음' : (S.reply.sus.slice().sort().map(s => CIRC[s]).join(' ') || '-')}</dd>
+    </dl>
+    <p class="note-text">${esc(S.reply.note).replace(/\n/g,'<br>') || '분석 소견 없음'}</p>`;
+}
+function histLi(f, ph, tag){
+  const base = ph === 2 ? S.r2.startAt : S.startAt;
+  const head = ph === 1
+    ? `<b>${CIRC[f.s]}</b> ${esc(f.a.label)}${f.b ? ' / ' + esc(f.b.label) : ''}`
+    : esc(f.lead);
+  const res = f.st === 'fixed' ? '다시 측정해 수정: ' + esc(f.note || '기록 수정') : '다시 확인한 뒤 기록 유지' + (f.why ? ': ' + esc(f.why) : '');
+  return `<li>${tag ? `<span class="ph">${ph}차</span>` : ''}<span class="t">${base ? fmt(f.at - base) : ''}</span>${head}<span class="res ${f.st}">${res}</span></li>`;
+}
+function histBlock(items, tag){
+  if(!items.length) return `<p class="who">기록끼리 어긋난 곳이 없어서 재확인 요청이 없었어요.</p>`;
+  const fixed = items.filter(([f]) => f.st === 'fixed').length;
+  return `<p class="who">재확인 요청 ${items.length}건: 다시 측정해 수정 ${fixed}건, 다시 확인한 뒤 기록 유지 ${items.length - fixed}건</p>
+    <ul class="history">${items.map(([f, ph]) => histLi(f, ph, tag)).join('')}</ul>`;
+}
+const closed = arr => arr.filter(f => f.st !== 'open').slice().sort((a, b) => a.at - b.at);
+
+function viewReport(){
+  const signed = S.reply.signed, can2 = signed || S.furthest >= P2;
+  const roleRows = roleDefs().map(r => `<div><dt>${r.label}</dt><dd>${esc(who(r.id, 1))}</dd></div>`).join('');
+  return `<section class="report">
+    ${signed ? '' : `<div class="banner">기록이 바뀌어 서명이 취소됐어요. 대응 보고에서 다시 서명하세요.<button type="button" class="secondary" data-act="go" data-stage="reply">대응 보고로 가기</button></div>`}
+    <div class="rep-head">
+      <h1 class="st">1차 분석 보고서</h1>
+      ${signed ? `<div class="seal"><span class="stamp ok">분석 완료</span><span class="sig">대응팀장 ${esc(who('chief'))}</span></div>` : ''}
+    </div>
+    <dl class="meta-grid">
+      <div><dt>지령 번호</dt><dd>${esc(caseNo())}</dd></div>
+      <div><dt>출동 장소</dt><dd>${CASE.place}</dd></div>
+      <div><dt>분석 시간</dt><dd>${timeRange(S.startAt, S.endAt)}</dd></div>
+      ${roleRows}
+    </dl>
+    <h2 class="sec">분석 결과 기록표</h2>
+    ${table1()}
+    <h2 class="sec">대응 보고</h2>
+    ${replySum1()}
+    <h2 class="sec">재확인 이력</h2>
+    ${histBlock(closed(S.flags).map(f => [f, 1]), false)}
+    <p class="sync-note who">${esc(syncText())}</p>
+    <div class="actions">
+      <button type="button" class="ghost" data-act="home">처음 화면으로</button>
+      ${canSave() ? '<button type="button" class="secondary" data-act="exportTeam">결과 파일 저장</button>' : ''}
+      <button type="button" class="secondary" data-act="go" data-stage="t0">기록 다시 보기</button>
+      <button type="button" class="primary" data-act="to2" ${can2 ? '' : 'disabled'}>2차 분석으로</button>
+    </div>
+  </section>`;
+}
+
+/* ───────── 화면: 2차 ───────── */
+function viewCase2(){
+  const by = l => SAMPLES.filter(s => S.judge[s].ok && S.judge[s].liq === l).map(s => CIRC[s]).join(' ') || '없음';
+  const no = SAMPLES.filter(s => S.reply.mix[s] === 'no').map(s => CIRC[s]).join(' ') || '없음';
+  return `<section>
+    <h1 class="st">2차 출동 지령</h1>
+    <div class="doc">
+      <p class="doc-title">출동 지령서</p>
+      <p class="doc-sub">(산과 염기의 중화 반응)</p>
+      <div class="scroll"><table class="form">
+        <tr><th>지령자</th><td>국립환경위기대응센터장</td><th>담당자</th><td>대응팀장 ${esc(who('chief'))}</td></tr>
+        <tr><th>지령 번호</th><td>${esc(caseNo())}</td><th>상황명</th><td>${CASE2.name}</td></tr>
+        <tr><th>판정 기준</th><td colspan="3">[2차] 부피 조건별 최고 온도, 색 변화 측정 결과</td></tr>
+      </table></div>
+      <table class="form"><caption>상황 개요</caption>
+        <tr><th>출동 장소</th><td>${CASE.place}</td></tr>
+        <tr><th>상황 개요</th><td>${CASE2.summary}</td></tr>
+        <tr><th>지령 내용</th><td>${CASE2.request}</td></tr>
+        <tr><th>수거 시료</th><td>${CASE2.evidence}</td></tr>
+      </table>
+    </div>
+    <h2 class="sec">1차 분석에서 밝힌 것</h2>
+    <dl class="reply-sum"><dt>산성</dt><dd>${by('A')}</dd><dt>중성</dt><dd>${by('N')}</dd><dt>염기성</dt><dd>${by('B')}</dd><dt>pH 기준 미충족</dt><dd>${no}</dd></dl>
+    <div class="say" style="margin-top:18px"><b>김 센터장</b><p>${esc(who('chief'))} 팀장, 이번엔 두 폐수를 섞었을 때 무슨 일이 벌어지는지 밝혀야 해. 비율을 바꿔 가며 온도와 색을 하나도 놓치지 말고 기록해.</p></div>
+    <div class="actions"><button type="button" class="primary" data-act="go" data-stage="roles2">역할 교대</button></div>
+  </section>`;
+}
+
+function viewRoles2(){
+  const chief = S.roles.chief, idx = memberIdx().filter(i => i !== chief), all = roleDefs();
+  const defs = all.filter(r => r.id !== 'chief'), iss = roleIssues2();
+  const cat = id => id === 'insp2' ? 'insp1' : id;
+  const role1 = i => all.find(r => S.roles[r.id] === i) || null;
+  const role2 = i => defs.find(r => S.r2.roles[r.id] === i) || null;
+  const same = idx.filter(i => { const a = role1(i), b = role2(i); return a && b && cat(a.id) === cat(b.id); });
+  return `<section class="narrow">
+    <h1 class="st">역할 교대</h1>
+    <p class="instr">2차 분석에서는 대응팀장만 그대로 두고 나머지 역할을 바꿔 맡아요. 팀원 명단의 2차 칸에 들어가는 내용이에요.</p>
+    <div class="role fixed"><h2>대응팀장</h2><p class="duty">1차와 같은 사람이 끝까지 맡아요.</p><p class="fixed-name">${esc(who('chief', 1))}</p></div>
+    ${defs.map(r => `<div class="role">
+      <h2>${r.label}</h2><p class="duty">${r.duty}</p>
+      <div class="opts">${idx.map(i => { const mine = S.r2.roles[r.id] === i, h = role2(i), a = role1(i);
+        const tag = mine ? (a ? `1차 ${a.label}` : '') : h ? `2차 ${h.label}` : a ? `1차 ${a.label}` : '';
+        return `<button type="button" class="opt" data-act="role2" data-role="${r.id}" data-i="${i}" aria-pressed="${mine}">${esc(nm(i))}${tag ? ` <small>${tag}</small>` : ''}</button>`; }).join('')}</div>
+    </div>`).join('')}
+    ${same.length ? `<p class="who">1차와 같은 역할을 다시 맡은 사람: ${same.map(i => esc(nm(i))).join(', ')}. 서로 바꿔 맡으면 모두 여러 역할을 해 볼 수 있어요.</p>` : ''}
+    <ul class="hint">${iss.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+    <div class="actions"><button type="button" class="primary" data-act="go" data-stage="prep2" ${iss.length ? 'disabled' : ''}>2차 준비</button></div>
+  </section>`;
+}
+
+function viewPrep2(){
+  const r = S.r2, iss = prepIssues(), back = S.furthest > sIdx('prep2');
+  const whoTxt = k => k === 'insp1' ? `수질 분석관 ${inspNames(2)}` : `${roleLabel(k)} ${who(k, 2)}`;
+  const vin = (i, side) => `<label class="vin"><input type="text" inputmode="numeric" id="cv-${i}-${side}" data-in="cv" data-i="${i}" data-side="${side}" value="${esc(r.cond[i][side])}" maxlength="3" autocomplete="off" aria-label="비커 ${BK[i]} ${side === 'a' ? '산성' : '염기성'} 폐수 부피"><span>mL</span></label>`;
+  const tin = (k, label) => `<label class="f"><span>${label}</span><span class="tin"><input type="text" inputmode="decimal" id="${k}" data-in="t0" data-k="${k}" value="${esc(r[k])}" maxlength="4" autocomplete="off" placeholder="예: 24.5"><span class="unit">℃</span></span></label>`;
+  return `<div class="work">
+    <div class="plate-col"><div id="viz">${beakersSVG({})}</div><p class="legend">비커마다 산성 폐수에 염기성 폐수를 섞어요. 숫자는 산 : 염기 부피(mL)예요.</p></div>
+    <section>
+      <h1 class="st">2차 준비</h1>
+      <p class="instr">혼합 조건을 확인하고, 두 폐수의 처음 온도를 재요.</p>
+      <h2 class="sec">혼합 조건</h2>
+      <p class="who">선생님이 정한 부피와 다르면 실제로 넣는 부피로 고쳐요.</p>
+      <div class="vol-head"><span></span><span>산성 폐수</span><span>염기성 폐수</span><span>합계</span></div>
+      ${IDX5.map(i => `<div class="vol-row"><span class="sno">${BK[i]}</span>${vin(i,'a')}${vin(i,'b')}<span class="sum" id="sum-${i}">${sumText(i)}</span></div>`).join('')}
+      <h2 class="sec">처음 온도</h2>
+      <p class="who">측정 <b>수질 분석관 ${esc(inspNames(2))}</b>&nbsp;&nbsp; 온도계를 증류수로 씻고 두 폐수의 온도를 따로 재요.</p>
+      <div class="t0-row">${tin('t0a','산성 폐수')}${tin('t0b','염기성 폐수')}</div>
+      <p class="terr" id="t0err">${tErr(r.t0a) || tErr(r.t0b)}</p>
+      <ul class="msgs" id="prep-warn">${prepWarn().map(x => `<li class="note">${esc(x)}</li>`).join('')}</ul>
+      <h2 class="sec">출동 점검</h2>
+      ${CHECKS2.map((c, i) => `<button type="button" class="check" role="checkbox" aria-checked="${r.checks[i]}" data-act="chk2" data-i="${i}">
+        <span class="box"></span><span class="who-l">${esc(whoTxt(c.r))}</span><span>${c.t}</span></button>`).join('')}
+      <ul class="hint" id="prep-hint">${iss.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+      <div class="actions"><button type="button" class="primary" id="start2" data-act="start2" ${iss.length ? 'disabled' : ''}>${back ? '확인하고 돌아가기' : '2차 분석 시작'}</button></div>
+    </section>
+  </div>`;
+}
+
+function beakerCard(i){
+  const d = S.r2.data[i], init = initT(i), B = BK[i], c = S.r2.cond[i];
+  return `<div class="tag${ui.focus === i ? ' focus' : ''}${rowDone(i) ? ' on' : ''}" id="tag-${i}">
+    <div class="tag-head"><span class="sno">${B}</span><span>산 ${esc(c.a)} mL + 염기 ${esc(c.b)} mL</span><span class="ok" id="ok-${i}">${rowDone(i) ? '기록됨' : ''}</span></div>
+    <p class="mini">섞기 전 온도 ${fmtT(init)}</p>
+    <span class="sub-l">최고 온도</span>
+    <div class="tin">
+      <button type="button" class="step" data-act="tstep" data-i="${i}" data-d="-1" aria-label="비커 ${B} 0.1도 내리기">−</button>
+      <input type="text" inputmode="decimal" id="t-${i}" data-in="t" data-i="${i}" value="${esc(d.t)}" maxlength="4" autocomplete="off" placeholder="-" aria-label="비커 ${B} 최고 온도">
+      <span class="unit">℃</span>
+      <button type="button" class="step" data-act="tstep" data-i="${i}" data-d="1" aria-label="비커 ${B} 0.1도 올리기">+</button>
+    </div>
+    <p class="terr" id="terr-${i}">${tErr(d.t)}</p>
+    <span class="sub-l">섞은 뒤 BTB 색</span>
+    <div class="opts">${['Y','G','B'].map(k => `<button type="button" class="opt" data-act="bcol" data-i="${i}" data-v="${k}" aria-pressed="${d.color === k}">${sw(BTB_COLORS[k], true)}${BTB_NAME[k]}</button>`).join('')}</div>
+  </div>`;
+}
+function viewM2(){
+  const n = IDX5.filter(rowDone).length, back = S.furthest > sIdx('m2');
+  return `<div class="work">
+    <div class="plate-col"><div id="viz">${beakersSVG({ interactive:true })}</div><p class="legend">비커를 누르면 그 비커의 기록으로 이동해요.</p></div>
+    <section>
+      <h1 class="st">2차 측정</h1>
+      <p class="instr">산성 폐수가 담긴 비커에 염기성 폐수를 붓고 유리 막대로 저어요. 온도계 눈금이 가장 높이 올라갔을 때 값을 적고, BTB 용액을 2~3방울 넣어 색을 기록해요.</p>
+      <p class="who">조작 <b>수질 분석관 ${esc(inspNames(2))}</b>&nbsp;&nbsp; 기록 <b>데이터 기록관 ${esc(who('rec', 2))}</b></p>
+      <div class="say"><b>김 센터장</b><p>온도는 올라갔다가 금방 내려가. 눈금에서 눈을 떼지 말고 가장 높은 값을 잡아. 다음 비커로 가기 전에 온도계를 증류수로 씻고 티슈로 닦아.</p></div>
+      <div class="samples">${IDX5.map(beakerCard).join('')}</div>
+      <div class="actions"><span class="progress" id="m2prog">${n}/5 기록</span><button type="button" class="primary" id="m2next" data-act="m2next" ${n === 5 ? '' : 'disabled'}>${back ? '확인하고 돌아가기' : '그래프 그리러 가기'}</button></div>
+    </section>
+  </div>`;
+}
+
+function viewG2(){
+  const r = S.r2, sel = ui.gsel, okN = IDX5.filter(plotOk).length;
+  const state = i => r.plot[i] == null ? ['점 없음', ''] : plotOk(i) ? ['일치', ''] : ['기록과 다름', 'bad'];
+  const pk = r.peak, pkErr = pk != null && !isPeak(pk);
+  return `<section class="narrow">
+    <h1 class="st">그래프</h1>
+    <p class="instr">기록표를 보고 비커마다 최고 온도를 그래프에 찍어요. 비커 칸을 누른 높이에 점이 찍히고, 아래 버튼으로 0.1℃씩 맞출 수 있어요.</p>
+    <p class="who">그리기 <b>데이터 기록관 ${esc(who('rec', 2))}</b>&nbsp;&nbsp; 확인 <b>수질 분석관 ${esc(inspNames(2))}</b></p>
+    <div class="graph-box">${graphSVG({ interactive:true })}</div>
+    <div class="gpick" role="group" aria-label="점을 고칠 비커">${IDX5.map(i => { const [t, c] = state(i); return `<button type="button" class="opt" data-act="gsel" data-i="${i}" aria-pressed="${sel === i}">${BK[i]}<small class="${c}">${t}</small></button>`; }).join('')}</div>
+    ${sel != null ? `<div class="gfine"><span class="gf-t">비커 ${BK[sel]}: 기록표 <b>${fmtT(tval(r.data[sel].t))}</b>, 그래프 <b>${r.plot[sel] == null ? '-' : fmtT(r.plot[sel])}</b></span>
+      <button type="button" class="step" data-act="gstep" data-d="-1" aria-label="0.1도 내리기">−</button><button type="button" class="step" data-act="gstep" data-d="1" aria-label="0.1도 올리기">+</button></div>` : ''}
+    <h2 class="sec">온도가 가장 높이 올라간 비커</h2>
+    <div class="opts">${IDX5.map(i => `<button type="button" class="opt" data-act="peak" data-i="${i}" aria-pressed="${pk === i}"><span class="disp" style="font-size:22px">${BK[i]}</span></button>`).join('')}</div>
+    ${pkErr ? `<ul class="msgs"><li class="err">기록표에서 최고 온도가 가장 높은 비커가 아니에요.</li></ul>` : ''}
+    <div class="actions"><span class="progress">${okN}/5 일치</span><button type="button" class="primary" data-act="go" data-stage="model" ${graphOk() ? '' : 'disabled'}>이온 모형으로</button></div>
+  </section>`;
+}
+
+function cmpHTML(i, m){
+  const d = S.r2.data[i];
+  if(!d.color) return '';
+  const rec = BTB_LIQ[d.color];
+  return rec === m.exp
+    ? `<p class="cmp same">측정 기록과 같아요. 비커 ${BK[i]}는 BTB ${BTB_NAME[d.color]}(${LIQ[rec]})으로 기록됐어요.</p>`
+    : `<p class="cmp diff">측정 기록과 달라요. 비커 ${BK[i]}는 BTB ${BTB_NAME[d.color]}(${LIQ[rec]})으로 기록됐어요. 왜 다를지 팀에서 이야기하고 결론에 적어요.</p>`;
+}
+function viewModel(){
+  const U = units();
+  if(!U) return `<section class="narrow"><h1 class="st">이온 모형</h1><p class="instr">혼합 조건의 부피를 먼저 확인해요.</p><div class="actions"><button type="button" class="primary" data-act="go" data-stage="prep2">2차 준비로 가기</button></div></section>`;
+  const i = ui.mb ?? 0, m = mstate(i), c = S.r2.cond[i], allOk = IDX5.every(modelOk);
+  const gTxt = Number.isInteger(U.g) ? `${U.g} mL` : `약 ${U.g.toFixed(1)} mL`;
+  const tabs = IDX5.map(k => `<button type="button" class="opt" data-act="mb" data-i="${k}" aria-pressed="${k === i}">${BK[k]}<small>${modelOk(k) ? '완료' : ''}</small></button>`).join('');
+  let side = `<ul class="ilegend">
+      <li><span class="ichip ion-h">H<sup>+</sup></span>수소 이온</li>
+      <li><span class="ichip ion-o">OH<sup>−</sup></span>수산화 이온</li>
+      <li><span class="ichip ion-na">Na<sup>+</sup></span>나트륨 이온</li>
+      <li><span class="ichip ion-cl">Cl<sup>−</sup></span>염화 이온</li>
+      <li><span class="ichip water">H<sub>2</sub>O</span>물 분자</li>
+    </ul>
+    <p class="who">비커 ${BK[i]}: 산성 폐수 ${esc(c.a)} mL, 염기성 폐수 ${esc(c.b)} mL. 모형에서 이온 하나는 용액 ${gTxt}에 든 이온을 나타내요.</p>
+    <p class="wcount">만들어진 물 분자<b>${m.st.pairs.length}</b>개</p>`;
+  if(!m.st.done){
+    side += `<p class="instr" style="font-size:16px">만나서 물 분자가 되는 두 이온을 차례로 눌러 짝지어요. 더 짝지을 수 없으면 반응 끝을 눌러요.</p>
+      ${ui.mmsg ? `<p class="mmsg" role="status">${esc(ui.mmsg)}</p>` : ''}
+      <div class="flag-act"><button type="button" class="primary sm" data-act="mdone">반응 끝</button><button type="button" class="ghost sm" data-act="mreset" ${m.st.pairs.length ? '' : 'disabled'}>다시 하기</button></div>`;
+  } else {
+    const ok = m.st.liq === m.exp;
+    side += `<span class="sub-l">섞은 뒤 용액의 액성</span>
+      <div class="opts">${['A','N','B'].map(l => `<button type="button" class="opt" data-act="mliq" data-v="${l}" aria-pressed="${m.st.liq === l}">${sw(`var(--${l})`, true)}${LIQ[l]}</button>`).join('')}</div>
+      ${m.st.liq && !ok ? `<p class="mmsg" role="status">반응이 끝난 뒤 남아 있는 이온을 다시 세어 봐요.</p>` : ''}
+      ${ok ? cmpHTML(i, m) : ''}
+      <div class="flag-act"><button type="button" class="ghost sm" data-act="mreset">다시 하기</button>${ok && !allOk ? `<button type="button" class="secondary sm" data-act="mnext">다음 비커</button>` : ''}</div>`;
+  }
+  return `<section>
+    <h1 class="st">이온 모형</h1>
+    <p class="instr">두 폐수는 농도가 같아서, 같은 부피에 같은 수의 이온이 들어 있다고 보고 섞은 뒤의 입자를 나타내요.${U.approx ? ' 부피를 그대로 나타내기 어려워서 이온 수는 대략적인 비율로 그렸어요. 부피가 더 많은 쪽은 이온도 더 많게 그렸어요.' : ''}</p>
+    <div class="mtabs" role="group" aria-label="비커 고르기">${tabs}</div>
+    <div class="mwork"><div class="mviz">${ionSVG(i)}</div><div class="mside">${side}</div></div>
+    ${allOk ? `<h2 class="sec">모형과 측정 기록 나란히 보기</h2><div class="msum">${modelSummarySVG()}</div>
+      <div class="say" style="margin-top:14px"><b>김 센터장</b><p>위아래 그래프 모양을 비교해 봐. 결론에서 왜 이런 모양이 나왔는지 이온 모형으로 설명해야 해.</p></div>` : ''}
+    <div class="actions"><span class="progress">${IDX5.filter(modelOk).length}/5 완료</span><button type="button" class="primary" data-act="go" data-stage="reply2" ${allOk ? '' : 'disabled'}>결론 쓰러 가기</button></div>
+  </section>`;
+}
+
+function viewReply2(){
+  const c = S.r2.concl, iss = issues2(), pm = pickMsg();
+  const ta = (f, h, p, rows) => `<h2 class="sec"><label for="c2-${f}">${h}</label></h2><p class="who">${p}</p>
+    <textarea id="c2-${f}" data-in="c2" data-f="${f}" rows="${rows || 5}">${esc(c[f])}</textarea><div class="count" id="cnt-${f}">${cntText(f)}</div>`;
+  return `<section class="narrow">
+    <h1 class="st">결론</h1>
+    ${S.reply.signed ? '' : `<div class="banner">1차 대응 보고 서명이 풀려 있어요. 다시 서명해야 2차 결론에 서명할 수 있어요.<button type="button" class="secondary" data-act="go" data-stage="reply">1차 대응 보고로</button></div>`}
+    <p class="instr">${CASE2.request}</p>
+    <h2 class="sec">처리에 쓸 혼합 비율</h2>
+    <p class="who">처리 탱크에서 쓸 혼합 비율을 고르세요. 동그라미는 비커마다 기록한 BTB 색이에요.</p>
+    <div class="opts pickrow">${IDX5.map(i => { const d = S.r2.data[i], k = S.r2.cond[i];
+      return `<button type="button" class="opt" data-act="pick" data-i="${i}" aria-pressed="${c.pick === i}"><b>${d.color ? sw(BTB_COLORS[d.color], true) : ''}${BK[i]}</b><small>산 ${esc(k.a)} : 염기 ${esc(k.b)}</small></button>`; }).join('')}</div>
+    ${pm ? `<ul class="msgs"><li class="${pm.err ? 'err' : 'note'}">${esc(pm.t)}</li></ul>` : ''}
+    ${ta('change', '액성 변화', '산성 폐수의 비율이 커질수록 BTB 색과 액성이 어떻게 달라졌는지 기록을 근거로 써요.', 4)}
+    ${ta('why', '중화 반응의 원리', '이온 모형을 이용해, 두 폐수를 섞으면 어떤 입자가 만나 무엇이 만들어지는지, 그리고 비커마다 온도 변화가 왜 달랐는지 설명해요.', 5)}
+    <h2 class="sec">생활 속 중화 반응</h2>
+    <p class="who">생활에서 중화 반응을 이용하는 예를 두 가지 써요. 무엇과 무엇이 만나는지도 함께 적어요.</p>
+    <div class="ex-row">
+      <label class="f"><span>사례 1</span><input type="text" id="c2-ex1" data-in="c2" data-f="ex1" value="${esc(c.ex1)}" autocomplete="off"></label>
+      <label class="f"><span>사례 2</span><input type="text" id="c2-ex2" data-in="c2" data-f="ex2" value="${esc(c.ex2)}" autocomplete="off"></label>
+    </div>
+    <div class="count"><span id="cnt-ex1">${cntText('ex1')}</span>, <span id="cnt-ex2">${cntText('ex2')}</span></div>
+    ${ta('brief', '상황 종료 브리핑', '센터장에게 보내는 마지막 보고예요. 상황이 어떻게 해결됐는지 이야기처럼 쓰고, 처리 방법과 섞을 때 주의할 점을 꼭 넣어요.', 6)}
+    <div class="actions">
+      <ul class="missing" id="missing2">${iss.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+      <button type="button" class="primary" id="sign2" data-act="sign2" ${iss.length ? 'disabled' : ''}>대응팀장 ${esc(who('chief'))} 서명</button>
+    </div>
+  </section>`;
+}
+
+function roster(){
+  return `<div class="scroll"><table class="form roster"><thead><tr><th>역할</th><th>1차</th><th>2차</th></tr></thead><tbody>${roleDefs().map(r => r.id === 'chief'
+    ? `<tr><th>${r.label}</th><td colspan="2">${esc(who('chief', 1))}</td></tr>`
+    : `<tr><th>${r.label}</th><td>${esc(who(r.id, 1))}</td><td>${esc(who(r.id, 2))}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function table2(){
+  const r = S.r2;
+  return `<div class="scroll"><table class="rt rt2">
+    <thead><tr><th>비커</th><th>산성 폐수</th><th>염기성 폐수</th><th>섞기 전 온도</th><th>최고 온도</th><th>온도 변화</th><th>BTB 색</th><th>물 분자(모형)</th><th>모형 액성</th></tr></thead>
+    <tbody>${IDX5.map(i => {
+      const d = r.data[i], T = tval(d.t), I = initT(i), m = mstate(i);
+      return `<tr><th scope="row" class="c">${BK[i]}</th><td class="num">${esc(r.cond[i].a)} mL</td><td class="num">${esc(r.cond[i].b)} mL</td><td class="num">${fmtT(I)}</td><td class="num">${fmtT(T)}</td>
+        <td class="num">${T != null && I != null ? signT(T - I) : '-'}</td><td>${d.color ? sw(BTB_COLORS[d.color], true) + BTB_NAME[d.color] : '-'}</td>
+        <td class="num">${m && m.st.done ? m.st.pairs.length + '개' : '-'}</td><td>${modelOk(i) ? LIQ[m.exp] : '-'}</td></tr>`;
+    }).join('')}</tbody></table></div>`;
+}
+function finalBody(o = {}){
+  const c = S.r2.concl, p2 = !!S.r2.startAt;
+  const pick = c.pick == null ? '-' : `비커 ${BK[c.pick]} (산성 폐수 ${esc(S.r2.cond[c.pick].a)} mL : 염기성 폐수 ${esc(S.r2.cond[c.pick].b)} mL)`;
+  const txt = f => esc(c[f]).replace(/\n/g, '<br>') || '-';
+  const hist = [...closed(S.flags).map(f => [f, 1]), ...closed(S.r2.flags).map(f => [f, 2])];
+  return `<dl class="meta-grid">
+      <div><dt>지령 번호</dt><dd>${esc(caseNo())}</dd></div>
+      <div><dt>출동 장소</dt><dd>${CASE.place}</dd></div>
+      <div><dt>1차 분석</dt><dd>${timeRange(S.startAt, S.endAt)}</dd></div>
+      <div><dt>2차 분석</dt><dd>${timeRange(S.r2.startAt, S.r2.endAt)}</dd></div>
+    </dl>
+    <h2 class="sec">대응팀 팀원 명단</h2>
+    ${roster()}
+    <h2 class="sec">1차 분석: 산과 염기의 성질</h2>
+    ${table1(o.key)}
+    <h3 class="sub3">대응 보고</h3>
+    ${replySum1()}
+    <h2 class="sec">2차 분석: 중화 반응</h2>
+    ${p2 ? `${table2()}
+    <div class="twin" style="margin-top:14px">
+      <div>${graphSVG({})}</div>
+      <div class="msum">${modelSummarySVG()}</div>
+    </div>
+    <h2 class="sec">결론</h2>
+    <dl class="reply-sum">
+      <dt>처리 혼합 비율</dt><dd>${pick}</dd>
+      <dt>생활 속 중화 반응</dt><dd>1. ${esc(c.ex1) || '-'}<br>2. ${esc(c.ex2) || '-'}</dd>
+    </dl>
+    <h3 class="sub3">액성 변화</h3><p class="note-text">${txt('change')}</p>
+    <h3 class="sub3">중화 반응의 원리</h3><p class="note-text">${txt('why')}</p>
+    <h2 class="sec">상황 종료 브리핑</h2>
+    <p class="note-text">${txt('brief')}</p>` : '<p class="who">아직 2차 분석을 시작하지 않았어요.</p>'}
+    <h2 class="sec">재확인 이력</h2>
+    ${histBlock(hist, true)}`;
+}
+function viewFinal(){
+  const c = S.r2.concl, ok = c.signed && S.reply.signed;
+  return `<section class="report">
+    ${ok ? '' : `<div class="banner">기록이 바뀌어 서명이 취소됐어요. 서명을 다시 받아야 보고서가 완성돼요.${S.reply.signed ? '' : '<button type="button" class="secondary" data-act="go" data-stage="reply">1차 대응 보고</button>'}${c.signed ? '' : '<button type="button" class="secondary" data-act="go" data-stage="reply2">2차 결론</button>'}</div>`}
+    <div class="rep-head">
+      <h1 class="st">종합 대응 보고서</h1>
+      ${ok ? `<div class="seal"><span class="stamp ok">상황 종료</span><span class="sig">대응팀장 ${esc(who('chief'))}</span></div>` : ''}
+    </div>
+    ${finalBody()}
+    <p class="sync-note who">${esc(syncText())}</p>
+    <div class="actions">
+      <button type="button" class="ghost" data-act="home">처음 화면으로</button>
+      <button type="button" class="secondary" data-act="go" data-stage="m2">2차 기록 다시 보기</button>
+      ${canSave() ? '<button type="button" class="primary" data-act="exportTeam">결과 파일 저장</button>' : ''}
+    </div>
+  </section>`;
+}
+
+const VIEWS = {
+  team:viewTeam, roles:viewRoles, case:viewCase, check:viewCheck,
+  t0:() => viewTest(0), t1:() => viewTest(1), t2:() => viewTest(2), t3:() => viewTest(3), t4:() => viewTest(4),
+  judge:viewJudge, reply:viewReply, report:viewReport,
+  case2:viewCase2, roles2:viewRoles2, prep2:viewPrep2, m2:viewM2, g2:viewG2, model:viewModel, reply2:viewReply2, final:viewFinal
+};
+
+/* ───────── 모달 ───────── */
+function obsBox(o){ return `<div class="obs"><b>${esc(o.label)}</b>${o.why ? `<p>${esc(o.why)}</p>` : ''}</div>`; }
+function keepBlock(f){
+  if(ui.keepId !== f.id) return `<button type="button" class="ghost" data-act="keep" data-id="${f.id}">기록 그대로 두기</button>`;
+  return `<div class="keepwhy">
+      <label class="f"><span>다시 확인한 내용 (5자 이상)</span><input type="text" id="kw" maxlength="80" autocomplete="off" placeholder="예: 두 번 다시 측정해도 같은 색이었다" value="${esc(ui.keepTxt || '')}"></label>
+      ${ui.keepErr ? `<p class="terr">${esc(ui.keepErr)}</p>` : ''}
+      <div class="flag-act"><button type="button" class="secondary" data-act="keepok" data-id="${f.id}">이 내용으로 기록 유지</button><button type="button" class="ghost" data-act="keepcancel">취소</button></div>
+    </div>`;
+}
+function flagCard(f){
+  const ts = f.self ? [f.a.t] : [...new Set([f.a.t, f.b.t])];
+  return `<div class="flag">
+    <div class="flag-s">${CIRC[f.s]} 시료 ${f.s}</div>
+    ${f.self ? obsBox(f.a) : `<div class="obs-pair">${obsBox(f.a)}<span class="vs">서로<br>맞지 않음</span>${obsBox(f.b)}</div>`}
+    <div class="flag-act">
+      ${ts.map(t => `<button type="button" class="secondary" data-act="remeasure" data-s="${f.s}" data-t="${t}">${testName(t)} 다시 측정</button>`).join('')}
+      ${keepBlock(f)}
+    </div>
+  </div>`;
+}
+function flagCard2(f){
+  return `<div class="flag">
+    <div class="flag-s">비커 ${f.bks.map(i => BK[i]).join(', ')}</div>
+    <p class="flag-lead">${esc(f.lead)}</p>
+    <div class="obs-row">${f.boxes.map(obsBox).join('')}</div>
+    <div class="flag-act">
+      ${f.acts.map(a => `<button type="button" class="secondary" data-act="remeasure2" data-target="${a.target}" data-i="${a.i == null ? '' : a.i}">${esc(a.label)}</button>`).join('')}
+      ${keepBlock(f)}
+    </div>
+  </div>`;
+}
+function modalHTML(){
+  const m = ui.modal;
+  if(m.type === 'flags'){
+    const ph = m.ph, open = (ph === 2 ? S.r2.flags : S.flags).filter(f => f.st === 'open');
+    return `<div class="tapebar"></div><div class="modal-in">
+      <h2 id="mt">재확인 요청 ${open.length}건</h2>
+      <p class="mlead">데이터 기록관 ${esc(josa(who('rec', ph),'이','가'))} 수질 분석관에게 다시 확인을 요청해요. 다시 측정해서 고치거나, 다시 봐도 결과가 같으면 기록을 그대로 두세요.</p>
+      ${open.map(ph === 2 ? flagCard2 : flagCard).join('')}
+      <div class="mfoot"><button type="button" class="ghost" data-act="close">닫기</button></div>
+    </div>`;
+  }
+  if(m.type === 'ph'){
+    const s = m.s;
+    return `<div class="modal-in">
+      <h2 id="mt">시료 ${CIRC[s]} pH</h2>
+      <p class="mlead">시험지 색을 통에 있는 표준 색표와 비교해서 가장 가까운 숫자를 골라요. 아래 색은 참고용이에요.</p>
+      <div class="phgrid">${Array.from({length:14},(_,k) => k+1).map(v => `<button type="button" class="phchip" style="--c:${PH_COLORS[v]}" data-act="setph" data-s="${s}" data-v="${v}" aria-pressed="${S.rec[s].ph === v}" aria-label="pH ${v}">${v}</button>`).join('')}</div>
+      <div class="mfoot"><button type="button" class="ghost" data-act="close">닫기</button></div>
+    </div>`;
+  }
+  if(m.type === 'pin'){
+    return `<div class="modal-in">
+      <h2 id="mt">교사 화면</h2>
+      <p class="mlead">${m.mode === 'set' ? '처음 열었어요. 교사 화면에 쓸 숫자 4~6자리를 정하세요. 학생이 우연히 들어오지 않게 막는 용도예요.' : '교사 PIN을 입력하세요.'}</p>
+      <label class="f"><span>PIN</span><input type="password" inputmode="numeric" id="pin1" maxlength="6" autocomplete="off"></label>
+      ${m.mode === 'set' ? '<label class="f" style="margin-top:10px"><span>한 번 더</span><input type="password" inputmode="numeric" id="pin2" maxlength="6" autocomplete="off"></label>' : ''}
+      ${m.err ? `<p class="mmsg" role="alert">${esc(m.err)}</p>` : ''}
+      ${m.mode === 'enter' && cloud.db ? '<p class="who" style="margin:10px 0 0">번호를 잊었으면 Claude에게 교사 PIN 초기화를 부탁하세요.</p>' : ''}
+      <div class="mfoot"><button type="button" class="ghost" data-act="close">취소</button><button type="button" class="primary" data-act="pinok">${m.mode === 'set' ? '정하고 들어가기' : '들어가기'}</button></div>
+    </div>`;
+  }
+  if(m.type === 'tdel'){
+    return `<div class="modal-in">
+      <h2 id="mt">${esc(m.label)} 기록을 지울까요?</h2>
+      <p class="mlead">교사 화면과 이 기기에서 지워요. 채점 기록도 함께 지워져요. 학생 태블릿에 같은 기록이 남아 있으면 다음에 저장될 때 다시 나타나요.</p>
+      <div class="mfoot"><button type="button" class="ghost" data-act="close">취소</button><button type="button" class="primary danger" data-act="tdel" data-id="${esc(m.id)}">지우기</button></div>
+    </div>`;
+  }
+  if(m.type === 'csv'){
+    return `<div class="modal-in">
+      <h2 id="mt">성적 CSV</h2>
+      <p class="mlead">이 화면에서는 파일로 저장할 수 없어서 내용을 보여 드려요. 복사해서 메모장에 붙여 넣고 .csv로 저장하거나, 스프레드시트에 바로 붙여 넣으세요.</p>
+      <textarea class="csvbox" id="csvbox" readonly>${esc(m.text)}</textarea>
+      <div class="mfoot"><button type="button" class="ghost" data-act="close">닫기</button><button type="button" class="primary" data-act="csvcopy">복사</button></div>
+    </div>`;
+  }
+  if(m.type === 'del'){
+    return `<div class="modal-in">
+      <h2 id="mt">${esc(m.label)} 기록을 지울까요?</h2>
+      <p class="mlead">이 기기에 저장된 1차와 2차 분석 기록이 모두 지워지고, 되돌릴 수 없어요.</p>
+      <div class="mfoot"><button type="button" class="ghost" data-act="close">취소</button><button type="button" class="primary danger" data-act="del" data-id="${esc(m.id)}">지우기</button></div>
+    </div>`;
+  }
+  return '';
+}
+function renderModal(){
+  const root = $('#modal-root');
+  if(!ui.modal){ root.innerHTML = ''; document.body.classList.remove('locked'); return; }
+  root.innerHTML = `<div class="scrim" data-act="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt">${modalHTML()}</div></div>`;
+  document.body.classList.add('locked');
+  const f = root.querySelector('.modal input') || root.querySelector('.modal button');
+  if(f) f.focus({ preventScroll:true });
+}
+function closeModal(){ ui.modal = null; ui.pending = null; ui.keepId = null; ui.keepErr = ""; renderModal(); }
+function openFlags(ph, after){ ui.modal = { type:'flags', ph }; ui.pending = after; renderModal(); }
+
+/* ───────── 수합 (db) & 파일 저장 (downloads) ───────── */
+const cloud = { db:null, state:'checking', last:null, timer:null, writing:false, dirty:false, teams:new Map(), sub:null, subOk:false, subErr:false, ready:null };
+const dl = { api:null };
+const inClaude = !!(window.claude && typeof window.claude.use === 'function');
+const canSave = () => !!dl.api || !inClaude;
+function blobSave(filename, data, type){
+  try{
+    const url = URL.createObjectURL(new Blob([data], { type }));
+    const a = document.createElement('a'); a.href = url; a.download = filename; a.style.display = 'none';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    return true;
+  }catch(e){ return false; }
+}
+async function saveFile(filename, data, type){
+  if(dl.api){
+    try{ await dl.api.save({ filename, data }); return 'ok'; }
+    catch(e){ if(e && e.code === 'declined') return 'declined'; }
+  }
+  if(!inClaude && blobSave(filename, data, type)) return 'ok';
+  return 'fail';
+}
+function capUse(n){
+  try{ return window.claude && typeof window.claude.use === 'function' ? Promise.resolve(window.claude.use(n)).catch(() => null) : Promise.resolve(null); }
+  catch(e){ return Promise.resolve(null); }
+}
+async function initCaps(){
+  const [db, d] = await Promise.all([capUse('db'), capUse('downloads')]);
+  cloud.db = db || null; dl.api = d || null; cloud.state = db ? 'on' : 'off';
+  if(db && S) queuePush();
+  if(db && ui.view === 'teacher') subscribeTeams();
+  softRender();
+}
+function queuePush(){
+  if(!cloud.db || cloud.state === 'denied' || cloud.state === 'full' || !S) return;
+  clearTimeout(cloud.timer);
+  cloud.timer = setTimeout(pushNow, 1200);
+}
+async function pushNow(){
+  clearTimeout(cloud.timer);
+  if(!cloud.db || cloud.state === 'denied' || cloud.state === 'full' || !S || !S.team.cls || !S.team.grp) return;
+  if(cloud.writing){ cloud.dirty = true; return; }
+  cloud.writing = true;
+  const d = S;
+  const body = { id:d.id, cls:Number(d.team.cls) || 0, grp:Number(d.team.grp) || 0, stage:d.stage, updated:d.updated || Date.now(), json:JSON.stringify(d) };
+  let wait = 1200;
+  try{
+    await cloud.db.collection('teams').doc(d.id).set(body);
+    cloud.last = Date.now(); cloud.state = 'on';
+  }catch(e){
+    const c = e && e.code;
+    if(c === 'quota_exceeded') cloud.state = 'full';
+    else if(['invalid_argument','not_granted','revoked','capability_disabled','capability_removed','transform_error'].includes(c)) cloud.state = 'denied';
+    else { cloud.state = 'retry'; cloud.dirty = true; wait = 6000; }
+  }
+  cloud.writing = false;
+  refreshSync();
+  if(cloud.dirty){ cloud.dirty = false; clearTimeout(cloud.timer); cloud.timer = setTimeout(pushNow, wait); }
+}
+function syncText(){
+  switch(cloud.state){
+    case 'checking': return '';
+    case 'on': return cloud.last ? `선생님 화면으로 보냈어요 (${clockOf(cloud.last)})` : '기록은 선생님 화면으로 자동으로 보내져요.';
+    case 'retry': return '연결이 불안정해서 다시 보내는 중이에요. 기록은 이 기기에도 저장돼요.';
+    case 'denied': return '이 계정으로는 선생님 화면에 보낼 수 없어요. 기록은 이 기기에 저장돼요.';
+    case 'full': return '수합 공간이 가득 찼어요. 선생님께 알려 주세요. 기록은 이 기기에 저장돼요.';
+    default: return canSave() ? '기록은 이 기기에만 저장돼요. 끝나면 결과 파일을 저장해 선생님께 내요.' : '기록은 이 기기에만 저장돼요.';
+  }
+}
+function tSyncText(){
+  if(cloud.state === 'checking') return '수합 연결 확인 중';
+  if(!cloud.db) return '실시간 수합 꺼짐: 이 기기 기록과 불러온 결과 파일만 보여요';
+  if(cloud.subErr) return '수합 연결이 끊겼어요. 페이지를 새로 열어 주세요';
+  return cloud.subOk ? '태블릿 기록을 실시간으로 받는 중' : '수합 연결 중';
+}
+function refreshSync(){
+  document.querySelectorAll('.sync-note').forEach(e => { e.textContent = syncText(); });
+  const t = document.getElementById('tsync'); if(t) t.textContent = tSyncText();
+}
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById('toast'); if(!t || !msg) return;
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 3500);
+}
+async function exportTeam(){
+  if(!canSave() || !S) return;
+  const r = await saveFile(`환경대응팀_${S.team.cls}반_${S.team.grp}조.json`, JSON.stringify({ kind:'chem-forensics-team', v:1, data:S }), 'application/json');
+  if(r === 'ok') showToast('결과 파일을 저장했어요. 선생님께 내요.');
+  else if(r === 'fail') showToast('결과 파일을 저장하지 못했어요.');
+}
+
+/* ───────── 교사 화면: 상태 ───────── */
+const TKEY = 'chem-forensics-teacher-v1';
+const SCORE = { 1:{A:20,B:15,C:10,D:5}, 2:{A:20,B:15,C:10,D:5}, 3:{A:30,B:25,C:20,D:15}, 4:{A:30,B:25,C:20,D:15} };
+const ITEM = { 1:'탐구 수행: 1차 분석 결과', 2:'탐구 수행: 2차 분석 결과', 3:'과학적 원리 설명 및 생활 속 적용', 4:'보고서 구성과 발표 및 역할 수행' };
+const C3 = ['반응 결과(물과 열 발생)를 올바르게 설명함', '모형으로 수소 이온과 수산화 이온이 반응해 물이 생성되는 원리를 설명함', '생활 속 중화 반응의 사례를 2가지 이상 설명함'];
+const G0 = { i1:null, i2:null, c3:[false,false,false], c3set:false, i4:null, per:{} };
+function tFresh(){ return { v:1, key:{}, names:{}, grades:{}, imported:{}, pin:null }; }
+function tLoad(){ try{ const d = JSON.parse(localStorage.getItem(TKEY) || 'null'); if(d && d.v === 1) return Object.assign(tFresh(), d); }catch(e){} return tFresh(); }
+function tSave(){ try{ localStorage.setItem(TKEY, JSON.stringify(TS)); }catch(e){} }
+let TS = tLoad();
+const hasKey = () => SAMPLES.some(s => TS.key[s]);
+const keyedN = () => SAMPLES.filter(s => TS.key[s]).length;
+const gradeOf = id => TS.grades[id] || (TS.grades[id] = JSON.parse(JSON.stringify(G0)));
+const i3Of = g => g.c3set ? ['D','C','B','A'][g.c3.filter(Boolean).length] : null;
+function teamTotal(id){
+  const g = TS.grades[id]; if(!g) return null;
+  const v = [g.i1, g.i2, i3Of(g), g.i4];
+  return v.some(x => !x) ? null : SCORE[1][v[0]] + SCORE[2][v[1]] + SCORE[3][v[2]] + SCORE[4][v[3]];
+}
+function withTeam(d, fn){ const prev = S; S = d; try{ return fn(); } finally{ S = prev; } }
+function ago(ts){
+  if(!ts) return '';
+  const m = Math.floor((Date.now() - ts) / 60000);
+  return m < 1 ? '방금' : m < 60 ? `${m}분 전` : whenStr(ts);
+}
+function allTeams(){
+  const m = new Map();
+  const add = d => { if(!d || !d.team || !d.team.cls || !d.team.grp) return; const o = m.get(d.id); if(!o || (d.updated || 0) > (o.updated || 0)) m.set(d.id, d); };
+  Object.values(TS.imported).forEach(x => add(upgrade(x)));
+  listSlots().forEach(add);
+  cloud.teams.forEach(add);
+  return [...m.values()].sort((a, b) => (a.team.cls - b.team.cls) || (a.team.grp - b.team.grp) || ((b.updated || 0) - (a.updated || 0)));
+}
+function subscribeTeams(){
+  if(!cloud.db || cloud.sub) return;
+  try{
+    cloud.sub = cloud.db.collection('teams').onSnapshot(snap => {
+      const m = new Map();
+      for(const doc of snap.docs){
+        const b = doc.data();
+        try{ const d = upgrade(JSON.parse(b && b.json)); if(d) m.set(d.id, d); }catch(e){}
+      }
+      cloud.teams = m; cloud.subOk = true; cloud.subErr = false;
+      if(ui.view === 'teacher') softRender();
+    }, () => { cloud.sub = null; cloud.subErr = true; if(ui.view === 'teacher') softRender(); });
+  }catch(e){ cloud.subErr = true; }
+}
+function metrics(){
+  const valid = s => S.judge[s].ok && S.judge[s].sig === recSig(s);
+  return {
+    judged: SAMPLES.filter(valid).length,
+    correct: hasKey() ? SAMPLES.filter(s => TS.key[s] && valid(s) && S.judge[s].liq === TS.key[s]).length : null,
+    kept1: S.flags.filter(f => f.st === 'kept').length,
+    kept2: S.r2.flags.filter(f => f.st === 'kept').length,
+    meas: IDX5.filter(rowDone).length, graph: graphOk(), model: IDX5.filter(modelOk).length,
+    s1: S.reply.signed, s2: S.r2.concl.signed, p2: !!S.r2.startAt
+  };
+}
+function sugg1(m){
+  if(m.correct == null || keyedN() < 6) return null;
+  const n = m.correct;
+  return n === 6 ? 'A' : n >= 4 ? 'B' : n === 3 ? 'C' : 'D';
+}
+function sugg2(m){
+  if(!m.p2) return null;
+  if(m.meas === 5 && m.graph) return S.r2.concl.change.trim().length >= TXT.change ? 'A' : 'B';
+  return m.meas >= 3 ? 'C' : 'D';
+}
+async function hashPin(p){
+  const txt = 'chem-forensics:' + p;
+  try{
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+  }catch(e){ let h = 0; for(const ch of txt) h = (h * 31 + ch.charCodeAt(0)) | 0; return 'x' + (h >>> 0).toString(16); }
+}
+async function getPinHash(){
+  if(cloud.db){ try{ const s = await cloud.db.doc('config/teacher').get(); return s.exists ? (s.data().pin || null) : null; }catch(e){} }
+  return TS.pin;
+}
+async function setPinHash(h){
+  TS.pin = h; tSave();
+  if(cloud.db){ try{ await cloud.db.doc('config/teacher').set({ pin:h }); }catch(e){} }
+}
+async function openGate(){
+  if(ui.teacherOk){ enterTeacher(); return; }
+  await cloud.ready;
+  const h = await getPinHash();
+  ui.modal = { type:'pin', mode: h ? 'enter' : 'set', hash:h, err:'' }; renderModal();
+}
+async function pinSubmit(){
+  const m = ui.modal; if(!m || m.type !== 'pin') return;
+  const p1 = (document.getElementById('pin1') || {}).value || '', p2 = (document.getElementById('pin2') || {}).value || '';
+  if(!/^\d{4,6}$/.test(p1)){ m.err = '숫자 4~6자리로 입력하세요.'; renderModal(); return; }
+  if(m.mode === 'set'){
+    if(p1 !== p2){ m.err = '두 번 입력한 번호가 달라요.'; renderModal(); return; }
+    await setPinHash(await hashPin(p1));
+  } else if(await hashPin(p1) !== m.hash){ m.err = '번호가 맞지 않아요.'; renderModal(); return; }
+  ui.modal = null; renderModal(); enterTeacher();
+}
+function enterTeacher(){
+  ui.view = 'teacher'; ui.teacherOk = true; ui.tDetail = null;
+  subscribeTeams(); render(); window.scrollTo(0, 0);
+}
+async function importFiles(files){
+  let ok = 0, bad = 0;
+  for(const f of files){
+    try{
+      const o = JSON.parse(await f.text());
+      for(const x of (Array.isArray(o) ? o : [o])){
+        const d = upgrade(x && x.kind === 'chem-forensics-team' ? x.data : null);
+        if(d && d.team.cls && d.team.grp){ const prev = TS.imported[d.id]; if(!prev || (prev.updated || 0) <= (d.updated || 0)) TS.imported[d.id] = d; ok++; }
+        else bad++;
+      }
+    }catch(e){ bad++; }
+  }
+  tSave(); render();
+  showToast(`결과 파일 ${ok}개를 불러왔어요.${bad ? ` 읽지 못한 파일 ${bad}개.` : ''}`);
+}
+async function deleteTeam(id){
+  delete TS.imported[id]; delete TS.grades[id]; tSave(); removeSlot(id);
+  if(S && S.id === id) S = null;
+  cloud.teams.delete(id);
+  ui.modal = null; ui.tDetail = null; ui.tOpen = null; render();
+  if(cloud.db){ try{ await cloud.db.collection('teams').doc(id).delete(); }catch(e){ showToast('수합된 기록은 지우지 못했어요. 잠시 뒤 다시 해 보세요.'); } }
+}
+const csvCell = v => { const t = String(v ?? ''); return /[",\r\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+function buildCSV(list){
+  const rows = [['반','조','이름','1차 역할','2차 역할','1차 분석 결과(20)','2차 분석 결과(20)','원리 설명·생활 적용(30)','보고서·발표·역할(30)','합계','1차 판정 일치']];
+  for(const d of list){
+    withTeam(d, () => {
+      const g = TS.grades[d.id] || G0, m = metrics(), defs = roleDefs();
+      const roleOf = (i, ph) => { const r = defs.find(x => rolesOf(ph)[x.id] === i); return r ? r.label : ''; };
+      const g3 = i3Of(g);
+      for(const i of memberIdx()){
+        const g4 = (g.per && g.per[i]) || g.i4;
+        const sc = [g.i1 ? SCORE[1][g.i1] : '', g.i2 ? SCORE[2][g.i2] : '', g3 ? SCORE[3][g3] : '', g4 ? SCORE[4][g4] : ''];
+        const tot = sc.every(x => x !== '') ? sc.reduce((a, b) => a + b, 0) : '';
+        rows.push([S.team.cls, S.team.grp, nm(i), roleOf(i, 1), S.r2.startAt ? roleOf(i, 2) : '', ...sc, tot, m.correct == null ? '' : `${m.correct}/${keyedN()}`]);
+      }
+    });
+  }
+  return '﻿' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');
+}
+async function exportCSV(){
+  const list = allTeams().filter(d => ui.tCls == null || String(d.team.cls) === ui.tCls);
+  const csv = buildCSV(list);
+  const r = await saveFile(`환경대응팀_${ui.tCls ? ui.tCls + '반_' : ''}성적.csv`, csv, 'text/csv;charset=utf-8');
+  if(r === 'ok'){ showToast('성적 파일을 저장했어요.'); return; }
+  if(r === 'declined') return;
+  ui.modal = { type:'csv', text:csv.replace(/^﻿/, '') }; renderModal();
+}
+
+/* ───────── 교사 화면: 화면 ───────── */
+function tHeader(){
+  return `<header class="top">
+    <button type="button" class="home" data-act="thome" aria-label="처음 화면으로">환경 대응팀</button>
+    <span class="tmode">교사 화면</span>
+    <p class="tsync" id="tsync">${esc(tSyncText())}</p>
+  </header>`;
+}
+function viewTeacher(){
+  const teams = allTeams();
+  if(ui.tDetail){ const d = teams.find(x => x.id === ui.tDetail); if(d) return tHeader() + viewTeamDetail(d); ui.tDetail = null; }
+  const classes = [...new Set(teams.map(d => String(d.team.cls)))].sort((a, b) => a - b);
+  if(ui.tCls != null && !classes.includes(ui.tCls)) ui.tCls = null;
+  const shown = teams.filter(d => ui.tCls == null || String(d.team.cls) === ui.tCls);
+  const tab = ui.tTab;
+  const tabBtn = (id, label) => `<button type="button" role="tab" class="ttab" data-act="ttab" data-v="${id}" aria-selected="${tab === id}">${label}</button>`;
+  const chips = `<div class="opts tcls" role="group" aria-label="반 고르기"><button type="button" class="opt" data-act="tcls" data-v="" aria-pressed="${ui.tCls == null}">전체</button>${classes.map(c => `<button type="button" class="opt" data-act="tcls" data-v="${c}" aria-pressed="${ui.tCls === c}">${c}반</button>`).join('')}</div>`;
+  const body = tab === 'key' ? tKeyView(teams) : tab === 'grade' ? tGradeView(shown) : tLiveView(shown);
+  return tHeader() + `<main>
+    <div class="ttabs" role="tablist">${tabBtn('live', '진행 현황')}${tabBtn('key', '시료 정답')}${tabBtn('grade', '채점')}</div>
+    ${tab !== 'key' && classes.length > 1 ? chips : ''}
+    ${body}
+    <div class="ttools">
+      <label class="secondary sm filebtn">결과 파일 불러오기<input type="file" id="imp" accept=".json,application/json" multiple hidden></label>
+      <span class="who">태블릿이 수합에 연결되지 않았을 때, 학생이 저장한 결과 파일을 여기서 불러와요.</span>
+    </div>
+  </main>`;
+}
+function tEmpty(){
+  return `<div class="tempty"><p class="instr">아직 들어온 분석 기록이 없어요.</p><p class="who">${cloud.db ? '학생 태블릿에서 팀 편성을 마치면 여기에 바로 나타나요.' : '이 기기에서 한 분석과 불러온 결과 파일이 여기에 나타나요.'}</p></div>`;
+}
+function tLiveView(list){
+  if(!list.length) return tEmpty();
+  const k = d => `${d.team.cls}-${d.team.grp}`, cnt = {};
+  list.forEach(d => { cnt[k(d)] = (cnt[k(d)] || 0) + 1; });
+  return `<div class="tcards">${list.map(d => withTeam(d, () => {
+    const m = metrics(), pct = Math.round(Math.max(0, S.furthest) / (STAGES.length - 1) * 100);
+    const p1 = S.reply.signed ? ['done', '1차 서명'] : S.startAt ? ['', '1차 진행 중'] : ['', '1차 시작 전'];
+    const p2 = S.r2.concl.signed ? ['done', '2차 서명'] : S.r2.startAt ? ['', '2차 진행 중'] : null;
+    const kept = m.kept1 + m.kept2;
+    return `<button type="button" class="tcard" data-act="tdetail" data-id="${esc(S.id)}">
+      <span class="tc-head"><span class="lbl">${esc(S.team.cls)}반 ${esc(S.team.grp)}조</span><span class="ago">${esc(ago(S.updated))}</span></span>
+      <span class="tc-names">${memberIdx().map(i => esc(nm(i))).join(', ')}</span>
+      <span class="tc-stage">지금 <b>${esc(stageName(S.stage))}</b></span>
+      <span class="bar" aria-hidden="true"><i style="width:${pct}%"></i></span>
+      <span class="pills"><span class="pill ${p1[0]}">${p1[1]}</span>${p2 ? `<span class="pill ${p2[0]}">${p2[1]}</span>` : ''}${m.correct != null ? `<span class="pill">판정 ${m.correct}/${keyedN()} 일치</span>` : ''}${kept ? `<span class="pill warn">재확인 뒤 기록 유지 ${kept}건</span>` : ''}${cnt[k(d)] > 1 ? `<span class="pill warn">같은 반·조 기록 ${cnt[k(d)]}개</span>` : ''}</span>
+    </button>`;
+  })).join('')}</div>`;
+}
+function tKeyView(teams){
+  const rows = SAMPLES.map(s => {
+    const judged = teams.filter(d => withTeam(d, () => S.judge[s].ok && S.judge[s].sig === recSig(s)));
+    const right = TS.key[s] ? judged.filter(d => d.judge[s].liq === TS.key[s]).length : null;
+    return `<div class="keyrow"><span class="sno">${CIRC[s]}</span>
+      <div class="opts">${['A','N','B'].map(l => `<button type="button" class="opt" data-act="tkey" data-s="${s}" data-v="${l}" aria-pressed="${TS.key[s] === l}">${sw(`var(--${l})`, true)}${LIQ[l]}</button>`).join('')}</div>
+      <label class="f kname"><span>물질 (선택)</span><input type="text" id="kname-${s}" data-in="tkname" data-s="${s}" value="${esc(TS.names[s] || '')}" autocomplete="off" placeholder="예: 묽은 염산"></label>
+      <span class="kstat">${right == null ? `판정한 팀 ${judged.length}` : `${right}/${judged.length}팀 일치`}</span>
+    </div>`;
+  }).join('');
+  return `<section class="narrow">
+    <p class="instr">시료 ①~⑥의 실제 액성을 정해요. 정답은 이 기기에만 저장되고 학생 태블릿으로는 보내지 않아요.</p>
+    ${rows}
+  </section>`;
+}
+function tGradeView(list){
+  if(!list.length) return tEmpty();
+  const done = list.filter(d => teamTotal(d.id) != null).length;
+  return `<div class="gtools"><span class="progress">채점 끝난 팀 ${done}/${list.length}</span><button type="button" class="primary sm" data-act="csv">${ui.tCls ? ui.tCls + '반 ' : ''}성적 CSV 저장</button></div>
+    ${hasKey() ? '' : '<p class="who">시료 정답 탭에서 정답을 정하면 1차 분석 결과에 제안 등급이 나와요.</p>'}
+    <p class="who">제안 등급은 기록만 보고 계산한 참고값이에요. 등급은 선생님이 눌러야 정해져요.</p>
+    ${list.map(gradeRow).join('')}`;
+}
+function gradeRow(d){
+  return withTeam(d, () => {
+    const g = TS.grades[d.id] || G0, m = metrics(), open = ui.tOpen === d.id, id = esc(d.id);
+    const item = (n, cur, sug, fixed) => `<div class="gitem"><span class="gi-l">${ITEM[n]} <small>${SCORE[n].A}점</small></span>
+      <span class="gbtns">${'ABCD'.split('').map(x => `<button type="button" class="gb" data-act="tg" data-id="${id}" data-n="${n}" data-v="${x}" aria-pressed="${cur === x}" aria-label="${ITEM[n]} ${x}" ${fixed ? 'disabled' : ''}>${x}<small>${SCORE[n][x]}</small></button>`).join('')}</span>
+      ${sug && sug !== cur ? `<button type="button" class="sugg" data-act="tg" data-id="${id}" data-n="${n}" data-v="${sug}">제안 ${sug}로 정하기</button>` : ''}
+      ${fixed ? `<span class="gnote">${cur ? '근거 보기에서 체크한 개수로 정해져요' : '근거 보기에서 평가 내용을 체크하세요'}</span>` : ''}</div>`;
+    const tot = teamTotal(d.id), per = Object.keys(g.per || {}).length;
+    return `<div class="grow${open ? ' open' : ''}">
+      <div class="gr-head"><span class="lbl">${esc(S.team.cls)}반 ${esc(S.team.grp)}조</span><span class="names">${memberIdx().map(i => esc(nm(i))).join(', ')}</span>
+        <span class="gtot">${tot == null ? '채점 중' : `팀 기준 ${tot}점${per ? `, 개별 조정 ${per}명` : ''}`}</span>
+        <button type="button" class="ghost sm" data-act="topen" data-id="${id}" aria-expanded="${open}">${open ? '근거 접기' : '근거 보기'}</button></div>
+      <div class="gr-items">${item(1, g.i1, sugg1(m))}${item(2, g.i2, sugg2(m))}${item(3, i3Of(g), null, true)}${item(4, g.i4, null)}</div>
+      ${open ? gradePanel(d, g, m) : ''}
+    </div>`;
+  });
+}
+function gradePanel(d, g, m){
+  const id = esc(d.id), c = S.r2.concl;
+  const quote = t => String(t || '').trim() ? `<p class="note-text">${esc(t).replace(/\n/g, '<br>')}</p>` : '<p class="who">아직 쓰지 않았어요.</p>';
+  const kws = t => [['물', /물|H₂O|H2O/], ['열·온도', /열|온도/], ['수소 이온', /수소 ?이온|H\+|H⁺/], ['수산화 이온', /수산화 ?이온|OH-|OH⁻|OH−/]]
+    .map(([l, re]) => `<span class="kw${re.test(t) ? ' on' : ''}">${l}</span>`).join('');
+  const marks = SAMPLES.map(s => {
+    const j = S.judge[s], ok = j.ok && j.sig === recSig(s), k = TS.key[s];
+    const cls = ok && k ? (j.liq === k ? 'ok' : 'no') : '';
+    return `<span class="mk ${cls}">${CIRC[s]} ${ok ? LIQ[j.liq] : '미확정'}${cls === 'ok' ? ' ✓' : cls === 'no' ? ' ✗' : ''}</span>`;
+  }).join('');
+  const defs = roleDefs();
+  const roleOf = (i, ph) => { const r = defs.find(x => rolesOf(ph)[x.id] === i); return r ? r.label : '-'; };
+  const ex = c.ex1.trim() || c.ex2.trim() ? `1. ${c.ex1}\n2. ${c.ex2}` : '';
+  return `<div class="gpanel">
+    <div class="gp"><h3 class="sub3">1차 분석 결과</h3><p class="marks">${marks}</p>
+      <p class="who">재확인 요청 뒤 기록 유지 ${m.kept1}건, 1차 서명 ${m.s1 ? '완료' : '전'}</p>
+      <h4 class="hm">분석 소견</h4>${quote(S.reply.note)}</div>
+    <div class="gp"><h3 class="sub3">2차 분석 결과</h3>
+      <p class="who">${m.p2 ? `측정 ${m.meas}/5, 그래프 ${m.graph ? '완성' : '미완성'}, 이온 모형 ${m.model}/5, 재확인 뒤 기록 유지 ${m.kept2}건` : '아직 2차 분석을 시작하지 않았어요.'}</p>
+      <h4 class="hm">액성 변화</h4>${quote(c.change)}</div>
+    <div class="gp"><h3 class="sub3">과학적 원리 설명 및 생활 속 적용</h3>
+      ${C3.map((t, k) => `<button type="button" class="check" role="checkbox" aria-checked="${!!g.c3[k]}" data-act="tc3" data-id="${id}" data-k="${k}"><span class="box"></span><span class="who-l">평가 내용 ${k + 1}</span><span>${t}</span></button>`).join('')}
+      <h4 class="hm">중화 반응의 원리</h4><p class="kws">${kws(c.why)}</p>${quote(c.why)}
+      <h4 class="hm">생활 속 중화 반응</h4>${quote(ex)}</div>
+    <div class="gp"><h3 class="sub3">보고서 구성과 발표 및 역할 수행</h3>
+      <h4 class="hm">상황 종료 브리핑</h4>${quote(c.brief)}
+      <h4 class="hm">개인별 등급</h4>
+      <p class="who">위에서 정한 팀 등급이 기본이에요. 역할 수행이 달랐던 학생만 바꿔요.</p>
+      ${memberIdx().map(i => { const pv = g.per && g.per[i], eff = pv || g.i4;
+        return `<div class="prow"><span class="pn">${esc(nm(i))}</span><span class="pr">1차 ${roleOf(i, 1)}, 2차 ${m.p2 ? roleOf(i, 2) : '-'}</span>
+          <span class="gbtns">${'ABCD'.split('').map(x => `<button type="button" class="gb sm" data-act="tp" data-id="${id}" data-i="${i}" data-v="${x}" aria-pressed="${eff === x}" aria-label="${esc(nm(i))} ${x}">${x}</button>`).join('')}</span>
+          ${pv ? `<button type="button" class="linkbtn" data-act="tp" data-id="${id}" data-i="${i}" data-v="">팀 등급으로 되돌리기</button>` : ''}</div>`; }).join('')}
+    </div>
+    <div class="flag-act"><button type="button" class="secondary sm" data-act="tdetail" data-id="${id}">보고서 전체 보기</button></div>
+  </div>`;
+}
+function viewTeamDetail(d){
+  return withTeam(d, () => `<main><section class="report">
+    <div class="flag-act" style="margin:0 0 14px"><button type="button" class="secondary sm" data-act="tback">목록으로</button><button type="button" class="ghost sm" data-act="tdelask" data-id="${esc(S.id)}">이 기록 지우기</button></div>
+    <div class="rep-head"><h1 class="st">${esc(S.team.cls)}반 ${esc(S.team.grp)}조 대응 기록</h1><span class="who" style="margin:0">마지막 기록 ${esc(whenStr(S.updated))}, ${esc(stageName(S.stage))} 단계</span></div>
+    ${finalBody({ key:true })}
+  </section></main>`);
+}
+function softRender(){
+  const a = document.activeElement;
+  if(a && a !== document.body && a.matches && a.matches('input, textarea, select')){ ui.pendingRender = true; refreshSync(); return; }
+  render();
+}
+
+/* ───────── 렌더 & 이동 ───────── */
+function render(){
+  const app = $('#app');
+  if(ui.view === 'teacher'){ app.innerHTML = viewTeacher(); renderModal(); return; }
+  if(ui.view !== 'game' || !S){ app.innerHTML = viewTitle(); renderModal(); return; }
+  app.innerHTML = viewHeader() + `<main>${VIEWS[S.stage]()}</main>`;
+  ui.pop = null; ui.stamp = null; ui.mpop = null;
+  const nav = document.querySelector('.steps'), cur = nav && nav.querySelector('[aria-current]');
+  if(nav && cur) nav.scrollLeft = cur.offsetLeft - nav.clientWidth / 2 + cur.offsetWidth / 2;
+  renderModal();
+  const behavior = reduceMotion ? 'auto' : 'smooth';
+  if(ui.scrollTo != null){
+    const el = document.getElementById('tag-' + ui.scrollTo);
+    if(el) el.scrollIntoView({ block:'center', behavior });
+    ui.scrollTo = null;
+  }
+  if(ui.scrollSel){
+    const el = document.querySelector(ui.scrollSel);
+    if(el) el.scrollIntoView({ block:'start', behavior });
+    ui.scrollSel = null;
+  }
+}
+function setStage(st, focus = null){
+  S.stage = st;
+  S.furthest = Math.max(S.furthest, sIdx(st));
+  ui.focus = focus; ui.scrollTo = focus; ui.tried = {}; ui.msel = null; ui.mmsg = '';
+  if(st === 'model'){ const nx = IDX5.find(k => !modelOk(k)); ui.mb = nx ?? 0; }
+  save(); render();
+  if(focus == null) window.scrollTo(0, 0);
+}
+function go(st){
+  const i = sIdx(st);
+  if(i < 0 || i > S.furthest + 1) return;
+  if(i >= sIdx('judge') && runCheck().length){ openFlags(1, () => go(st)); return; }
+  if(i > sIdx('m2') && runCheck2().length){ openFlags(2, () => go(st)); return; }
+  setStage(st);
+}
+function next(){
+  switch(S.stage){
+    case 'team': if(!teamIssues().length) go('roles'); break;
+    case 'roles': if(!roleIssues().length) go('case'); break;
+    case 'case': go('check'); break;
+    case 'judge': SAMPLES.forEach(syncJudge); if(SAMPLES.every(s => S.judge[s].ok)) go('reply'); break;
+  }
+}
+function afterTest(i){
+  const idx = sIdx('t'+i);
+  go(S.furthest > idx ? STAGES[S.furthest] : STAGES[idx+1]);
+}
+function testNext(){
+  const i = Number(S.stage.slice(1));
+  if(!testDone(i)) return;
+  const open = runCheck();
+  if(open.length){ openFlags(1, () => afterTest(i)); return; }
+  afterTest(i);
+}
+function setRec(s, f, v){
+  S.rec[s][f] = f === 'btb' ? v : Number(v);
+  ui.pop = { s, row:ROW_OF[f] };
+  if(ui.focus === s) ui.focus = null;
+  syncJudge(s); unsign1(); save(); render();
+}
+function wellNav(s, r){
+  const target = r === 0 ? 't0' : r === 1 ? 't1' : r === 3 ? 't4' : (S.stage === 't3' ? 't3' : 't2');
+  if(sIdx(target) > S.furthest) return;
+  if(S.stage === target){ ui.focus = s; ui.scrollTo = s; render(); }
+  else setStage(target, s);
+}
+function startNew(){
+  S = fresh(); ui.view = 'game'; ui.tried = {}; ui.focus = null; ui.gsel = null;
+  setStage('team');
+}
+function openSlot(id){
+  const d = loadSlot(id);
+  if(!d) return;
+  S = d; ui.view = 'game'; ui.modal = null; ui.focus = null; ui.gsel = null; ui.msel = null; ui.mmsg = '';
+  if(S.stage === 'model'){ const nx = IDX5.find(k => !modelOk(k)); ui.mb = nx ?? 0; }
+  render(); window.scrollTo(0, 0);
+}
+
+/* ───────── 부분 갱신 (입력 중 포커스 유지) ───────── */
+function refresh(){
+  switch(S.stage){
+    case 'team': {
+      const iss = teamIssues(), dup = dupNote();
+      $('#team-hint').innerHTML = iss.map(x => `<li>${x}</li>`).join('') + (dup ? `<li>${esc(dup)}</li>` : '');
+      $('#next').disabled = iss.length > 0;
+      const cn = $('#caseno'); if(cn) cn.textContent = caseNo();
+      break;
+    }
+    case 'reply': {
+      const iss = replyIssues();
+      $('#note-count').textContent = `${S.reply.note.trim().length}자`;
+      $('#missing').innerHTML = iss.map(x => `<li>${esc(x)}</li>`).join('');
+      $('#sign').disabled = iss.length > 0;
+      break;
+    }
+    case 'prep2': {
+      $('#viz').innerHTML = beakersSVG({});
+      IDX5.forEach(i => { $('#sum-' + i).textContent = sumText(i); });
+      $('#t0err').textContent = tErr(S.r2.t0a) || tErr(S.r2.t0b);
+      $('#prep-warn').innerHTML = prepWarn().map(x => `<li class="note">${esc(x)}</li>`).join('');
+      const iss = prepIssues();
+      $('#prep-hint').innerHTML = iss.map(x => `<li>${esc(x)}</li>`).join('');
+      $('#start2').disabled = iss.length > 0;
+      break;
+    }
+    case 'm2': {
+      $('#viz').innerHTML = beakersSVG({ interactive:true });
+      IDX5.forEach(i => { $('#terr-' + i).textContent = tErr(S.r2.data[i].t); $('#ok-' + i).textContent = rowDone(i) ? '기록됨' : ''; $('#tag-' + i).classList.toggle('on', rowDone(i)); });
+      const n = IDX5.filter(rowDone).length;
+      $('#m2prog').textContent = `${n}/5 기록`;
+      $('#m2next').disabled = n < 5;
+      break;
+    }
+    case 'reply2': {
+      const iss = issues2();
+      $('#missing2').innerHTML = iss.map(x => `<li>${esc(x)}</li>`).join('');
+      $('#sign2').disabled = iss.length > 0;
+      for(const f in TXT){ const e = $('#cnt-' + f); if(e) e.textContent = cntText(f); }
+      break;
+    }
+  }
+}
+
+/* ───────── 이벤트 ───────── */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if(!el || el.disabled) return;
+  const a = el.dataset.act, s = Number(el.dataset.s);
+  switch(a){
+    case 'scrim': if(e.target === el) closeModal(); break;
+    case 'close': closeModal(); break;
+    case 'home': ui.view = 'title'; ui.modal = null; save(); render(); window.scrollTo(0, 0); break;
+    case 'new': startNew(); break;
+    case 'open': openSlot(el.dataset.id); break;
+    case 'delask': {
+      const d = loadSlot(el.dataset.id);
+      ui.modal = { type:'del', id:el.dataset.id, label: d && d.team.cls && d.team.grp ? `${d.team.cls}반 ${d.team.grp}조` : '이' };
+      renderModal(); break;
+    }
+    case 'del': removeSlot(el.dataset.id); if(S && S.id === el.dataset.id) S = null; ui.modal = null; render(); break;
+    case 'exportTeam': exportTeam(); break;
+    case 'tgate': openGate(); break;
+    case 'pinok': pinSubmit(); break;
+    case 'thome': ui.view = 'title'; ui.tDetail = null; render(); window.scrollTo(0, 0); break;
+    case 'ttab': ui.tTab = el.dataset.v; ui.tDetail = null; render(); break;
+    case 'tcls': ui.tCls = el.dataset.v || null; render(); break;
+    case 'tdetail': ui.tDetail = el.dataset.id; render(); window.scrollTo(0, 0); break;
+    case 'tback': ui.tDetail = null; render(); window.scrollTo(0, 0); break;
+    case 'topen': ui.tOpen = ui.tOpen === el.dataset.id ? null : el.dataset.id; render(); break;
+    case 'tdelask': {
+      const d = allTeams().find(x => x.id === el.dataset.id);
+      ui.modal = { type:'tdel', id:el.dataset.id, label: d ? `${d.team.cls}반 ${d.team.grp}조` : '이' }; renderModal(); break;
+    }
+    case 'tdel': deleteTeam(el.dataset.id); break;
+    case 'tkey': { const k = Number(el.dataset.s); TS.key[k] = TS.key[k] === el.dataset.v ? null : el.dataset.v; tSave(); render(); break; }
+    case 'tg': { const g = gradeOf(el.dataset.id), n = el.dataset.n; g['i' + n] = g['i' + n] === el.dataset.v && !el.classList.contains('sugg') ? null : el.dataset.v; tSave(); render(); break; }
+    case 'tc3': { const g = gradeOf(el.dataset.id), k = Number(el.dataset.k); g.c3[k] = !g.c3[k]; g.c3set = true; tSave(); render(); break; }
+    case 'tp': {
+      const g = gradeOf(el.dataset.id), i = el.dataset.i, v = el.dataset.v;
+      if(!g.per) g.per = {};
+      if(!v || v === g.i4) delete g.per[i]; else g.per[i] = v;
+      tSave(); render(); break;
+    }
+    case 'csv': exportCSV(); break;
+    case 'csvcopy': {
+      const box = document.getElementById('csvbox');
+      const fallback = () => { if(box){ box.focus(); box.select(); } showToast('선택된 내용을 복사하세요.'); };
+      try{ navigator.clipboard.writeText(box ? box.value : '').then(() => showToast('복사했어요.'), fallback); }catch(e){ fallback(); }
+      break;
+    }
+    case 'go': go(el.dataset.stage); break;
+    case 'next': next(); break;
+    case 'role': {
+      const i = Number(el.dataset.i), rid = el.dataset.role;
+      for(const k in S.roles) if(S.roles[k] === i) S.roles[k] = null;
+      S.roles[rid] = i; save(); render(); break;
+    }
+    case 'role2': {
+      const i = Number(el.dataset.i), rid = el.dataset.role;
+      for(const k in S.r2.roles) if(S.r2.roles[k] === i) S.r2.roles[k] = null;
+      S.r2.roles[rid] = i; save(); render(); break;
+    }
+    case 'chk': { const i = Number(el.dataset.i); S.checks[i] = !S.checks[i]; save(); render(); break; }
+    case 'chk2': { const i = Number(el.dataset.i); S.r2.checks[i] = !S.r2.checks[i]; save(); render(); break; }
+    case 'start':
+      if(!S.checks.every(Boolean)) break;
+      if(!S.startAt) S.startAt = Date.now();
+      go(S.furthest > sIdx('t0') ? STAGES[S.furthest] : 't0'); break;
+    case 'start2':
+      if(prepIssues().length) break;
+      if(!S.r2.startAt) S.r2.startAt = Date.now();
+      go(S.furthest > sIdx('m2') ? STAGES[S.furthest] : 'm2'); break;
+    case 'set': setRec(s, el.dataset.f, el.dataset.v); break;
+    case 'phsheet': ui.modal = { type:'ph', s }; renderModal(); break;
+    case 'setph': ui.modal = null; setRec(s, 'ph', el.dataset.v); break;
+    case 'testnext': testNext(); break;
+    case 'well': wellNav(s, Number(el.dataset.r)); break;
+    case 'keep': { ui.keepId = el.dataset.id; ui.keepTxt = ''; ui.keepErr = ''; renderModal(); const k = document.getElementById('kw'); if(k) k.focus(); break; }
+    case 'keepcancel': { ui.keepId = null; ui.keepErr = ''; renderModal(); break; }
+    case 'keepok': {
+      const ph = (ui.modal && ui.modal.ph) || 1, arr = ph === 2 ? S.r2.flags : S.flags;
+      const f = arr.find(x => x.id === el.dataset.id);
+      const k = document.getElementById('kw'), why = k ? k.value.trim() : '';
+      if(why.length < 5){ ui.keepTxt = why; ui.keepErr = '다시 확인한 내용을 5자 이상 적어요.'; renderModal(); const k2 = document.getElementById('kw'); if(k2) k2.focus(); break; }
+      ui.keepId = null; ui.keepErr = '';
+      if(f){ f.st = 'kept'; f.done = Date.now(); f.why = why; }
+      save();
+      if(!arr.some(x => x.st === 'open')){ const p = ui.pending; ui.modal = null; ui.pending = null; renderModal(); if(p) p(); }
+      else renderModal();
+      break;
+    }
+    case 'remeasure': {
+      const i = TESTS.findIndex(t => t.id === el.dataset.t);
+      ui.modal = null; ui.pending = null; renderModal();
+      setStage('t'+i, s); break;
+    }
+    case 'remeasure2': {
+      const i = el.dataset.i === '' ? null : Number(el.dataset.i);
+      ui.modal = null; ui.pending = null; renderModal();
+      setStage(el.dataset.target, i); break;
+    }
+    case 'jliq': { const j = S.judge[s]; j.liq = el.dataset.v; j.ok = false; unsign1(); save(); render(); break; }
+    case 'jchip': {
+      const j = S.judge[s], id = el.dataset.id;
+      j.chips = j.chips.includes(id) ? j.chips.filter(x => x !== id) : [...j.chips, id];
+      j.ok = false; unsign1(); save(); render(); break;
+    }
+    case 'jok': {
+      ui.tried[s] = true;
+      const j = S.judge[s];
+      if(!judgeMsgs(s).errors.length){ j.ok = true; j.sig = recSig(s); ui.stamp = s; }
+      save(); render(); break;
+    }
+    case 'mix': S.reply.mix[s] = el.dataset.v; unsign1(); save(); render(); break;
+    case 'sus': {
+      const l = S.reply.sus;
+      S.reply.sus = l.includes(s) ? l.filter(x => x !== s) : [...l, s];
+      S.reply.none = false; unsign1(); save(); render(); break;
+    }
+    case 'susnone': S.reply.none = !S.reply.none; if(S.reply.none) S.reply.sus = []; unsign1(); save(); render(); break;
+    case 'sign':
+      if(replyIssues().length) break;
+      S.reply.signed = true; S.endAt = Date.now(); save(); go('report'); break;
+    case 'to2': go(S.furthest >= P2 ? STAGES[S.furthest] : 'case2'); break;
+
+    case 'tstep': {
+      const i = Number(el.dataset.i), d = S.r2.data[i], I = initT(i);
+      const base = tval(d.t) ?? (I != null ? r1(I) : 25);
+      d.t = clamp(r1(base + 0.1 * Number(el.dataset.d)), 0, 60).toFixed(1);
+      unsign2(); save(); render(); break;
+    }
+    case 'bcol': { const i = Number(el.dataset.i); S.r2.data[i].color = el.dataset.v; unsign2(); save(); render(); break; }
+    case 'bk': { const i = Number(el.dataset.i); ui.focus = i; ui.scrollTo = i; render(); break; }
+    case 'm2next': if(IDX5.every(rowDone)) go(S.furthest > sIdx('m2') ? STAGES[S.furthest] : 'g2'); break;
+    case 'gcol': {
+      const i = Number(el.dataset.i), [lo, hi] = tRange();
+      let t;
+      if(ui.kbd || (!e.clientX && !e.clientY)) t = S.r2.plot[i] ?? (lo + hi) / 2;
+      else {
+        const svg = el.ownerSVGElement, pt = svg.createSVGPoint();
+        pt.x = e.clientX; pt.y = e.clientY;
+        const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+        t = lo + (G.B - p.y) / (G.B - G.T) * (hi - lo);
+      }
+      S.r2.plot[i] = clamp(r1(t), lo, hi); ui.gsel = i; unsign2(); save(); render(); break;
+    }
+    case 'gsel': ui.gsel = Number(el.dataset.i); render(); break;
+    case 'gstep': {
+      const i = ui.gsel; if(i == null) break;
+      const [lo, hi] = tRange(), base = S.r2.plot[i] ?? r1((lo + hi) / 2);
+      S.r2.plot[i] = clamp(r1(base + 0.1 * Number(el.dataset.d)), lo, hi);
+      unsign2(); save(); render(); break;
+    }
+    case 'peak': S.r2.peak = Number(el.dataset.i); unsign2(); save(); render(); break;
+    case 'mb': ui.mb = Number(el.dataset.i); ui.msel = null; ui.mmsg = ''; render(); break;
+    case 'ion': {
+      const b = Number(el.dataset.b), k = el.dataset.k, x = Number(el.dataset.x), m = mstate(b);
+      if(!m || m.st.done) break;
+      const sel = ui.msel;
+      ui.mmsg = '';
+      if(!sel || sel.b !== b) ui.msel = { b, k, x };
+      else if(sel.k === k && sel.x === x) ui.msel = null;
+      else if(sel.k === k) ui.msel = { b, k, x };
+      else if((sel.k === 'h' && k === 'o') || (sel.k === 'o' && k === 'h')){
+        const h = sel.k === 'h' ? sel.x : x, o = sel.k === 'o' ? sel.x : x;
+        m.st.pairs.push([h, o]); ui.msel = null; ui.mpop = { b, h }; unsign2(); save();
+      } else {
+        ui.mmsg = `${ION[sel.k].name}과 ${ION[k].name}은 만나도 물 분자가 되지 않아요.`;
+        ui.msel = null;
+      }
+      render(); break;
+    }
+    case 'mdone': {
+      const m = mstate(ui.mb);
+      if(m.h > 0 && m.o > 0) ui.mmsg = '아직 짝을 지어 물 분자가 될 수 있는 이온이 남아 있어요.';
+      else { m.st.done = true; ui.mmsg = ''; ui.msel = null; unsign2(); save(); }
+      render(); break;
+    }
+    case 'mreset': {
+      const m = mstate(ui.mb);
+      Object.assign(m.st, { pairs:[], done:false, liq:null });
+      ui.msel = null; ui.mmsg = ''; unsign2(); save(); render(); break;
+    }
+    case 'mliq': { const m = mstate(ui.mb); m.st.liq = el.dataset.v; unsign2(); save(); render(); break; }
+    case 'mnext': {
+      const nx = IDX5.find(k => !modelOk(k));
+      if(nx != null){ ui.mb = nx; ui.msel = null; ui.mmsg = ''; ui.scrollSel = '.mtabs'; }
+      render(); break;
+    }
+    case 'pick': S.r2.concl.pick = Number(el.dataset.i); unsign2(); save(); render(); break;
+    case 'sign2':
+      if(issues2().length) break;
+      S.r2.concl.signed = true; S.r2.endAt = Date.now(); save(); go('final'); break;
+  }
+});
+
+function onInput(e){
+  const el = e.target, k = el.dataset && el.dataset.in;
+  if(k === 'tkname'){ TS.names[Number(el.dataset.s)] = el.value; tSave(); return; }
+  if(!k || !S || ui.view !== 'game') return;
+  const i = Number(el.dataset.i);
+  if(k === 'cls' || k === 'grp') S.team[k] = el.value;
+  else if(/^m\d$/.test(k)) S.team.m[Number(k.slice(1))] = el.value;
+  else if(k === 'note'){ S.reply.note = el.value; unsign1(); }
+  else if(k === 'cv'){
+    const v = el.value.replace(/\D/g, '').slice(0, 3);
+    if(v !== el.value) el.value = v;
+    S.r2.cond[i][el.dataset.side] = v; unsign2();
+  } else if(k === 't0' || k === 't'){
+    const v = cleanT(el.value);
+    if(v !== el.value) el.value = v;
+    if(k === 't0') S.r2[el.dataset.k] = v; else S.r2.data[i].t = v;
+    unsign2();
+  } else if(k === 'c2'){ S.r2.concl[el.dataset.f] = el.value; unsign2(); }
+  save();
+  refresh();
+}
+document.addEventListener('input', onInput);
+document.addEventListener('change', onInput);
+
+document.addEventListener('change', e => {
+  if(e.target && e.target.id === 'imp' && e.target.files && e.target.files.length){ importFiles([...e.target.files]); e.target.value = ''; }
+});
+document.addEventListener('focusout', () => {
+  if(!ui.pendingRender) return;
+  ui.pendingRender = false;
+  setTimeout(softRender, 0);
+});
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') pushNow(); });
+window.addEventListener('pagehide', () => pushNow());
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && ui.modal){ closeModal(); return; }
+  if(e.key === 'Enter' && e.target && (e.target.id === 'pin1' || e.target.id === 'pin2')){ e.preventDefault(); pinSubmit(); return; }
+  const t = e.target;
+  if((e.key === 'Enter' || e.key === ' ') && t instanceof SVGElement && t.getAttribute('role') === 'button'){
+    e.preventDefault();
+    ui.kbd = true;
+    t.dispatchEvent(new MouseEvent('click', { bubbles:true }));
+    ui.kbd = false;
+  }
+});
+
+let tick = 0;
+setInterval(() => {
+  if(ui.view === 'teacher' && ++tick % 30 === 0 && !ui.modal) softRender();
+  const t = document.getElementById('timer');
+  if(!t || !S || ui.view !== 'game') return;
+  const p2 = ph2(), st = p2 ? S.r2.startAt : S.startAt, en = p2 ? S.r2.endAt : S.endAt;
+  if(st) t.textContent = fmt((en || Date.now()) - st);
+}, 1000);
+
+migrate();
+render();
+cloud.ready = initCaps();
+})();
+</script>
+</body>
+</html>
