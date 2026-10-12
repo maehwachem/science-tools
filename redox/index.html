@@ -336,6 +336,12 @@ details > summary{cursor:pointer;font-size:13.5px;color:var(--ink-2);padding-blo
       </figure>
     </div>
     <form id="startForm" class="start-form" novalidate>
+      <div id="lastBox" class="panel resume" hidden>
+        <span class="lbl">이 기기에서 방금 마친 실험</span>
+        <p class="small" id="lastTx"></p>
+        <div class="tools"><button type="button" id="lastCopy" class="btn">제출용 기록 다시 복사</button><button type="button" id="lastDrop" class="btn ghost">지우기</button></div>
+        <textarea id="lastCopyBox" class="copybox" hidden readonly aria-label="복사할 기록"></textarea>
+      </div>
       <div id="resume" class="panel resume" hidden>
         <span class="lbl">진행 중이던 실험</span>
         <p class="small" id="resumeTx"></p>
@@ -1933,7 +1939,7 @@ function finish(){
   const WL=liveWaste();
   for(const w of WL){const c=S.wch[w.uid];if(!c)bad('waste-left',`폐액을 처리하지 않음: ${w.desc}`);else if(c!==w.kind)bad('waste-wrong',`폐액을 잘못 버림: ${w.desc} → ${WASTE.find(x=>x[0]===c)[1]}`);}
   log('act','실험을 마침');S.finished=true;
-  const rec=buildRec(WL);RECS.push(rec);const ok=persist();LAST=rec;if(ok)clearSave();
+  const rec=buildRec(WL);RECS=RECS.filter(x=>x.src!=='local');RECS.push(rec);const ok=persist();LAST=rec;if(ok)clearSave();
   renderDone(rec,ok);show('done');
 }
 
@@ -1942,7 +1948,8 @@ function show(w){
   const M={start:'#scrStart',lab:'#scrLab',done:'#scrDone',lock:'#scrLock',teacher:'#scrTeacher'};
   for(const k in M)$(M[k]).hidden=k!==w;
   $('#ppeBar').hidden=w!=='lab';$('#roleBar').hidden=w!=='lab'||!(S&&S.group);$('#brief').hidden=w!=='lab';$('#guideBar').hidden=w!=='lab';$('#brief').open=true;$('#clock').hidden=w!=='lab';
-  const tb=$('#btnTeacher');tb.hidden=w==='lab';tb.textContent=(w==='lock'||w==='teacher')?'돌아가기':'교사 보기';
+  const tb=$('#btnTeacher');tb.hidden=w==='lab'||!TROUTE;  // 교사 화면은 #teacher 주소로 연 기기에서만
+  if(w==='start'){try{renderLast();}catch(e){}}tb.textContent=(w==='lock'||w==='teacher')?'돌아가기':'교사 보기';
   if(w==='start'||w==='lock'||w==='teacher')$('#hdrSub').textContent='전기화학 실험대 · 화학 전지 · 전기분해 · 연료 전지';
   window.scrollTo(0,0);
 }
@@ -1990,6 +1997,7 @@ function renderWasteMaybe(){const s=liveWaste().map(w=>w.uid+w.desc).join(',');i
 /* ---------- saved records, submission ---------- */
 /* 교사 PIN: 기기마다 처음 연 사람이 정하고, 해시만 이 기기에 남긴다. 소스에는 코드가 없다. */
 const PIN_KEY='vlab-redox-pin';
+const TROUTE=(location.hash||'').slice(1).split('.').includes('teacher');
 async function hashPin(p){const txt='vlab-redox:'+p;try{const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt));return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');}catch(e){let h=0;for(const ch of txt)h=(h*31+ch.charCodeAt(0))|0;return 'x'+(h>>>0).toString(16);}}
 function getPin(){try{return localStorage.getItem(PIN_KEY);}catch(e){return null;}}
 function setPin(h){try{localStorage.setItem(PIN_KEY,h);return true;}catch(e){return false;}}
@@ -1997,6 +2005,17 @@ const RKEY='vlab-redox-records-v1';
 let RECS=[],LAST=null,UNLOCKED=false,TF='all';
 try{const v=JSON.parse(localStorage.getItem(RKEY)||'[]');if(Array.isArray(v))RECS=v;}catch(e){RECS=[];}
 function persist(){try{localStorage.setItem(RKEY,JSON.stringify(RECS.slice(-200)));return true;}catch(e){return false;}}
+/* 학생 기기에는 이 기기에서 마친 기록을 하나만, 잠깐 남긴다 (제출용 기록을 다시 복사할 수 있게).
+   다음 실험을 시작하거나 3시간이 지나면 지운다. 교사 화면에 쌓이는 것은 불러온 제출 기록뿐이다. */
+const LOCAL_TTL=3*3600*1000;
+function dropLocal(){const n=RECS.length;RECS=RECS.filter(r=>r.src!=='local');if(RECS.length!==n)persist();}
+(()=>{const loc=RECS.filter(r=>r.src==='local'&&Date.now()-Date.parse(r.at)<LOCAL_TTL).slice(-1),keep=RECS.filter(r=>r.src!=='local').concat(loc);if(keep.length!==RECS.length){RECS=keep;persist();}})();
+function lastLocal(){return RECS.filter(r=>r.src==='local').slice(-1)[0]||null;}
+function renderLast(){
+  const r=lastLocal();$('#lastBox').hidden=!r;$('#lastCopyBox').hidden=true;if(!r)return;
+  const d=new Date(r.at),hm=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  $('#lastTx').textContent=`${r.name} · ${ROOMS[r.room]?ROOMS[r.room].nm:''} · ${r.mode==='exam'?'평가':'연습'} · ${hm}에 마침. 다음 실험을 시작하거나 3시간이 지나면 지워져요.`;
+}
 /* 제출 코드: 학생 화면에는 분석을 보여 주지 않고, 교사 화면에서 불러올 때만 풀어 본다 (가벼운 가림 처리) */
 const XK='vlab-redox-2026';
 function encodeRec(r){const bytes=new TextEncoder().encode(JSON.stringify(r));let s='';bytes.forEach((b,i)=>{s+=String.fromCharCode(b^XK.charCodeAt(i%XK.length));});return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
@@ -2184,7 +2203,7 @@ function linkHash(){const rm=$('#lkRoom').value;$('#lkSampleW').hidden=rm!=='tit
 function linkFull(h){return FRAMED?h:location.origin+location.pathname+h;}
 function renderLink(){
   const h=linkHash();$('#lkBox').hidden=true;
-  if(!h){$('#lkOut').textContent='지금은 학생이 실험실과 모드를 직접 고릅니다. 주소를 그대로 주면 됩니다.';$('#lkCopy').hidden=true;return;}
+  if(!h){if(FRAMED)$('#lkOut').textContent='지금은 학생이 실험실과 모드를 직접 고릅니다. 공유 링크를 그대로 주면 됩니다.';else $('#lkOut').innerHTML=`지금은 학생이 실험실과 모드를 직접 고릅니다. 학생용 주소: <span class="mono" style="word-break:break-all">${esc(location.origin+location.pathname)}</span> (끝에 #teacher가 없는 주소)`;$('#lkCopy').hidden=true;return;}
   $('#lkCopy').hidden=false;
   $('#lkOut').innerHTML=FRAMED?`공유 링크 끝에 이 표시를 붙여 학생에게 주세요: <b class="mono">${esc(h)}</b>`:`학생용 주소: <span class="mono" style="word-break:break-all">${esc(linkFull(h))}</span>`;
 }
@@ -2200,7 +2219,7 @@ let lockMode='enter';
 function openLock(){
   lockMode=getPin()?'enter':'set';const set=lockMode==='set';
   $('#lockTitle').textContent=set?'교사 PIN을 정하세요':'교사 PIN을 입력하세요';
-  $('#lockLead').textContent=set?'이 기기에서 교사 화면을 처음 열었어요. 숫자 4~6자리를 정하면 다음부터 이 PIN으로 열어요. 학생 기기나 공용 기기는 수업 전에 선생님이 미리 정해 두세요.':'학생 기록과 정답, 분석 결과는 교사 PIN으로만 열 수 있어요.';
+  $('#lockLead').textContent=set?'이 기기에서 교사 화면을 처음 열었어요. 숫자 4~6자리를 정하면 다음부터 이 PIN으로 열어요. 교사 화면은 선생님 기기에서만 쓰세요.':'학생 기록과 정답, 분석 결과는 교사 PIN으로만 열 수 있어요.';
   $('#lockRow2').hidden=!set;$('#lockGo').textContent=set?'정하고 열기':'열기';$('#lockForgotRow').hidden=set;
   const f=$('#lockForgot');delete f.dataset.armed;f.textContent='PIN을 잊었어요';$('#lockForgotTx').hidden=true;
   $('#lockCode').value='';$('#lockCode2').value='';$('#lockMsg').textContent='';
@@ -2329,11 +2348,15 @@ $('#startForm').addEventListener('submit',e=>{
   $('#stErr').hidden=true;
   let grp=null;
   if($('#tmG').checked&&rv('mode')!=='exam'){grp=readGroup();if(grp.err){$('#grpErr').textContent=grp.err;$('#grpErr').hidden=false;return;}}
-  $('#grpErr').hidden=true;
+  $('#grpErr').hidden=true;dropLocal();$('#lastBox').hidden=true;
   startLab(rv('room'),rv('mode'),name,grp);
 });
 $('#btnAgain').onclick=()=>{S=null;show('start');showResume();};
 bind();bindTeacher();applyFix();syncStart();showResume();
+$('#lastCopy').onclick=()=>{const r=lastLocal();if(!r)return;okMsg='복사했어요. 웨일 클래스 과제에 붙여 넣으세요.';copyText(studentText(r),'#lastCopyBox');};
+$('#lastDrop').onclick=()=>{dropLocal();renderLast();toast('이 기기에 남은 기록을 지웠어요.');};
+renderLast();$('#btnTeacher').hidden=!TROUTE;
+if(TROUTE)openLock();
 requestAnimationFrame(frame);
 })();
 </script>
