@@ -109,7 +109,7 @@ body:not(.view) .view-only{display:none!important}
       <button type="button" data-lay="path" aria-pressed="false">산책길</button>
     </div>
     <p class="note" id="layNote"></p>
-    <label class="gap">간격 <input type="range" id="gap" min="0.8" max="2.5" step="0.1" value="1.3" aria-label="전시대 사이 간격"><span id="gapVal">1.3 m</span></label>
+    <label class="gap">간격 <input type="range" id="gap" min="0.8" max="2.5" step="0.1" value="1" aria-label="전시대 사이 간격"><span id="gapVal">1.0 m</span></label>
   </section>
 
   <section class="panel" aria-labelledby="h-view" id="secView">
@@ -125,7 +125,7 @@ body:not(.view) .view-only{display:none!important}
       <li>전시대는 실제 크기(판 위쪽 높이 약 1.8 m)예요. 걸어서 다가가 읽어 보세요.</li>
     </ol>
     <p class="note view-only">나도 전시를 만들어 보려면 <a href="exhibit.html">AR 전시관 편집기</a>를 여세요.</p>
-    <p class="note">아이폰은 사파리, 안드로이드는 크롬(ARCore 지원 기기)에서 돼요. <span id="ver">버전 2026-10-13 · 3판</span> 아이폰은 AR 화면의 셔터로 사진도 찍을 수 있어요.</p>
+    <p class="note">아이폰은 사파리, 안드로이드는 크롬(ARCore 지원 기기)에서 돼요. <span id="ver">버전 2026-10-13 · 4판</span> 아이폰은 AR 화면의 셔터로 사진도 찍을 수 있어요.</p>
   </section>
 
   <section class="panel edit-only" aria-labelledby="h-file">
@@ -194,7 +194,7 @@ const $=s=>document.querySelector(s);
 const MAX_ITEMS=30;
 
 /* ---------- 저장 (IndexedDB) ---------- */
-let E={title:'',intro:'',layout:'ring',gap:1.3,items:[]};
+let E={title:'',intro:'',layout:'ring',gap:1.0,items:[]};
 function db(){return new Promise((ok,no)=>{const r=indexedDB.open('ar-exhibit',1);r.onupgradeneeded=()=>r.result.createObjectStore('e');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});}
 async function dbDo(mode,fn){const d=await db();return new Promise((ok,no)=>{const t=d.transaction('e',mode),q=fn(t.objectStore('e'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error);});}
 const VIEW=new URLSearchParams(location.search).get('ex');
@@ -386,7 +386,7 @@ function stand(canvas,w,h,cy){   // 앞뒤 모두 바로 읽히는 전시대
 function layout(n,gap,kind){   // 반환: [{x,z,ry}] 전시물 n개 + 제목판. 보는 사람은 +z 쪽에서 -z를 바라봄
   const P=[];let T;
   if(kind==='ring'){
-    const span=Math.PI*2*300/360,r=Math.max(1.3,(n*gap)/span);
+    const span=Math.PI*2*300/360,r=Math.max(1.0,(n*gap)/span);
     for(let i=0;i<n;i++){const a=Math.PI/2+Math.PI*30/180+span*(n===1?0.5:i/(n-1));   // 입구(+z)를 비워 둠
       const x=r*Math.cos(a),z=r*Math.sin(a);P.push({x,z,ry:Math.atan2(-x,-z)});}
     T={x:0,z:r+0.6,ry:0};
@@ -456,18 +456,41 @@ async function startXR(){
   const say=t=>{msg.textContent=t;};say('휴대폰을 천천히 좌우로 움직여 바닥을 비춰 주세요.');
   const viewer=await session.requestReferenceSpace('viewer');
   const hts=await session.requestHitTestSource({space:viewer});
-  let placed=false,seen=false,lastHit=null,anchor=null,yaw=0;const t0=performance.now();const up=new THREE.Vector3(),pos=new THREE.Vector3(),q=new THREE.Quaternion(),sc=new THREE.Vector3(),cp=new THREE.Vector3();
+  let placed=false,seen=false,lastHit=null,anchor=null,yaw=0,snaps=[],snapN=-1;const t0=performance.now();const up=new THREE.Vector3(),pos=new THREE.Vector3(),q=new THREE.Quaternion(),sc=new THREE.Vector3(),cp=new THREE.Vector3();
   function place(){
     if(placed||!ret.visible)return;
     ret.matrix.decompose(pos,q,sc);renderer.xr.getCamera().getWorldPosition(cp);
     yaw=Math.atan2(pos.x-cp.x,pos.z-cp.z)+Math.PI;   // 전시가 내 앞쪽으로 뻗게
     root.position.copy(pos);root.rotation.set(0,yaw,0);
-    anchor=null;if(lastHit&&lastHit.createAnchor)lastHit.createAnchor().then(a=>{if(placed)anchor=a;else a.delete&&a.delete();}).catch(()=>{});   // 바닥에 고정점을 박아 흔들리지 않게
+    anchor=null;try{if(lastHit&&lastHit.createAnchor)lastHit.createAnchor().then(a=>{if(placed)anchor=a;else a.delete&&a.delete();}).catch(()=>{});}catch(e){}   // 바닥에 고정점을 박아 흔들리지 않게
     root.visible=true;ret.visible=false;placed=true;$('#xrAgain').hidden=false;
-    say('전시가 놓였어요. 걸어서 다가가 보세요. 자리가 마음에 안 들면 ‘다시 놓기’를 눌러요.');}
+    say('전시가 놓였어요. 걸어서 다가가 보세요. 자리가 마음에 안 들면 ‘다시 놓기’를 눌러요.');
+    startSnaps();}
+  // 전시대마다 바로 아래 실제 바닥을 따로 찾아 높이를 맞춤 (먼 곳일수록 바닥 기울기 오차가 커지기 때문)
+  function stopSnaps(){for(const sn of snaps){try{sn.src&&sn.src.cancel();}catch(e){}sn.stand.position.y=0;}snaps=[];snapN=-1;}
+  function startSnaps(){
+    stopSnaps();root.updateMatrixWorld(true);const ref=renderer.xr.getReferenceSpace(),wp=new THREE.Vector3();
+    if(typeof XRRay==='undefined')return;
+    for(const st of ex.children){
+      st.getWorldPosition(wp);const sn={stand:st,src:null,y:null};snaps.push(sn);
+      try{session.requestHitTestSource({space:ref,offsetRay:new XRRay({x:wp.x,y:root.position.y+1.2,z:wp.z,w:1},{x:0,y:-1,z:0,w:0})}).then(src=>{if(snaps.includes(sn))sn.src=src;else src.cancel();}).catch(()=>{});}catch(e){}
+    }}
+  const hq=new THREE.Quaternion(),hm=new THREE.Matrix4();
+  function updateSnaps(frame){
+    const ref=renderer.xr.getReferenceSpace();let n=0;
+    for(const sn of snaps){
+      if(sn.src){for(const h of frame.getHitTestResults(sn.src)){const p=h.getPose(ref);if(!p)continue;
+        hm.fromArray(p.transform.matrix);up.set(0,1,0).applyQuaternion(hq.setFromRotationMatrix(hm));
+        const hy=p.transform.position.y;
+        if(up.y>0.9&&Math.abs(hy-root.position.y)<0.35){sn.y=sn.y==null?hy:sn.y*0.85+hy*0.15;break;}}}   // 탁자·의자처럼 높은 면은 건너뜀
+      if(sn.y!=null){sn.stand.position.y=sn.y-root.position.y;n++;}
+    }
+    if(n!==snapN&&snaps.length){snapN=n;
+      say(n===snaps.length?'모든 전시대를 실제 바닥에 맞췄어요. 걸어서 둘러보세요.':`전시대 ${n}/${snaps.length}개를 실제 바닥에 맞췄어요. 전시대 아래 바닥을 비추며 둘러보면 나머지도 맞춰져요.`);}
+  }
   session.addEventListener('select',place);
   ui.querySelectorAll('button').forEach(b=>b.addEventListener('beforexrselect',e=>e.preventDefault()));
-  $('#xrAgain').onclick=()=>{if(anchor&&anchor.delete)anchor.delete();anchor=null;placed=false;root.visible=false;$('#xrAgain').hidden=true;say('바닥의 초록 원이 전시를 시작할 자리예요. 원을 맞추고 화면을 눌러요.');};
+  $('#xrAgain').onclick=()=>{stopSnaps();if(anchor&&anchor.delete)anchor.delete();anchor=null;placed=false;root.visible=false;$('#xrAgain').hidden=true;say('바닥의 초록 원이 전시를 시작할 자리예요. 원을 맞추고 화면을 눌러요.');};
   $('#xrClose').onclick=()=>session.end();
   renderer.setAnimationLoop((t,frame)=>{
     if(frame&&!placed){
@@ -484,8 +507,9 @@ async function startXR(){
     }
     if(frame&&placed&&anchor){const p=frame.getPose(anchor.anchorSpace,renderer.xr.getReferenceSpace());
       if(p){const m=p.transform.position;root.position.set(m.x,m.y,m.z);}}   // 고정점이 다듬어지면 전시도 따라감
+    if(frame&&placed)updateSnaps(frame);
     renderer.render(scene,cam);});
-  session.addEventListener('end',()=>{renderer.setAnimationLoop(null);hts.cancel&&hts.cancel();renderer.dispose();renderer.domElement.remove();
+  session.addEventListener('end',()=>{stopSnaps();renderer.setAnimationLoop(null);hts.cancel&&hts.cancel();renderer.dispose();renderer.domElement.remove();
     ui.hidden=true;document.body.classList.remove('xr');$('#xrAgain').hidden=true;});
 }
 
