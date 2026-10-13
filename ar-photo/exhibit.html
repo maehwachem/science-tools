@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="사진·이름·설명으로 전시물을 만들고, 실제 공간에 펼쳐 걸어 다니며 보는 AR 전시관">
+<meta name="theme-color" content="#fbf7f2">
+<title>AR 전시관</title>
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js","three/addons/":"./vendor/three/"}}</script>
+<script type="module" src="vendor/model-viewer.min.js"></script>
+<style>
+:root{--bg:#fbf7f2;--ink:#2a2220;--sub:#5f5450;--mute:#8a7d78;--line:#e3d8cf;--accent:#1f7a55;--accent-ink:#fff;--card:#fff;
+  --font:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);word-break:keep-all;-webkit-text-size-adjust:100%}
+.in{max-width:720px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 16px 40px;display:flex;flex-direction:column;gap:18px}
+h1{margin:0;font-size:26px;letter-spacing:-.02em}
+h2{margin:0;font-size:18px}
+p{margin:0;line-height:1.6;color:var(--sub)}
+a{color:inherit}
+.note{font-size:13px;color:var(--mute)}
+.panel{border:1px solid #eadfd6;border-radius:16px;background:var(--card);padding:16px;display:flex;flex-direction:column;gap:12px}
+.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:11px 14px;min-height:46px;cursor:pointer;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:#b0262f}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>.btn{flex:1 1 140px}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:#3d3431}
+input[type=text],textarea{font:inherit;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;color:var(--ink);width:100%}
+textarea{min-height:76px;resize:vertical;line-height:1.5}
+.count{font-weight:400;color:var(--mute);font-size:12px}
+.seg{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.seg button{flex:1;font:inherit;font-weight:600;border:0;background:none;color:var(--sub);padding:10px 6px;min-height:44px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.gap{display:flex;align-items:center;gap:10px;font-size:14px}.gap input{flex:1;accent-color:var(--accent)}
+.items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.item{display:flex;gap:12px;align-items:center;border:1px solid #efe6de;border-radius:12px;padding:8px}
+.item img{width:64px;height:64px;object-fit:cover;border-radius:8px;flex:none;background:#eee}
+.item .t{flex:1;min-width:0}
+.item b{display:block;font-size:15px}
+.item small{display:block;color:var(--mute);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .acts{display:flex;gap:4px;flex:none}
+.ib{font:inherit;font-size:14px;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
+.ib:disabled{opacity:.3}
+.empty{border:1px dashed #d8ccc3;border-radius:12px;padding:18px;text-align:center;color:var(--mute);font-size:14px}
+model-viewer{width:100%;height:340px;border-radius:14px;background:linear-gradient(#eef3ee,#dfe8e0);--poster-color:transparent}
+.msg{font-size:14px;border-radius:10px;padding:10px 12px;margin:0;line-height:1.5}
+.msg.ok{background:#e7f6ee;color:#1d6b46}.msg.warn{background:#fff4e0;color:#8a5200}
+dialog{border:0;border-radius:18px;padding:0;width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 24px);background:#fff;color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.dlg{padding:16px;display:flex;flex-direction:column;gap:12px}
+.pick{display:flex;gap:12px;align-items:center}
+.pick img,.pick .ph{width:110px;height:110px;border-radius:12px;object-fit:cover;flex:none;background:#f1ebe5}
+.pick .ph{display:flex;align-items:center;justify-content:center;color:var(--mute);font-size:13px;text-align:center}
+.err{color:#b0262f;font-size:14px;margin:0}
+ol.steps{margin:0;padding-left:20px;line-height:1.7;color:#3d3431}
+#photoIn,#fileIn{display:none}
+</style>
+</head>
+<body>
+<main class="in">
+  <header style="display:flex;flex-direction:column;gap:8px">
+    <h1>AR 전시관</h1>
+    <p>사진과 이름, 설명으로 전시물을 만들면 실제 공간에 전시대가 세워져요. 걸어 다니며 다가가 읽고, 돌아서 볼 수 있어요. 아무것도 붙이거나 세우지 않으니 훼손하면 안 되는 곳에서도 전시할 수 있어요.</p>
+    <p class="note">사진은 이 휴대폰 안에만 저장되고 어디로도 보내지 않아요. 나눌 때는 ‘전시 파일’로 직접 건네요. <a href="./">AR 포토로 돌아가기</a></p>
+  </header>
+
+  <section class="panel" aria-labelledby="h-info">
+    <h2 id="h-info">전시 정보</h2>
+    <label class="f">전시 제목 <span class="count" id="titleCount"></span><input type="text" id="title" maxlength="30" placeholder="예: 우리 학교 주변의 동식물"></label>
+    <label class="f">소개 <span class="count" id="introCount"></span><textarea id="intro" maxlength="120" placeholder="예: 3학년 2반이 학교 둘레를 걸으며 만난 동식물을 모았어요."></textarea></label>
+  </section>
+
+  <section class="panel" aria-labelledby="h-items">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="h-items">전시물</h2><span class="note" id="itemCount"></span></div>
+    <ul class="items" id="items"></ul>
+    <div class="empty" id="empty">아직 전시물이 없어요. ‘전시물 추가’로 사진을 넣거나, 먼저 ‘예시로 해 보기’로 AR을 확인해 보세요.</div>
+    <div class="row">
+      <button type="button" class="btn primary" id="addBtn">전시물 추가</button>
+      <button type="button" class="btn" id="sampleBtn">예시로 해 보기</button>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-lay">
+    <h2 id="h-lay">배치</h2>
+    <div class="seg" role="group" aria-label="배치 방식">
+      <button type="button" data-lay="ring" aria-pressed="true">둥글게</button>
+      <button type="button" data-lay="hall" aria-pressed="false">복도 양쪽</button>
+      <button type="button" data-lay="path" aria-pressed="false">산책길</button>
+    </div>
+    <p class="note" id="layNote"></p>
+    <label class="gap">간격 <input type="range" id="gap" min="0.8" max="2.5" step="0.1" value="1.3" aria-label="전시대 사이 간격"><span id="gapVal">1.3 m</span></label>
+  </section>
+
+  <section class="panel" aria-labelledby="h-view">
+    <h2 id="h-view">미리 보기와 AR</h2>
+    <model-viewer id="mv" loading="eager" camera-controls shadow-intensity="0.8" exposure="1.1" camera-orbit="0deg 55deg auto" interaction-prompt="none"
+      ar ar-modes="webxr quick-look" ar-placement="floor" ar-scale="auto" alt="전시관 미리 보기"></model-viewer>
+    <button type="button" class="btn primary" id="arBtn" disabled>공간에 펼치기 (AR)</button>
+    <p class="msg" id="arMsg" hidden></p>
+    <ol class="steps">
+      <li>넓고 평평한 곳에 서서 ‘공간에 펼치기’를 눌러요.</li>
+      <li>휴대폰을 천천히 움직여 바닥을 비추면 전시관이 놓여요. 놓을 자리는 손가락으로 끌어 옮길 수 있어요.</li>
+      <li>전시대는 실제 크기(높이 약 1.6 m)예요. 걸어서 다가가 읽어 보세요.</li>
+    </ol>
+    <p class="note">아이폰은 사파리, 안드로이드는 크롬(ARCore 지원 기기)에서 돼요. 아이폰은 AR 화면의 셔터로 사진도 찍을 수 있어요.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="h-file">
+    <h2 id="h-file">전시 파일로 나누고 합치기</h2>
+    <p class="note"><b>학생</b>: 자기 전시물을 만든 뒤 ‘전시 파일 내보내기’로 받은 파일을 클래스룸 등으로 내요.<br><b>선생님</b>: ‘전시 파일 불러오기’로 학생 파일을 여러 개 한꺼번에 고르면 지금 전시에 합쳐져요. 다 모은 전시를 다시 내보내 나눠 주면, 모두 같은 전시관을 볼 수 있어요.</p>
+    <div class="row">
+      <button type="button" class="btn" id="exportBtn">전시 파일 내보내기</button>
+      <button type="button" class="btn" id="importBtn">전시 파일 불러오기</button>
+    </div>
+    <input type="file" id="fileIn" accept=".json,application/json" multiple>
+    <p class="msg" id="fileMsg" hidden></p>
+    <button type="button" class="btn danger" id="clearBtn">새 전시 시작 (전부 지우기)</button>
+  </section>
+</main>
+
+<dialog id="ed" aria-labelledby="edH">
+  <form class="dlg" method="dialog" id="edForm">
+    <h2 id="edH">전시물</h2>
+    <div class="pick">
+      <img id="edImg" alt="고른 사진" hidden>
+      <div class="ph" id="edPh">사진 없음</div>
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1">
+        <button type="button" class="btn" id="edPick">사진 고르기·찍기</button>
+        <span class="note">가로세로 어느 쪽이든 괜찮아요.</span>
+      </div>
+    </div>
+    <input type="file" id="photoIn" accept="image/*">
+    <label class="f">이름 <span class="count" id="nameCount"></span><input type="text" id="edName" maxlength="20" placeholder="예: 왜가리" required></label>
+    <label class="f">설명 <span class="count" id="descCount"></span><textarea id="edDesc" maxlength="140" placeholder="예: 학교 앞 하천에서 물고기를 노리던 모습. 목을 S자로 접고 날아요."></textarea></label>
+    <label class="f">발견한 곳 (선택)<input type="text" id="edPlace" maxlength="24" placeholder="예: 학교 앞 하천, 5월"></label>
+    <label class="f">만든 사람 (선택)<input type="text" id="edBy" maxlength="16" placeholder="예: 3학년 2반 7모둠"></label>
+    <p class="err" id="edErr" hidden></p>
+    <div class="row">
+      <button type="button" class="btn" id="edCancel">취소</button>
+      <button type="submit" class="btn primary" id="edSave">저장</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module">
+import * as THREE from 'three';
+import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
+const $=s=>document.querySelector(s);
+const MAX_ITEMS=30;
+
+/* ---------- 저장 (IndexedDB) ---------- */
+let E={title:'',intro:'',layout:'ring',gap:1.3,items:[]};
+function db(){return new Promise((ok,no)=>{const r=indexedDB.open('ar-exhibit',1);r.onupgradeneeded=()=>r.result.createObjectStore('e');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});}
+async function dbDo(mode,fn){const d=await db();return new Promise((ok,no)=>{const t=d.transaction('e',mode),q=fn(t.objectStore('e'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error);});}
+let saveT=0;function save(){clearTimeout(saveT);saveT=setTimeout(()=>dbDo('readwrite',s=>s.put(E,'cur')).catch(()=>{}),300);}
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+
+/* ---------- 화면 ---------- */
+const LAY={ring:'전시대가 둥글게 서고, 앞쪽 입구에 제목판이 있어요. 가운데로 들어가 둘러보세요.',
+  hall:'복도 양쪽에 전시대가 마주 보고 서요. 복도 끝에 제목판이 있어요.',
+  path:'전시대가 지그재그로 앞으로 이어져요. 걸어가며 하나씩 만나요.'};
+function counts(){
+  $('#titleCount').textContent=`${$('#title').value.length}/30`;$('#introCount').textContent=`${$('#intro').value.length}/120`;}
+function render(){
+  $('#title').value=E.title;$('#intro').value=E.intro;counts();
+  document.querySelectorAll('[data-lay]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lay===E.layout)));
+  $('#layNote').textContent=LAY[E.layout];$('#gap').value=E.gap;$('#gapVal').textContent=E.gap.toFixed(1)+' m';
+  const ul=$('#items');ul.innerHTML='';
+  E.items.forEach((it,i)=>{
+    const li=document.createElement('li');li.className='item';
+    const img=document.createElement('img');img.src=it.img;img.alt='';
+    const t=document.createElement('div');t.className='t';
+    const b=document.createElement('b');b.textContent=`${i+1}. ${it.name}`;
+    const s=document.createElement('small');s.textContent=[it.place,it.by].filter(Boolean).join(' · ')||it.desc||'설명 없음';
+    t.append(b,s);
+    const a=document.createElement('div');a.className='acts';
+    const mk=(txt,lab,fn,dis)=>{const x=document.createElement('button');x.type='button';x.className='ib';x.textContent=txt;x.setAttribute('aria-label',`${it.name} ${lab}`);x.disabled=!!dis;x.onclick=fn;return x;};
+    a.append(mk('↑','앞으로',()=>move(i,-1),i===0),mk('↓','뒤로',()=>move(i,1),i===E.items.length-1),mk('✎','고치기',()=>openEd(i)),mk('✕','지우기',()=>del(i)));
+    li.append(img,t,a);ul.append(li);
+  });
+  $('#empty').hidden=E.items.length>0;
+  $('#itemCount').textContent=`${E.items.length}/${MAX_ITEMS}점`;
+  $('#addBtn').disabled=E.items.length>=MAX_ITEMS;
+  $('#exportBtn').disabled=!E.items.length;
+}
+function changed(rebuild=true){save();render();if(rebuild)scheduleBuild();}
+function move(i,d){const j=i+d;[E.items[i],E.items[j]]=[E.items[j],E.items[i]];changed();}
+let delArm=-1,delT=0;
+function del(i){ // 두 번 눌러 지우기
+  if(delArm!==i){delArm=i;clearTimeout(delT);delT=setTimeout(()=>{delArm=-1;render();},3000);render();
+    const btn=$('#items').children[i].querySelector('.ib:last-child');btn.textContent='?';btn.style.color='#b0262f';btn.setAttribute('aria-label','한 번 더 누르면 지워져요');btn.focus();return;}
+  delArm=-1;E.items.splice(i,1);changed();}
+$('#title').oninput=e=>{E.title=e.target.value;counts();save();scheduleBuild();};
+$('#intro').oninput=e=>{E.intro=e.target.value;counts();save();scheduleBuild();};
+document.querySelectorAll('[data-lay]').forEach(b=>b.onclick=()=>{E.layout=b.dataset.lay;changed();});
+$('#gap').oninput=e=>{E.gap=+e.target.value;$('#gapVal').textContent=E.gap.toFixed(1)+' m';save();scheduleBuild();};
+
+/* ---------- 전시물 편집 ---------- */
+let edIdx=-1,edImgData='';
+function openEd(i){
+  edIdx=i;const it=i>=0?E.items[i]:{name:'',desc:'',place:'',by:localStorageGet('ar-ex-by')||'',img:''};
+  edImgData=it.img;$('#edName').value=it.name;$('#edDesc').value=it.desc;$('#edPlace').value=it.place||'';$('#edBy').value=it.by||'';
+  $('#edImg').hidden=!edImgData;$('#edPh').hidden=!!edImgData;if(edImgData)$('#edImg').src=edImgData;
+  $('#edErr').hidden=true;$('#edH').textContent=i>=0?'전시물 고치기':'전시물 추가';edCounts();$('#ed').showModal();}
+function edCounts(){$('#nameCount').textContent=`${$('#edName').value.length}/20`;$('#descCount').textContent=`${$('#edDesc').value.length}/140`;}
+$('#edName').oninput=edCounts;$('#edDesc').oninput=edCounts;
+function localStorageGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function localStorageSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+$('#addBtn').onclick=()=>openEd(-1);
+$('#edPick').onclick=()=>$('#photoIn').click();
+$('#edCancel').onclick=()=>$('#ed').close();
+async function fileToJpeg(f,max=1024){
+  const bmp=await createImageBitmap(f,{imageOrientation:'from-image'});
+  const k=Math.min(1,max/Math.max(bmp.width,bmp.height)),w=Math.round(bmp.width*k),h=Math.round(bmp.height*k);
+  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(bmp,0,0,w,h);
+  return c.toDataURL('image/jpeg',0.85);}
+$('#photoIn').onchange=async e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;
+  try{edImgData=await fileToJpeg(f);$('#edImg').src=edImgData;$('#edImg').hidden=false;$('#edPh').hidden=true;$('#edErr').hidden=true;}
+  catch(err){$('#edErr').hidden=false;$('#edErr').textContent='이 사진을 열지 못했어요. JPG나 PNG로 골라 주세요.';}};
+$('#edForm').onsubmit=e=>{
+  const name=$('#edName').value.trim();
+  if(!edImgData||!name){e.preventDefault();$('#edErr').hidden=false;$('#edErr').textContent=!edImgData?'사진을 골라 주세요.':'이름을 적어 주세요.';return;}
+  const it={id:edIdx>=0?E.items[edIdx].id:uid(),name,desc:$('#edDesc').value.trim(),place:$('#edPlace').value.trim(),by:$('#edBy').value.trim(),img:edImgData};
+  if(it.by)localStorageSet('ar-ex-by',it.by);
+  if(edIdx>=0)E.items[edIdx]=it;else E.items.push(it);changed();};
+
+/* 예시: 그림으로 만든 자리표시 전시물 */
+$('#sampleBtn').onclick=()=>{
+  const S=[['예시 1','#4f9d69','🌿'],['예시 2','#d98c2b','🐦'],['예시 3','#3f7fbf','🦋'],['예시 4','#c2456b','🌸'],['예시 5','#7a5bb5','🐞'],['예시 6','#2f8f8f','🍄']];
+  for(const [n,col,em] of S){if(E.items.length>=MAX_ITEMS)break;
+    const c=document.createElement('canvas');c.width=800;c.height=600;const x=c.getContext('2d');
+    const g=x.createLinearGradient(0,0,800,600);g.addColorStop(0,col);g.addColorStop(1,'#ffffff');x.fillStyle=g;x.fillRect(0,0,800,600);
+    x.font='260px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(em,400,310);
+    E.items.push({id:uid(),name:n,desc:'여기에 동식물의 특징, 만난 때와 모습, 알게 된 점 같은 설명이 들어가요.',place:'발견한 곳',by:'만든 사람',img:c.toDataURL('image/jpeg',0.85)});}
+  if(!E.title)E.title='예시 전시';changed();};
+
+/* ---------- 파일 ---------- */
+function showMsg(el,cls,txt){el.hidden=false;el.className='msg '+cls;el.textContent=txt;}
+$('#exportBtn').onclick=async()=>{
+  const data={type:'ar-exhibit',v:1,title:E.title,intro:E.intro,layout:E.layout,gap:E.gap,items:E.items};
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+  const by=[...new Set(E.items.map(i=>i.by).filter(Boolean))];
+  const nm=('AR전시-'+(E.title||'전시')+(by.length===1?'-'+by[0]:'')).replace(/[\\/:*?"<>|\s]+/g,'_').slice(0,50)+'.json';
+  const file=new File([blob],nm,{type:'application/json'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});return;}catch(e){if(e.name==='AbortError')return;}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nm;document.body.append(a);a.click();a.remove();
+  showMsg($('#fileMsg'),'ok',`‘${nm}’로 저장했어요 (${(blob.size/1048576).toFixed(1)} MB).`);};
+$('#importBtn').onclick=()=>$('#fileIn').click();
+const clean=(v,n)=>String(v||'').slice(0,n);
+$('#fileIn').onchange=async e=>{
+  const files=[...(e.target.files||[])];e.target.value='';if(!files.length)return;
+  let added=0,skipped=0,bad=0,full=0;const have=new Set(E.items.map(i=>i.id));
+  for(const f of files){
+    try{const j=JSON.parse(await f.text());if(j.type!=='ar-exhibit'||!Array.isArray(j.items))throw 0;
+      if(!E.items.length&&!E.title){E.title=clean(j.title,30);E.intro=clean(j.intro,120);if(['ring','hall','path'].includes(j.layout))E.layout=j.layout;if(+j.gap>=0.8&&+j.gap<=2.5)E.gap=+j.gap;}
+      for(const it of j.items){
+        if(!it||!/^data:image\/(jpeg|png|webp);base64,/.test(it.img||'')||!it.name){bad++;continue;}
+        const id=clean(it.id,40)||uid();if(have.has(id)){skipped++;continue;}
+        if(E.items.length>=MAX_ITEMS){full++;continue;}
+        E.items.push({id,name:clean(it.name,20),desc:clean(it.desc,140),place:clean(it.place,24),by:clean(it.by,16),img:it.img});have.add(id);added++;}
+    }catch(err){bad++;}
+  }
+  changed();
+  const parts=[`${files.length}개 파일에서 전시물 ${added}점을 더했어요.`];
+  if(skipped)parts.push(`이미 있는 ${skipped}점은 건너뛰었어요.`);
+  if(full)parts.push(`최대 ${MAX_ITEMS}점이라 ${full}점은 넣지 못했어요.`);
+  if(bad)parts.push(`읽지 못한 파일이나 항목이 ${bad}개 있어요.`);
+  showMsg($('#fileMsg'),bad||full?'warn':'ok',parts.join(' '));};
+let clearArm=false,clearT=0;
+$('#clearBtn').onclick=()=>{
+  if(!clearArm){clearArm=true;$('#clearBtn').textContent='한 번 더 누르면 전부 지워져요';clearT=setTimeout(()=>{clearArm=false;$('#clearBtn').textContent='새 전시 시작 (전부 지우기)';},4000);return;}
+  clearTimeout(clearT);clearArm=false;$('#clearBtn').textContent='새 전시 시작 (전부 지우기)';
+  E={title:'',intro:'',layout:E.layout,gap:E.gap,items:[]};$('#fileMsg').hidden=true;changed();};
+
+/* ---------- 3D 전시관 만들기 ---------- */
+const PW=0.6,PH=0.8,PY=1.2;   // 판 가로·세로(m), 판 중심 높이
+function wrap(x,text,maxW,maxLines){
+  const out=[];let line='';
+  const words=String(text).replace(/\s+/g,' ').trim().split(' ');
+  for(const w of words){
+    const tryL=line?line+' '+w:w;
+    if(x.measureText(tryL).width<=maxW){line=tryL;continue;}
+    if(line)out.push(line);
+    if(x.measureText(w).width<=maxW){line=w;continue;}
+    line='';for(const ch of w){if(x.measureText(line+ch).width>maxW){out.push(line);line=ch;}else line+=ch;}
+  }
+  if(line)out.push(line);
+  if(out.length>maxLines){out.length=maxLines;let l=out[maxLines-1];while(l&&x.measureText(l+'…').width>maxW)l=l.slice(0,-1);out[maxLines-1]=l+'…';}
+  return out;}
+const FONT='"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif';
+function loadImg(src){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src;});}
+async function itemTexture(it,no){
+  const W=768,H=1024,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  x.fillStyle='#fffdf8';x.fillRect(0,0,W,H);
+  const img=await loadImg(it.img);const bx=40,by=40,bw=W-80,bh=520;
+  x.fillStyle='#e9e3dc';x.fillRect(bx,by,bw,bh);
+  const k=Math.min(bw/img.width,bh/img.height),dw=img.width*k,dh=img.height*k;   // 사진 전체가 보이게
+  x.drawImage(img,bx+(bw-dw)/2,by+(bh-dh)/2,dw,dh);
+  x.fillStyle='#1f7a55';x.beginPath();x.arc(80,620,30,0,7);x.fill();
+  x.fillStyle='#fff';x.font=`bold 30px ${FONT}`;x.textAlign='center';x.textBaseline='middle';x.fillText(String(no),80,622);
+  x.textAlign='left';x.textBaseline='alphabetic';x.fillStyle='#2a2220';x.font=`bold 54px ${FONT}`;
+  x.fillText(wrap(x,it.name,W-170,1)[0],128,640);
+  const meta=[it.place,it.by].filter(Boolean).join(' · ');
+  let y=700;if(meta){x.fillStyle='#8a7d78';x.font=`28px ${FONT}`;x.fillText(wrap(x,meta,W-80,1)[0],40,y);y+=56;}else y+=10;
+  x.fillStyle='#3d3431';x.font=`31px ${FONT}`;
+  for(const l of wrap(x,it.desc||'',W-80,meta?6:7)){x.fillText(l,40,y);y+=44;}
+  x.fillStyle='#b9aca4';x.font=`22px ${FONT}`;x.fillText(wrap(x,E.title||'AR 전시관',W-80,1)[0],40,H-30);
+  return c;}
+function titleTexture(n){
+  const W=1024,H=640,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  x.fillStyle='#1f7a55';x.fillRect(0,0,W,H);x.fillStyle='#fffdf8';x.fillRect(24,24,W-48,H-48);
+  x.fillStyle='#1f7a55';x.font=`bold 30px ${FONT}`;x.fillText('AR 전시관',64,100);
+  x.fillStyle='#2a2220';x.font=`bold 66px ${FONT}`;let y=190;
+  for(const l of wrap(x,E.title||'우리의 전시',W-128,2)){x.fillText(l,64,y);y+=80;}
+  x.fillStyle='#3d3431';x.font=`32px ${FONT}`;y+=10;
+  for(const l of wrap(x,E.intro||'',W-128,4)){x.fillText(l,64,y);y+=46;}
+  x.fillStyle='#8a7d78';x.font=`28px ${FONT}`;x.fillText(`전시물 ${n}점`,64,H-60);
+  return c;}
+function tex(canvas){const t=new THREE.CanvasTexture(canvas);t.colorSpace=THREE.SRGBColorSpace;t.userData.mimeType='image/jpeg';return t;}
+const M={pole:new THREE.MeshStandardMaterial({color:0x4a4440,roughness:.6,metalness:.2}),
+  frame:new THREE.MeshStandardMaterial({color:0xc9b79c,roughness:.8}),
+  base:new THREE.MeshStandardMaterial({color:0x5a524c,roughness:.7})};
+function stand(canvas,w,h,cy){   // 앞뒤 모두 바로 읽히는 전시대
+  const g=new THREE.Group(),t=tex(canvas),mat=new THREE.MeshStandardMaterial({map:t,roughness:.95,metalness:0});
+  const front=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat);front.position.set(0,cy,0.012);g.add(front);
+  const back=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat);back.rotation.y=Math.PI;back.position.set(0,cy,-0.012);g.add(back);
+  const fr=new THREE.Mesh(new THREE.BoxGeometry(w+0.04,h+0.04,0.02),M.frame);fr.position.y=cy;g.add(fr);
+  const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,cy-h/2,12),M.pole);pole.position.y=(cy-h/2)/2;g.add(pole);
+  const base=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.22,0.025,32),M.base);base.position.y=0.0125;g.add(base);
+  return g;}
+function layout(n,gap,kind){   // 반환: [{x,z,ry}] 전시물 n개 + 제목판. 보는 사람은 +z 쪽에서 -z를 바라봄
+  const P=[];let T;
+  if(kind==='ring'){
+    const span=Math.PI*2*300/360,r=Math.max(1.3,(n*gap)/span);
+    for(let i=0;i<n;i++){const a=Math.PI/2+Math.PI*30/180+span*(n===1?0.5:i/(n-1));   // 입구(+z)를 비워 둠
+      const x=r*Math.cos(a),z=r*Math.sin(a);P.push({x,z,ry:Math.atan2(-x,-z)});}
+    T={x:0,z:r+0.6,ry:0};
+  }else if(kind==='hall'){
+    const half=Math.ceil(n/2),w=1.1;
+    for(let i=0;i<n;i++){const side=i%2?1:-1,k=Math.floor(i/2);P.push({x:side*w,z:-0.4-k*gap,ry:side*-Math.PI/2+(side<0?Math.PI:0)});}
+    T={x:0,z:-0.4-half*gap-0.4,ry:0};
+  }else{
+    for(let i=0;i<n;i++){const side=i%2?1:-1;P.push({x:side*0.7,z:-i*gap,ry:side*-0.35});}
+    T={x:-1.5,z:0.9,ry:0.4};
+  }
+  return {P,T};}
+function fixHall(P){return P.map(p=>({...p,ry:p.x<0?Math.PI/2:-Math.PI/2}));}   // 복도: 왼쪽은 오른쪽(+x)을, 오른쪽은 왼쪽을 봄
+let buildT=0,building=null,curUrl=null,version=0;
+function scheduleBuild(){clearTimeout(buildT);$('#arBtn').disabled=true;buildT=setTimeout(()=>{building=build();},500);}
+async function build(){
+  const my=++version;
+  const n=E.items.length,scene=new THREE.Scene();
+  if(!n){if(curUrl){URL.revokeObjectURL(curUrl);curUrl=null;}$('#mv').removeAttribute('src');$('#arBtn').disabled=true;return;}
+  let {P,T}=layout(n,E.gap,E.layout);if(E.layout==='hall')P=fixHall(P);
+  for(let i=0;i<n;i++){const s=stand(await itemTexture(E.items[i],i+1),PW,PH,PY);s.position.set(P[i].x,0,P[i].z);s.rotation.y=P[i].ry;s.name='item'+(i+1);scene.add(s);}
+  const t=stand(titleTexture(n),0.9,0.5625,1.15);t.position.set(T.x,0,T.z);t.rotation.y=T.ry;t.name='title';scene.add(t);
+  if(my!==version)return;
+  const glb=await new GLTFExporter().parseAsync(scene,{binary:true,maxTextureSize:1024});
+  if(my!==version)return;
+  const url=URL.createObjectURL(new Blob([glb],{type:'model/gltf-binary'}));
+  const old=curUrl;curUrl=url;$('#mv').setAttribute('src',url);if(old)setTimeout(()=>URL.revokeObjectURL(old),3000);
+  window.__glbBytes=glb.byteLength;
+  await new Promise(r=>$('#mv').addEventListener('load',r,{once:true}));
+  if(my!==version)return;
+  $('#arBtn').disabled=false;arHint();}
+function arHint(){
+  const mv=$('#mv');
+  if(mv.canActivateAR){$('#arMsg').hidden=true;return;}
+  showMsg($('#arMsg'),'warn','이 기기나 브라우저에서는 AR을 쓸 수 없어요. 아이폰은 사파리, 안드로이드는 크롬으로 열어 보세요. 위 미리 보기는 손가락으로 돌려 볼 수 있어요.');}
+$('#arBtn').onclick=async()=>{await building;try{await $('#mv').activateAR();}catch(e){showMsg($('#arMsg'),'warn','AR을 시작하지 못했어요. 밝은 곳에서 바닥을 천천히 비춰 보세요.');}};
+$('#mv').addEventListener('ar-status',e=>{if(e.detail.status==='failed')showMsg($('#arMsg'),'warn','AR을 시작하지 못했어요. 밝고 무늬 있는 바닥을 천천히 비춰 보세요.');});
+
+/* ---------- 시작 ---------- */
+dbDo('readonly',s=>s.get('cur')).then(v=>{if(v&&Array.isArray(v.items))E={...E,...v};}).catch(()=>{}).finally(()=>{render();scheduleBuild();});
+</script>
+</body>
+</html>
