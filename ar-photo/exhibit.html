@@ -8,6 +8,7 @@
 <title>AR 전시관</title>
 <script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js","three/addons/":"./vendor/three/"}}</script>
 <script type="module" src="vendor/model-viewer.min.js"></script>
+<script src="vendor/qrcode.js"></script>
 <style>
 :root{--bg:#fbf7f2;--ink:#2a2220;--sub:#5f5450;--mute:#8a7d78;--line:#e3d8cf;--accent:#1f7a55;--accent-ink:#fff;--card:#fff;
   --font:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif}
@@ -68,11 +69,15 @@ body:not(.view) .view-only{display:none!important}
     <h1 id="vTitle">전시를 불러오는 중…</h1>
     <p id="vIntro"></p>
     <p class="note" id="vMeta"></p>
+    <div class="row" id="vShare" hidden>
+      <button type="button" class="btn" id="qrBtn">QR 보기·저장</button>
+      <button type="button" class="btn" id="copyBtn">링크 복사</button>
+    </div>
   </header>
   <header class="edit-only" style="display:flex;flex-direction:column;gap:8px">
     <h1>AR 전시관</h1>
     <p>사진과 이름, 설명으로 전시물을 만들면 실제 공간에 전시대가 세워져요. 걸어 다니며 다가가 읽고, 돌아서 볼 수 있어요. 아무것도 붙이거나 세우지 않으니 훼손하면 안 되는 곳에서도 전시할 수 있어요.</p>
-    <p class="note">사진은 이 휴대폰 안에만 저장되고 어디로도 보내지 않아요. 나눌 때는 ‘전시 파일’로 직접 건네요. <a href="./">AR 포토로 돌아가기</a></p>
+    <p class="note">사진은 이 휴대폰 안에만 저장되고 어디로도 보내지 않아요. 나눌 때는 ‘전시 파일’로 직접 건네요. <a href="exhibit-guide.html">사용법 보기</a> · <a href="./">AR 포토로 돌아가기</a></p>
   </header>
 
   <section class="panel edit-only" aria-labelledby="h-info">
@@ -121,6 +126,8 @@ body:not(.view) .view-only{display:none!important}
   <section class="panel edit-only" aria-labelledby="h-file">
     <h2 id="h-file">전시 파일로 나누고 합치기</h2>
     <p class="note"><b>학생</b>: 자기 전시물을 만든 뒤 ‘전시 파일 내보내기’로 받은 파일을 클래스룸 등으로 내요.<br><b>선생님</b>: ‘전시 파일 불러오기’로 학생 파일을 여러 개 한꺼번에 고르면 지금 전시에 합쳐져요. 다 모은 전시를 다시 내보내 나눠 주면, 모두 같은 전시관을 볼 수 있어요.</p>
+    <label class="f">링크 이름 (사이트에 올릴 때만) <span class="count">영문 소문자·숫자·- 만</span><input type="text" id="slug" maxlength="40" placeholder="예: chojigo-nature" autocapitalize="none" autocomplete="off" spellcheck="false" inputmode="url"></label>
+    <p class="note" id="slugNote">적으면 내보낸 파일 이름이 그대로 링크 이름이 돼요. 자세한 방법은 <a href="exhibit-guide.html#share">사용법</a>을 보세요.</p>
     <div class="row">
       <button type="button" class="btn" id="exportBtn">전시 파일 내보내기</button>
       <button type="button" class="btn" id="importBtn">전시 파일 불러오기</button>
@@ -130,6 +137,18 @@ body:not(.view) .view-only{display:none!important}
     <button type="button" class="btn danger" id="clearBtn">새 전시 시작 (전부 지우기)</button>
   </section>
 </main>
+
+<dialog id="qrDlg" aria-labelledby="qrH">
+  <div class="dlg" style="align-items:center;text-align:center">
+    <h2 id="qrH">이 전시로 오는 QR</h2>
+    <canvas id="qrCv" width="600" height="720" style="width:min(300px,100%);height:auto;border-radius:8px" role="img" aria-label="전시 링크 QR 코드"></canvas>
+    <p class="note">휴대폰 카메라로 찍으면 이 전시가 열려요. 저장해서 인쇄하거나 화면에 띄워 두세요.</p>
+    <div class="row" style="width:100%">
+      <button type="button" class="btn primary" id="qrSave">QR 그림 저장</button>
+      <button type="button" class="btn" id="qrClose">닫기</button>
+    </div>
+  </div>
+</dialog>
 
 <dialog id="ed" aria-labelledby="edH">
   <form class="dlg" method="dialog" id="edForm">
@@ -176,7 +195,7 @@ const LAY={ring:'전시대가 둥글게 서고, 앞쪽 입구에 제목판이 �
 function counts(){
   $('#titleCount').textContent=`${$('#title').value.length}/30`;$('#introCount').textContent=`${$('#intro').value.length}/120`;}
 function render(){
-  $('#title').value=E.title;$('#intro').value=E.intro;counts();
+  $('#title').value=E.title;$('#intro').value=E.intro;$('#slug').value=E.slug||'';counts();
   document.querySelectorAll('[data-lay]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lay===E.layout)));
   $('#layNote').textContent=LAY[E.layout];$('#gap').value=E.gap;$('#gapVal').textContent=E.gap.toFixed(1)+' m';
   const ul=$('#items');ul.innerHTML='';
@@ -207,6 +226,8 @@ function del(i){ // 두 번 눌러 지우기
 $('#title').oninput=e=>{E.title=e.target.value;counts();save();scheduleBuild();};
 $('#intro').oninput=e=>{E.intro=e.target.value;counts();save();scheduleBuild();};
 document.querySelectorAll('[data-lay]').forEach(b=>b.onclick=()=>{E.layout=b.dataset.lay;changed();});
+$('#slug').oninput=e=>{const v=e.target.value.toLowerCase().replace(/[\s_]+/g,'-').replace(/[^a-z0-9-]/g,'');if(v!==e.target.value)e.target.value=v;E.slug=v;save();
+  $('#slugNote').textContent=v?`올린 뒤 링크: …/ar-photo/exhibit.html?ex=${v}`:'적으면 내보낸 파일 이름이 그대로 링크 이름이 돼요.';};
 $('#gap').oninput=e=>{E.gap=+e.target.value;$('#gapVal').textContent=E.gap.toFixed(1)+' m';save();scheduleBuild();};
 
 /* ---------- 전시물 편집 ---------- */
@@ -254,7 +275,7 @@ $('#exportBtn').onclick=async()=>{
   const data={type:'ar-exhibit',v:1,title:E.title,intro:E.intro,layout:E.layout,gap:E.gap,items:E.items};
   const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
   const by=[...new Set(E.items.map(i=>i.by).filter(Boolean))];
-  const nm=('AR전시-'+(E.title||'전시')+(by.length===1?'-'+by[0]:'')).replace(/[\\/:*?"<>|\s]+/g,'_').slice(0,50)+'.json';
+  const nm=E.slug?E.slug+'.json':('AR전시-'+(E.title||'전시')+(by.length===1?'-'+by[0]:'')).replace(/[\\/:*?"<>|\s]+/g,'_').slice(0,50)+'.json';
   const file=new File([blob],nm,{type:'application/json'});
   if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});return;}catch(e){if(e.name==='AbortError')return;}}
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nm;document.body.append(a);a.click();a.remove();
@@ -284,7 +305,7 @@ let clearArm=false,clearT=0;
 $('#clearBtn').onclick=()=>{
   if(!clearArm){clearArm=true;$('#clearBtn').textContent='한 번 더 누르면 전부 지워져요';clearT=setTimeout(()=>{clearArm=false;$('#clearBtn').textContent='새 전시 시작 (전부 지우기)';},4000);return;}
   clearTimeout(clearT);clearArm=false;$('#clearBtn').textContent='새 전시 시작 (전부 지우기)';
-  E={title:'',intro:'',layout:E.layout,gap:E.gap,items:[]};$('#fileMsg').hidden=true;changed();};
+  E={title:'',intro:'',slug:'',layout:E.layout,gap:E.gap,items:[]};$('#fileMsg').hidden=true;changed();};
 
 /* ---------- 3D 전시관 만들기 ---------- */
 const PW=0.6,PH=0.8,PY=1.2;   // 판 가로·세로(m), 판 중심 높이
@@ -384,6 +405,21 @@ function arHint(){
 $('#arBtn').onclick=async()=>{await building;try{await $('#mv').activateAR();}catch(e){showMsg($('#arMsg'),'warn','AR을 시작하지 못했어요. 밝은 곳에서 바닥을 천천히 비춰 보세요.');}};
 $('#mv').addEventListener('ar-status',e=>{if(e.detail.status==='failed')showMsg($('#arMsg'),'warn','AR을 시작하지 못했어요. 밝고 무늬 있는 바닥을 천천히 비춰 보세요.');});
 
+/* ---------- 공유 화면: QR·링크 ---------- */
+function drawQR(){
+  const url=location.origin+location.pathname+'?ex='+encodeURIComponent(VIEW),cv=$('#qrCv'),x=cv.getContext('2d');
+  const q=qrcode(0,'M');q.addData(url);q.make();const n=q.getModuleCount(),pad=4,cell=Math.floor(560/(n+pad*2)),size=cell*(n+pad*2),ox=(600-size)/2;
+  x.fillStyle='#fff';x.fillRect(0,0,600,720);x.fillStyle='#000';
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))x.fillRect(ox+(c+pad)*cell,20+(r+pad)*cell,cell,cell);
+  x.fillStyle='#2a2220';x.textAlign='center';x.font=`bold 34px ${FONT}`;x.fillText(wrap(x,E.title,560,1)[0],300,20+size+44);
+  x.fillStyle='#1f7a55';x.font=`26px ${FONT}`;x.fillText('AR 전시관 · 휴대폰 카메라로 찍어 보세요',300,20+size+88);}
+$('#qrBtn').onclick=()=>{drawQR();$('#qrDlg').showModal();};
+$('#qrClose').onclick=()=>$('#qrDlg').close();
+$('#qrSave').onclick=()=>$('#qrCv').toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=('QR-'+E.title).replace(/[\\/:*?"<>|\s]+/g,'_').slice(0,40)+'.png';document.body.append(a);a.click();a.remove();},'image/png');
+$('#copyBtn').onclick=async()=>{const url=location.origin+location.pathname+'?ex='+encodeURIComponent(VIEW);
+  try{await navigator.clipboard.writeText(url);$('#copyBtn').textContent='복사했어요';}catch(e){prompt('이 링크를 복사하세요',url);}
+  setTimeout(()=>$('#copyBtn').textContent='링크 복사',2000);};
+
 /* ---------- 시작 ---------- */
 if(VIEW!==null){
   document.body.classList.add('view');
@@ -397,7 +433,7 @@ if(VIEW!==null){
       document.title=E.title+' · AR 전시관';$('#vTitle').textContent=E.title;$('#vIntro').textContent=E.intro;
       const by=[...new Set(E.items.map(i=>i.by).filter(Boolean))];
       $('#vMeta').textContent=`전시물 ${E.items.length}점`+(by.length?` · ${by.slice(0,4).join(', ')}${by.length>4?' 외':''}`:'');
-      render();scheduleBuild();
+      render();scheduleBuild();$('#vShare').hidden=false;
     }catch(e){$('#vTitle').textContent='전시를 찾지 못했어요';$('#vErr').hidden=false;$('#vErr').textContent='링크가 바뀌었거나 전시가 내려갔을 수 있어요. 링크를 보내 준 선생님께 확인해 주세요.';$('#secItems').hidden=true;$('#mv').hidden=true;$('#arBtn').hidden=true;}
   })();
 }else{

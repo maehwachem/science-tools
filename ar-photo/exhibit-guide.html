@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="AR 전시관 사용법: 전시물 만들기, 학생 전시 합치기, 링크와 QR로 공유하기, 관람하기">
+<meta name="theme-color" content="#fbf7f2">
+<title>AR 전시관 사용법</title>
+<style>
+:root{--bg:#fbf7f2;--ink:#2a2220;--sub:#4d4340;--mute:#8a7d78;--line:#e3d8cf;--accent:#1f7a55;--soft:#e7f6ee;--warn:#fff4e0;
+  --font:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);word-break:keep-all;-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+main{max-width:720px;margin:0 auto;padding:max(24px,env(safe-area-inset-top)) 16px 56px}
+h1{margin:0 0 8px;font-size:28px;letter-spacing:-.02em}
+h2{margin:44px 0 12px;font-size:21px;letter-spacing:-.01em;scroll-margin-top:16px}
+h3{margin:22px 0 8px;font-size:16px}
+p,li{line-height:1.7;color:var(--sub)}
+p{margin:0 0 10px}
+ol,ul{margin:0 0 12px;padding-left:22px}
+li{margin:3px 0}
+a{color:var(--accent);font-weight:600}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;background:#f1ebe5;border-radius:5px;padding:1px 5px;word-break:break-all}
+.lead{font-size:16px}
+.toc{background:#fff;border:1px solid #eadfd6;border-radius:14px;padding:14px 16px;margin:20px 0}
+.toc b{display:block;margin-bottom:6px}
+.toc ol{margin:0}
+.box{border-radius:12px;padding:12px 14px;margin:12px 0}
+.box p:last-child,.box ul:last-child,.box ol:last-child{margin-bottom:0}
+.tip{background:var(--soft)}
+.warn{background:var(--warn)}
+.who{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;margin-right:6px;vertical-align:2px}
+.t{background:#1f7a55;color:#fff}.s{background:#3f6fb5;color:#fff}.v{background:#8a5a2b;color:#fff}
+.go{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 16px;border-radius:12px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;margin:6px 8px 6px 0}
+.go.alt{background:#fff;color:var(--ink);border:1px solid var(--line)}
+dl{margin:0}
+dt{font-weight:700;color:var(--ink);margin-top:14px}
+dd{margin:4px 0 0;line-height:1.7;color:var(--sub)}
+.foot{margin-top:48px;font-size:13px;color:var(--mute)}
+</style>
+</head>
+<body>
+<main>
+  <h1>AR 전시관 사용법</h1>
+  <p class="lead">사진과 이름, 설명으로 전시물을 만들면 실제 공간에 전시대가 세워지고, 걸어 다니며 볼 수 있어요. 아무것도 붙이거나 세우지 않으니 훼손하면 안 되는 곳에서도 전시할 수 있어요.</p>
+  <p><a class="go" href="exhibit.html">AR 전시관 열기</a><a class="go alt" href="exhibit.html?ex=sample">예시 전시 보기</a></p>
+
+  <nav class="toc" aria-label="차례">
+    <b>차례</b>
+    <ol>
+      <li><a href="#need">준비물</a></li>
+      <li><a href="#make">전시물 만들기</a></li>
+      <li><a href="#merge">학생 전시 모아 합치기</a></li>
+      <li><a href="#share">링크와 QR로 공유하기</a></li>
+      <li><a href="#watch">관람하기</a></li>
+      <li><a href="#privacy">올리기 전 확인할 것</a></li>
+      <li><a href="#trouble">잘 안 될 때</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="need">1. 준비물</h2>
+  <ul>
+    <li><b>아이폰</b>: 사파리로 열어요.</li>
+    <li><b>안드로이드</b>: 크롬으로 열어요. ARCore(구글 Play AR 서비스)를 지원하는 기기여야 해요. 최근 몇 년 사이의 기기는 대부분 돼요.</li>
+    <li><b>장소</b>: 밝고, 바닥에 무늬나 결이 조금 있는 곳이 좋아요. 반짝이는 바닥, 새하얀 바닥, 어두운 곳에서는 바닥을 잘 못 찾아요.</li>
+    <li><b>공간</b>: 전시대 사이 간격과 전시물 수에 따라 달라요. 10점을 간격 1.3 m로 둥글게 놓으면 지름 5 m쯤 돼요.</li>
+  </ul>
+
+  <h2 id="make">2. 전시물 만들기</h2>
+  <p><span class="who s">학생</span><span class="who t">선생님</span>만드는 방법은 같아요.</p>
+  <ol>
+    <li><a href="exhibit.html">AR 전시관</a>을 열고 <b>전시 제목</b>과 <b>소개</b>를 적어요.</li>
+    <li><b>전시물 추가</b>를 눌러 사진을 고르거나 찍고, <b>이름</b>(20자)과 <b>설명</b>(140자)을 적어요. <b>발견한 곳</b>과 <b>만든 사람</b>은 적어도 되고 안 적어도 돼요.</li>
+    <li>목록의 ↑↓로 순서를 바꾸고, ✎로 고치고, ✕를 두 번 눌러 지워요. 한 전시에 30점까지 넣을 수 있어요.</li>
+    <li><b>배치</b>를 골라요.
+      <ul>
+        <li><b>둥글게</b>: 입구에 제목판이 있고, 안으로 들어가 둘러봐요. 모여서 보기 좋아요.</li>
+        <li><b>복도 양쪽</b>: 전시대가 마주 보고 서요. 복도나 긴 공간에 맞아요.</li>
+        <li><b>산책길</b>: 지그재그로 앞으로 이어져요. 걸으며 하나씩 만나요.</li>
+      </ul>
+    </li>
+    <li><b>미리 보기</b>를 손가락으로 돌려 확인하고, <b>공간에 펼치기 (AR)</b>로 실제 공간에 놓아 봐요.</li>
+  </ol>
+  <div class="box tip">
+    <p>만든 전시는 그 휴대폰 브라우저에 자동으로 저장돼요. 페이지를 닫았다 열어도 그대로예요. 다만 브라우저 기록을 지우거나 다른 브라우저로 열면 보이지 않으니, 끝나면 <b>전시 파일 내보내기</b>로 파일을 받아 두세요.</p>
+  </div>
+  <p>사진이 아직 없으면 <b>예시로 해 보기</b>를 눌러 자리표시 전시물 6점으로 AR을 먼저 확인할 수 있어요.</p>
+
+  <h2 id="merge">3. 학생 전시 모아 합치기</h2>
+  <h3><span class="who s">학생</span>제출하기</h3>
+  <ol>
+    <li>자기 전시물을 만들어요. <b>만든 사람</b> 칸에는 실명 대신 모둠 이름이나 반을 적어요.</li>
+    <li><b>전시 파일 내보내기</b>를 눌러 .json 파일을 받아요. 휴대폰에서는 공유 창이 뜨면 바로 클래스룸이나 드라이브로 보낼 수 있어요.</li>
+    <li>받은 파일을 클래스룸 과제 등으로 내요.</li>
+  </ol>
+  <h3><span class="who t">선생님</span>합치기</h3>
+  <ol>
+    <li>학생 파일을 모두 내려받아요.</li>
+    <li>AR 전시관에서 <b>전시 파일 불러오기</b>를 누르고, 파일을 <b>여러 개 한꺼번에</b> 골라요.</li>
+    <li>모든 전시물이 지금 전시 뒤에 붙어요. 같은 전시물이 두 번 들어오면 한 번만 들어가요.</li>
+    <li>순서를 정리하고, 전시 제목과 소개, 배치를 정해요.</li>
+  </ol>
+  <div class="box tip">
+    <p>처음부터 다시 모으려면 <b>새 전시 시작 (전부 지우기)</b>를 두 번 눌러요. 그 전에 지금 전시를 내보내 두면 안전해요.</p>
+  </div>
+
+  <h2 id="share">4. 링크와 QR로 공유하기</h2>
+  <p><span class="who t">사이트 관리자</span>전시 파일을 이 사이트(GitHub)에 올리면, 링크나 QR 하나로 누구나 바로 볼 수 있어요. 컴퓨터에서 하는 게 편해요.</p>
+  <h3>① 링크 이름을 정해서 내보내기</h3>
+  <ol>
+    <li>AR 전시관 아래쪽의 <b>링크 이름</b> 칸에 영문 소문자, 숫자, 하이픈(-)으로 이름을 적어요. 예: <code>chojigo-nature</code>, <code>2026-3-2-plants</code></li>
+    <li><b>전시 파일 내보내기</b>를 누르면 파일 이름이 <code>chojigo-nature.json</code>처럼 저장돼요. 파일 이름을 바꾸지 마세요.</li>
+  </ol>
+  <h3>② GitHub에 올리기</h3>
+  <ol>
+    <li>GitHub에 로그인한 상태로 <a href="https://github.com/maehwachem/science-tools/upload/main/ar-photo/exhibits" target="_blank" rel="noopener noreferrer">전시 파일 올리는 곳</a>을 열어요. (저장소에서 <code>ar-photo</code> → <code>exhibits</code> 폴더로 들어가 <b>Add file → Upload files</b>를 눌러도 같아요.)</li>
+    <li>내보낸 .json 파일을 끌어다 놓거나 <b>choose your files</b>로 골라요.</li>
+    <li>아래 <b>Commit changes</b> 버튼을 눌러요. 설명 칸은 비워 둬도 돼요.</li>
+    <li>1~2분 기다려요. 사이트가 다시 만들어지는 시간이에요.</li>
+  </ol>
+  <h3>③ 링크 열고 QR 받기</h3>
+  <ol>
+    <li>링크는 <code>https://maehwachem.github.io/science-tools/ar-photo/exhibit.html?ex=링크이름</code>이에요. 링크 이름 칸에 적으면 바로 아래에 미리 보여요.</li>
+    <li>링크를 열면 보기 전용 화면이 나와요. 위쪽의 <b>QR 보기·저장</b>으로 QR 그림을 저장해 인쇄하거나, <b>링크 복사</b>로 클래스룸에 붙여요.</li>
+  </ol>
+  <h3>고치기와 내리기</h3>
+  <ul>
+    <li><b>고치기</b>: 편집기에서 고친 뒤 같은 링크 이름으로 다시 내보내 같은 방법으로 올리면 덮어써져요. 링크와 QR은 그대로예요. 바로 안 바뀌어 보이면 1~2분 뒤 새로 고침 해요.</li>
+    <li><b>내리기</b>: GitHub의 <code>exhibits</code> 폴더에서 그 파일을 열고, 오른쪽 위 <b>…</b> 메뉴(또는 휴지통 아이콘)에서 <b>Delete file</b> → <b>Commit changes</b>를 눌러요. 링크는 바로 ‘전시를 찾지 못했어요’로 바뀌어요.</li>
+  </ul>
+  <div class="box warn">
+    <p>이 저장소는 공개예요. 올린 전시는 링크를 아는 누구나 볼 수 있고, 지운 뒤에도 GitHub 기록에 남아요. 올리기 전에 <a href="#privacy">확인할 것</a>을 꼭 봐 주세요.</p>
+  </div>
+
+  <h2 id="watch">5. 관람하기</h2>
+  <p><span class="who v">관람객</span>앱 설치나 로그인은 필요 없어요.</p>
+  <ol>
+    <li>QR을 휴대폰 카메라로 찍거나 링크를 열어요.</li>
+    <li><b>공간에 펼치기 (AR)</b>를 눌러요.</li>
+    <li>휴대폰을 천천히 좌우로 움직이며 바닥을 비춰요. 바닥을 찾으면 전시관이 놓여요. 놓을 자리는 손가락으로 끌어 옮길 수 있어요.</li>
+    <li>전시대는 실제 크기(높이 약 1.6 m)예요. 걸어서 다가가 읽어요. 앞뒤 어느 쪽에서 봐도 글이 바로 읽혀요.</li>
+    <li>아이폰은 AR 화면 아래 셔터 버튼으로 사진을 찍을 수 있어요. 안드로이드는 휴대폰 화면 캡처를 써요.</li>
+  </ol>
+
+  <h2 id="privacy">6. 올리기 전 확인할 것</h2>
+  <ul>
+    <li>학생 얼굴, 이름표, 교복 명찰이 나온 사진은 빼요.</li>
+    <li><b>만든 사람</b>에는 실명 대신 모둠 이름이나 반을 적어요.</li>
+    <li>집 주소나 자세한 위치가 드러나는 설명은 쓰지 않아요. ‘학교 앞 하천’ 정도면 충분해요.</li>
+    <li>다른 사람이 찍은 사진이나 인터넷 그림은 쓰지 말고, 직접 찍은 사진을 써요.</li>
+    <li>멸종위기종이나 희귀 식물은 정확한 발견 장소를 적지 않아요.</li>
+  </ul>
+
+  <h2 id="trouble">7. 잘 안 될 때</h2>
+  <dl>
+    <dt>‘이 기기나 브라우저에서는 AR을 쓸 수 없어요’가 떠요</dt>
+    <dd>아이폰은 사파리, 안드로이드는 크롬으로 열었는지 봐요. 카카오톡이나 학교 앱 안에서 링크를 열면 AR이 안 돼요. 오른쪽 위 메뉴에서 ‘다른 브라우저로 열기’를 눌러요. 안드로이드는 Play 스토어에서 ‘Google Play AR 서비스’가 설치·업데이트되어 있어야 해요.</dd>
+    <dt>전시관이 놓이지 않아요</dt>
+    <dd>밝은 곳에서, 무늬가 있는 바닥을 천천히 비춰요. 반짝이는 바닥이나 새하얀 바닥은 잘 안 잡혀요. 휴대폰을 너무 빨리 움직이지 않아요.</dd>
+    <dt>링크를 열면 ‘전시를 찾지 못했어요’가 떠요</dt>
+    <dd>올린 뒤 1~2분이 지났는지, 링크의 <code>ex=</code> 뒤 이름이 파일 이름(<code>.json</code> 앞부분)과 같은지 봐요. 파일 이름에 한글, 대문자, 띄어쓰기가 있으면 열리지 않아요.</dd>
+    <dt>전시가 너무 넓거나 좁아요</dt>
+    <dd>편집기의 <b>간격</b>을 바꾸고 다시 내보내 올려요. 둥글게 배치는 전시물이 많을수록 원이 커져요.</dd>
+    <dt>휴대폰이 느리거나 AR이 끊겨요</dt>
+    <dd>전시물이 많으면 느려질 수 있어요. 15점 안팎으로 나눠 전시를 두 개로 만들어 보세요.</dd>
+    <dt>멀리 걸어가면 전시대가 조금씩 어긋나요</dt>
+    <dd>휴대폰이 바닥을 추적하는 범위에 한계가 있어서 그래요. 운동장처럼 아주 넓은 곳보다 교실이나 복도 크기에서 가장 잘 맞아요.</dd>
+  </dl>
+
+  <p class="foot"><a href="exhibit.html">AR 전시관</a> · <a href="./">AR 포토</a> · <a href="../">과학 수업 도구 모음</a></p>
+</main>
+</body>
+</html>
