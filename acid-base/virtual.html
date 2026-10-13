@@ -2044,7 +2044,7 @@ function studentText(r) {
   return [`[산·염기 가상 실험실 · 제출] ${r.name}`, `${LV[r.level]} · ${r.mode === 'exam' ? '평가' : '연습'}${r.group ? ' · 조별' : ''} · ${fmtDate(r.at)} · 소요 ${mmss(r.dur)}`, ...groupLine(r),
     '내 기록:', ...(r.student || []).map(s => '- ' + s),
     ...(r.data || []).filter(d => d.rows.length).flatMap(d => [`측정 (${d.label}):`, ...d.rows.map(rowLine)]),
-    `과정 기록 ${r.log.length}개와 분석 결과는 선생님 화면에서 확인합니다.`, '분석 코드 (지우지 마세요):', 'VLAB1:' + encodeRec({ ...r, src: undefined })].join('\n');
+    '분석 결과는 선생님 화면에서 확인합니다.', '분석 코드 (지우지 마세요):', 'VLAB1:' + encodeRec({ ...r, src: undefined })].join('\n');
 }
 function importCodes(text) {
   const found = text.match(/VLAB1:[A-Za-z0-9_-]+/g) || []; let added = 0, dup = 0, badN = 0;
@@ -2082,13 +2082,71 @@ function renderDone(r) {
   const exam = r.mode === 'exam';
   $('#doneEyebrow').textContent = exam ? '기록 저장 완료 · 평가' : '기록 저장 완료 · 연습 결과';
   $('#doneTitle').textContent = exam ? '이 기기에 기록을 저장했습니다' : r.headline;
-  $('#doneMeta').textContent = `${r.name} · ${LV[r.level]} · 소요 ${mmss(r.dur)} · 과정 기록 ${r.log.length}개`;
+  $('#doneMeta').textContent = `${r.name} · ${LV[r.level]} · 소요 ${mmss(r.dur)}`;
   $('#doneBody').innerHTML = exam ? `<div class="panel"><span class="lbl">내 기록</span><ul class="list">${(r.student || []).map(n => `<li>${esc(n)}</li>`).join('')}</ul></div>` :
     `<div class="panel"><span class="lbl">세부 결과</span><ul class="list">${r.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul></div>
-     ${(r.data || []).some(d => d.rows.length) ? `<div class="panel">${dataHTML(r)}</div>` : ''}
-     <div class="panel"><span class="lbl">기록된 실수</span>${mistakeChips(r)}</div>
-     <div class="panel"><details><summary>과정 기록 ${r.log.length}개 보기</summary>${timeline(r.log)}</details></div>`;
+     ${(r.data || []).some(d => d.rows.length) ? `<div class="panel">${dataHTML(r)}</div>` : ''}`;
   $('#copyBox').hidden = true;
+  $('#doneBody').appendChild(reportPanel(r, labReport));
+}
+/* ---------- 실험 보고서 PDF: 보고서만 인쇄 화면에 띄우고, 학생이 'PDF로 저장'을 고른다 ---------- */
+const PRINT_CSS=`@media screen{#printReport{display:none!important}}
+@media print{@page{size:A4;margin:14mm 14mm 16mm}
+html,body{background:#fff!important;color:#000!important;padding:0!important;margin:0!important;height:auto!important;overflow:visible!important}
+body>*:not(#printReport){display:none!important}
+#printReport{display:block!important;font:10.5pt/1.65 'IBM Plex Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.rp-eye{margin:0;font-size:9pt;letter-spacing:.04em;color:#444}
+.rp h1{margin:1mm 0 4mm;font-size:19pt;line-height:1.25}
+.rp h2{margin:7mm 0 2.5mm;font-size:12pt;border-bottom:1.2pt solid #000;padding-bottom:1mm;break-after:avoid}
+.rp h3{margin:3mm 0 1mm;font-size:10.5pt}
+.rp p{margin:0 0 2mm}
+.rp table{width:100%;border-collapse:collapse;margin:0 0 2mm;font-size:9.5pt}
+.rp th,.rp td{border:.6pt solid #777;padding:1.4mm 2mm;text-align:left;vertical-align:top}
+.rp th{background:#eee;font-weight:700;white-space:nowrap}
+.rp tr{break-inside:avoid}
+.rp-meta th{width:22mm}
+.rp ol{margin:0 0 2mm;padding-left:6mm}
+.rp li{margin:0 0 1.2mm}
+.rp-task{break-inside:avoid;margin:0 0 3mm}
+.rp-ref{box-sizing:border-box;white-space:pre-wrap;border:.6pt solid #777;padding:2.5mm 3mm;min-height:20mm}
+.rp-lines div{border-bottom:.6pt solid #999;height:8.5mm}
+.rp-foot{margin-top:6mm;font-size:8pt;color:#555;border-top:.4pt solid #aaa;padding-top:1.5mm}
+.rp svg{max-width:100%;height:auto}}`;
+const LAB_TITLE=(document.querySelector('title')||{}).textContent||'가상 실험실';
+const rpDate=iso=>{const d=new Date(iso);return isNaN(d)?'':`${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}.`;};
+const rpReflect=t=>t&&t.trim()?`<div class="rp-ref">${esc(t.trim())}</div>`:`<div class="rp-lines">${'<div></div>'.repeat(6)}</div>`;
+function printDoc(html,title){
+  let st=document.getElementById('printCss');
+  if(!st){st=document.createElement('style');st.id='printCss';st.textContent=PRINT_CSS;document.head.appendChild(st);}
+  let el=document.getElementById('printReport');
+  if(!el){el=document.createElement('div');el.id='printReport';el.setAttribute('data-noi18n','');document.body.appendChild(el);}
+  el.innerHTML=html;
+  const t0=document.title;document.title=title.replace(/[\\/:*?"<>|]/g,'');
+  let back=false;const done=()=>{if(back)return;back=true;document.title=t0;window.removeEventListener('afterprint',done);};
+  window.addEventListener('afterprint',done);setTimeout(done,60000);
+  setTimeout(()=>{try{window.print();}catch(e){done();toast('이 화면에서는 인쇄를 열 수 없어요. 브라우저 메뉴의 인쇄에서 PDF로 저장하세요.');}},60);
+}
+function reportPanel(r,build){
+  const wrap=document.createElement('div');wrap.className='panel';wrap.setAttribute('data-noi18n','');
+  wrap.innerHTML=`<span class="lbl">실험 보고서</span><p class="small">관찰 기록과 내 답으로 실험 보고서를 만들어요. 아래에 고찰을 적고 ‘보고서 PDF로 저장’을 누른 뒤, 인쇄 화면에서 대상(프린터)을 ‘PDF로 저장’으로 고르세요. 고찰을 비워 두면 손으로 쓸 빈 줄이 들어가요.</p><textarea class="copybox rp-in" style="min-height:96px" aria-label="고찰" placeholder="고찰: 결과에서 알게 된 점, 예상과 달랐던 점과 그 까닭, 더 알아보고 싶은 점"></textarea><div class="tools"><button type="button" class="btn primary rp-go">보고서 PDF로 저장</button></div>`;
+  wrap.querySelector('.rp-go').addEventListener('click',()=>{const t=wrap.querySelector('.rp-in').value;const o=build(r,t);printDoc(o.html,o.title);});
+  return wrap;
+}
+const RP_AIM = { ms: '여러 가지 시료의 액성을 지시약으로 판별하고, 산과 염기를 섞을 때 일어나는 중화 반응의 변화를 관찰한다.', hs: '농도를 아는 수산화 나트륨 수용액으로 중화 적정하여 농도를 모르는 산의 몰 농도를 구한다.' };
+function labReport(r, reflect) {
+  const members = r.group ? r.group.members.join(', ') : '';
+  const meta = [['이름', esc(r.name)], ...(members ? [['조원', esc(members)]] : []), ['날짜', rpDate(r.at)], ['실험', `${esc(LV[r.level] || '')} · ${r.mode === 'exam' ? '평가' : '연습'}`]];
+  const data = (r.data || []).filter(d => d.rows.length);
+  const res = data.length ? data.map(d => `<h3>${esc(d.label)}</h3>${measureHTML(d.rows, d.hs, { mark: false })}`).join('') : '<p>기록한 측정값이 없습니다.</p>';
+  const mine = (r.student || []).length ? `<ol>${r.student.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : '<p>정리한 판단이 없습니다.</p>';
+  const html = `<div class="rp"><p class="rp-eye">${esc(LAB_TITLE)} · 실험 보고서</p><h1>${r.level === 'hs' ? '중화 적정' : '액성 판별과 중화 반응'}</h1>
+<table class="rp-meta"><tbody>${meta.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('')}</tbody></table>
+<h2>1. 실험 목적</h2><p>${RP_AIM[r.level] || ''}</p>
+<h2>2. 실험 결과 (측정 기록)</h2>${res}
+<h2>3. 결론 (내가 내린 판단)</h2>${mine}
+<h2>4. 고찰</h2>${rpReflect(reflect)}
+<p class="rp-foot">화면 속 가상 실험실에서 한 실험의 보고서입니다. 실제 실험의 측정값과는 다를 수 있습니다.</p></div>`;
+  return { html, title: `실험보고서_${r.name}_${r.level === 'hs' ? '중화적정' : '액성판별'}` };
 }
 
 /* ---------- example records (marked 예시) ---------- */
@@ -2221,7 +2279,7 @@ function paintStrips() {
 paintStrips();
 (() => {
   const snap = loadSave(); if (!snap) return; const s = snap.S;
-  $('#resumeTx').textContent = `${s.name} · ${LV[s.level]} · ${s.mode === 'exam' ? '평가' : '연습'} · 진행 ${mmss(s.elapsed || 0)} · 과정 기록 ${(s.log || []).length}개`;
+  $('#resumeTx').textContent = `${s.name} · ${LV[s.level]} · ${s.mode === 'exam' ? '평가' : '연습'} · 진행 ${mmss(s.elapsed || 0)}`;
   $('#resume').hidden = false;
 })();
 $('#resumeGo').addEventListener('click', () => { const snap = loadSave(); $('#resume').hidden = true; if (snap) restoreSave(snap); else toast('저장된 실험을 찾지 못했어요.'); });

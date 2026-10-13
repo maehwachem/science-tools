@@ -1766,8 +1766,7 @@ function report1Body(o = {}){
     <h2 class="sec">알루미늄판 E 추가 시험</h2>${alSummary()}
     <h2 class="sec">직렬 미션</h2>${serSummary()}
     <h2 class="sec">판정과 대책</h2>${replySummary()}
-    <h2 class="sec">재확인 이력</h2>${histBlock(S.flags)}
-    ${triesBlock()}`;
+    ${ui.view === 'teacher' ? `<h2 class="sec">재확인 이력</h2>${histBlock(S.flags)}${triesBlock()}` : ''}`;
 }
 function viewReport(){
   const signed = S.reply.signed, tr = courseTrack(), mod = tr && STAGES2[tr];
@@ -1786,6 +1785,7 @@ function viewReport(){
     <div class="actions">
       <button type="button" class="ghost" data-act="home">처음 화면으로</button>
       <button type="button" class="primary" data-act="subcode">제출 코드 복사</button>
+      <button type="button" class="secondary" data-act="pdf">성적서 PDF로 저장</button>
       <button type="button" class="secondary" data-act="go" data-stage="pairs">기록 다시 보기</button>
       ${to2}
     </div>
@@ -2125,10 +2125,10 @@ function makeTrack(T){
       <div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr))">${T.charts.map(ch => `<div class="figbox">${chartSVG(ch)}<p class="who" style="margin:4px 8px">${esc(ch.q)} → <b>${esc(TREND[r.trend[ch.id]] || '-')}</b></p></div>`).join('')}</div>
       ${T.extraReport ? T.extraReport() : ''}
       <h2 class="sec">${esc(T.modelLabel)}</h2>
-      <p class="who">${T.model.filter(q => modelDone(q.id)).length}/${T.model.length}단계 완성, 다시 고른 횟수 ${tries}번</p>
+      <p class="who">${T.model.filter(q => modelDone(q.id)).length}/${T.model.length}단계 완성${ui.view === 'teacher' ? `, 다시 고른 횟수 ${tries}번` : ''}</p>
       <h2 class="sec">${esc(T.replyLabel)}</h2>
       <dl class="reply-sum">${T.texts.map(t => `<dt>${esc(t.label)}</dt><dd>${esc(r.texts[t.id]) || '-'}</dd>`).join('')}</dl>
-      <h2 class="sec">재확인 이력</h2>${histBlock2()}`;
+      ${ui.view === 'teacher' ? `<h2 class="sec">재확인 이력</h2>${histBlock2()}` : ''}`;
   };
   const histBlock2 = () => {
     const items = R2().flags.filter(f => f.st !== 'open').slice().sort((a, b) => a.at - b.at);
@@ -2148,6 +2148,7 @@ function makeTrack(T){
       <div class="actions">
         <button type="button" class="ghost" data-act="home">처음 화면으로</button>
         <button type="button" class="primary" data-act="subcode">제출 코드 복사</button>
+      <button type="button" class="secondary" data-act="pdf">성적서 PDF로 저장</button>
         <button type="button" class="secondary" data-act="go" data-stage="m2">2차 기록 다시 보기</button>
       </div>
     </section>`;
@@ -3936,6 +3937,33 @@ async function submitText(d){
     '분석 코드 (지우지 마세요):'
   ]).join('\n') + '\n' + await encodeTeam(d);
 }
+/* ───────── 성적서 PDF: 성적서 부분만 인쇄 화면에 띄우고, 학생이 'PDF로 저장'을 고름 ───────── */
+const PRINT_CSS = `@media screen{#printReport{display:none!important}}
+@media print{@page{size:A4;margin:12mm}
+html,body{background:#fff!important;padding:0!important;margin:0!important;height:auto!important;overflow:visible!important}
+body>*:not(#printReport){display:none!important}
+#printReport{display:block!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#printReport .actions,#printReport .banner,#printReport button{display:none!important}
+#printReport .report{margin:0!important;padding:0!important;max-width:none!important}
+#printReport table,#printReport tr,#printReport .figbox,#printReport dl{break-inside:avoid}
+#printReport h2{break-after:avoid}
+#printReport .report,#printReport .report *{box-sizing:border-box}
+#printReport table{width:100%!important;max-width:100%!important}
+#printReport .tbl-wrap,#printReport .twin>div{overflow:visible!important;min-width:0!important}
+#printReport svg{max-width:100%;height:auto}}`;
+function printReportOf(btn){
+  const sec = btn && btn.closest('section'); if(!sec || !S) return;
+  let st = document.getElementById('printCss');
+  if(!st){ st = document.createElement('style'); st.id = 'printCss'; st.textContent = PRINT_CSS; document.head.appendChild(st); }
+  let el = document.getElementById('printReport');
+  if(!el){ el = document.createElement('div'); el.id = 'printReport'; document.body.appendChild(el); }
+  const c = sec.cloneNode(true); c.querySelectorAll('.actions, .banner, .sync-note').forEach(n => n.remove());
+  el.innerHTML = ''; el.appendChild(c);
+  const t0 = document.title; document.title = `시험성적서_${(teamLabel(S) || '반조미정').replace(/\s+/g, '_')}`;
+  let back = false; const done = () => { if(back) return; back = true; document.title = t0; window.removeEventListener('afterprint', done); };
+  window.addEventListener('afterprint', done); setTimeout(done, 60000);
+  setTimeout(() => { try{ window.print(); }catch(e){ done(); showToast('이 화면에서는 인쇄를 열 수 없어요. 브라우저 메뉴의 인쇄에서 PDF로 저장하세요.'); } }, 60);
+}
 async function copySubmit(){
   if(!S) return;
   save();
@@ -4320,6 +4348,7 @@ document.addEventListener('click', e => {
     case 'del': removeSlot(el.dataset.id); if(S && S.id === el.dataset.id) S = null; ui.modal = null; render(); break;
     case 'exportTeam': exportTeam(); break;
     case 'subcode': copySubmit(); break;
+    case 'pdf': printReportOf(el); break;
     case 'timport': { const b = document.getElementById('tImportBox'); importCodes(b ? b.value : ''); break; }
     case 'tgate': openGate(); break;
     case 'pinok': pinSubmit(); break;

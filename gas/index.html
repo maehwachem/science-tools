@@ -1254,7 +1254,7 @@ function studentText(r){
     ...(assignText(r.room,r.assign,r.mode)?[assignText(r.room,r.assign,r.mode)]:[]),
     '내 답:',...r.tasks.map((t,i)=>`- 과제 ${i+1}: ${t?`${t.ans} · 근거 ${evText(t.ev)}`:'판정 기록 없음'}`),
     ...recLines(r),
-    `과정 기록 ${r.log.length}개와 분석 결과는 선생님 화면에서 확인합니다.`,'분석 코드 (지우지 마세요):',CODE+encodeRec({...r,src:undefined})].join('\n');
+    '분석 결과는 선생님 화면에서 확인합니다.','분석 코드 (지우지 마세요):',CODE+encodeRec({...r,src:undefined})].join('\n');
 }
 function teacherText(r){
   return [`[기체 가상 실험실] ${r.name}`,`${ROOMS[r.room].nm} · ${r.mode==='exam'?'평가':'연습'}${r.group?' · 조별':''} · 소요 ${mmss(r.dur)}`,...groupLine(r),...(assignText(r.room,r.assign,r.mode)?[assignText(r.room,r.assign,r.mode)]:[]),`결과: ${headline(r)}`,
@@ -1302,12 +1302,73 @@ function renderDone(r,saved=true){
   $('#doneEye').textContent=(saved?'기록 저장 완료':'기록 저장 실패')+(exam?' · 평가':' · 연습 결과');
   $('#doneH').textContent=!saved?'이 기기에 기록을 저장하지 못했습니다':exam?'이 기기에 기록을 저장했습니다':headline(r);
   $('#saveFail').hidden=saved;
-  $('#doneMeta').textContent=`${r.name}${r.group?' · 조별 ('+r.group.members.join(', ')+')':''} · ${ROOMS[r.room].nm} · 소요 ${mmss(r.dur)} · 과정 기록 ${r.log.length}개`;
+  $('#doneMeta').textContent=`${r.name}${r.group?' · 조별 ('+r.group.members.join(', ')+')':''} · ${ROOMS[r.room].nm} · 소요 ${mmss(r.dur)}`;
   const recs=`<div class="panel"><details><summary>관찰 기록 ${r.recs.length}개 보기</summary>${recsInner(r)}</details></div>`;
   $('#doneBody').innerHTML=exam
     ?`<div class="panel"><span class="lbl">내 답</span><ul class="list">${r.tasks.map((t,i)=>`<li>과제 ${i+1}: ${t?`${esc(t.ans)} · 근거 ${evText(t.ev)}`:'판정 기록 없음'}</li>`).join('')}</ul></div>`+recs
-    :`<div class="panel"><span class="lbl">탐구 과제</span>${tasksInner(r)}</div><div class="panel"><span class="lbl">폐액 처리</span>${wasteInner(r)}</div><div class="panel"><span class="lbl">다시 짚어 볼 조작</span>${mistakeChips(r)}</div>`+recs+`<div class="panel"><details><summary>과정 기록 ${r.log.length}개 보기</summary>${timeline(r.log)}</details></div>`;
+    :`<div class="panel"><span class="lbl">탐구 과제</span>${tasksInner(r)}</div><div class="panel"><span class="lbl">폐액 처리</span>${wasteInner(r)}</div>`+recs;
   $('#copyBox').hidden=true;
+  $('#doneBody').appendChild(reportPanel(r,labReport));
+}
+/* ---------- 실험 보고서 PDF: 보고서만 인쇄 화면에 띄우고, 학생이 'PDF로 저장'을 고른다 ---------- */
+const PRINT_CSS=`@media screen{#printReport{display:none!important}}
+@media print{@page{size:A4;margin:14mm 14mm 16mm}
+html,body{background:#fff!important;color:#000!important;padding:0!important;margin:0!important;height:auto!important;overflow:visible!important}
+body>*:not(#printReport){display:none!important}
+#printReport{display:block!important;font:10.5pt/1.65 'IBM Plex Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.rp-eye{margin:0;font-size:9pt;letter-spacing:.04em;color:#444}
+.rp h1{margin:1mm 0 4mm;font-size:19pt;line-height:1.25}
+.rp h2{margin:7mm 0 2.5mm;font-size:12pt;border-bottom:1.2pt solid #000;padding-bottom:1mm;break-after:avoid}
+.rp h3{margin:3mm 0 1mm;font-size:10.5pt}
+.rp p{margin:0 0 2mm}
+.rp table{width:100%;border-collapse:collapse;margin:0 0 2mm;font-size:9.5pt}
+.rp th,.rp td{border:.6pt solid #777;padding:1.4mm 2mm;text-align:left;vertical-align:top}
+.rp th{background:#eee;font-weight:700;white-space:nowrap}
+.rp tr{break-inside:avoid}
+.rp-meta th{width:22mm}
+.rp ol{margin:0 0 2mm;padding-left:6mm}
+.rp li{margin:0 0 1.2mm}
+.rp-task{break-inside:avoid;margin:0 0 3mm}
+.rp-ref{box-sizing:border-box;white-space:pre-wrap;border:.6pt solid #777;padding:2.5mm 3mm;min-height:20mm}
+.rp-lines div{border-bottom:.6pt solid #999;height:8.5mm}
+.rp-foot{margin-top:6mm;font-size:8pt;color:#555;border-top:.4pt solid #aaa;padding-top:1.5mm}
+.rp svg{max-width:100%;height:auto}}`;
+const LAB_TITLE=(document.querySelector('title')||{}).textContent||'가상 실험실';
+const rpDate=iso=>{const d=new Date(iso);return isNaN(d)?'':`${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}.`;};
+const rpReflect=t=>t&&t.trim()?`<div class="rp-ref">${esc(t.trim())}</div>`:`<div class="rp-lines">${'<div></div>'.repeat(6)}</div>`;
+function printDoc(html,title){
+  let st=document.getElementById('printCss');
+  if(!st){st=document.createElement('style');st.id='printCss';st.textContent=PRINT_CSS;document.head.appendChild(st);}
+  let el=document.getElementById('printReport');
+  if(!el){el=document.createElement('div');el.id='printReport';el.setAttribute('data-noi18n','');document.body.appendChild(el);}
+  el.innerHTML=html;
+  const t0=document.title;document.title=title.replace(/[\\/:*?"<>|]/g,'');
+  let back=false;const done=()=>{if(back)return;back=true;document.title=t0;window.removeEventListener('afterprint',done);};
+  window.addEventListener('afterprint',done);setTimeout(done,60000);
+  setTimeout(()=>{try{window.print();}catch(e){done();toast('이 화면에서는 인쇄를 열 수 없어요. 브라우저 메뉴의 인쇄에서 PDF로 저장하세요.');}},60);
+}
+function reportPanel(r,build){
+  const wrap=document.createElement('div');wrap.className='panel';wrap.setAttribute('data-noi18n','');
+  wrap.innerHTML=`<span class="lbl">실험 보고서</span><p class="small">관찰 기록과 내 답으로 실험 보고서를 만들어요. 아래에 고찰을 적고 ‘보고서 PDF로 저장’을 누른 뒤, 인쇄 화면에서 대상(프린터)을 ‘PDF로 저장’으로 고르세요. 고찰을 비워 두면 손으로 쓸 빈 줄이 들어가요.</p><textarea class="copybox rp-in" style="min-height:96px" aria-label="고찰" placeholder="고찰: 결과에서 알게 된 점, 예상과 달랐던 점과 그 까닭, 더 알아보고 싶은 점"></textarea><div class="tools"><button type="button" class="btn primary rp-go">보고서 PDF로 저장</button></div>`;
+  wrap.querySelector('.rp-go').addEventListener('click',()=>{const t=wrap.querySelector('.rp-in').value;const o=build(r,t);printDoc(o.html,o.title);});
+  return wrap;
+}
+function labReport(r,reflect){
+  const room=ROOMS[r.room]||{nm:r.room,sub:''},titles=TT[r.room]||[];
+  let qs=[];const prev=S;
+  try{S=Object.assign({},prev||{},{room:r.room,mode:r.mode,assign:r.assign});qs=(TASKS[r.room]||[]).map((t,i)=>{try{return t.q();}catch(e){return titles[i]||'';}});}catch(e){}finally{S=prev;}
+  const asg=assignText(r.room,r.assign,r.mode),members=r.group?r.group.members.join(', '):'';
+  const meta=[['이름',esc(r.name)],...(members?[['조원',esc(members)]]:[]),['날짜',rpDate(r.at)],['실험',`${esc(room.nm)} · ${r.mode==='exam'?'평가':'연습'}`],...(asg?[['조건',esc(asg.replace(/^배정 조건 · /,''))]]:[])];
+  const recs=r.recs&&r.recs.length?`<table><thead><tr><th>번호</th><th>장치</th><th>기록</th></tr></thead><tbody>${r.recs.map(x=>`<tr><td>#${x.n}</td><td>${esc(x.s)}</td><td>${esc(x.x)}</td></tr>`).join('')}</tbody></table>`:'<p>남긴 관찰 기록이 없습니다.</p>';
+  const concl=r.tasks.map((t,i)=>`<div class="rp-task"><h3>${i+1}. ${esc(titles[i]||'')}</h3>${t?`<p>${esc(t.ans)}</p><p style="font-size:9pt;color:#444">근거로 든 관찰 기록: ${esc(evText(t.ev))}</p>`:'<p>답을 정하지 않았습니다.</p>'}</div>`).join('');
+  const html=`<div class="rp"><p class="rp-eye">${esc(LAB_TITLE)} · 실험 보고서</p><h1>${esc(room.nm)}</h1>
+<table class="rp-meta"><tbody>${meta.map(([k,v])=>`<tr><th>${k}</th><td>${v}</td></tr>`).join('')}</tbody></table>
+<h2>1. 실험 주제와 탐구 과제</h2><p>${esc((room.sub||'').replace(/^[^·]*·\s*/,''))}</p><ol>${qs.map(q=>`<li>${esc(q)}</li>`).join('')}</ol>
+<h2>2. 실험 결과 (관찰 기록)</h2>${recs}
+<h2>3. 결론</h2>${concl}
+<h2>4. 고찰</h2>${rpReflect(reflect)}
+<p class="rp-foot">화면 속 가상 실험실에서 한 실험의 보고서입니다. 실제 실험의 측정값과는 다를 수 있습니다.</p></div>`;
+  return {html,title:`실험보고서_${r.name}_${room.nm}`};
 }
 
 /* ---------- example records (marked 예시) ---------- */
@@ -1457,7 +1518,7 @@ function loadSave(){
 }
 function showResume(){
   const d=loadSave();$('#resume').hidden=!d;
-  if(d)$('#resumeTx').textContent=`${d.S.name}${d.S.group?' (조별)':''} · ${ROOMS[d.S.room].nm} · ${d.S.mode==='exam'?'평가':'연습'} · ${fmtDate(new Date(d.at).toISOString())}에 마지막으로 저장 · 과정 기록 ${d.S.log.length}개`;
+  if(d)$('#resumeTx').textContent=`${d.S.name}${d.S.group?' (조별)':''} · ${ROOMS[d.S.room].nm} · ${d.S.mode==='exam'?'평가':'연습'} · ${fmtDate(new Date(d.at).toISOString())}에 마지막으로 저장`;
 }
 function restoreSave(){
   const d=loadSave();if(!d){showResume();return;}
