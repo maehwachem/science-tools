@@ -1169,7 +1169,8 @@ function show(w){
   const M={start:'#scrStart',lab:'#scrLab',done:'#scrDone',lock:'#scrLock',teacher:'#scrTeacher'};
   for(const k in M)$(M[k]).hidden=k!==w;
   $('#ppeBar').hidden=w!=='lab';$('#roleBar').hidden=w!=='lab'||!(S&&S.group);$('#brief').hidden=w!=='lab';$('#guideBar').hidden=w!=='lab';$('#brief').open=true;$('#clock').hidden=w!=='lab';
-  const tb=$('#btnTeacher');tb.hidden=w==='lab'||!TROUTE;  // 교사 화면은 #teacher 주소로 연 기기에서만tb.textContent=(w==='lock'||w==='teacher')?'돌아가기':'교사 보기';
+  const tb=$('#btnTeacher');tb.hidden=w==='lab'; // 실험 중에만 숨긴다. 교사 PIN은 기기마다 나눠 주기 전에 정한다
+if(w==='start')renderPinHint();tb.textContent=(w==='lock'||w==='teacher')?'돌아가기':'교사 보기';
   if(w!=='lab'&&w!=='done')$('#hdrSub').textContent='화학 평형 실험대 · 농도 · 온도 · 압력';
   window.scrollTo(0,0);
 }
@@ -1208,6 +1209,8 @@ const TROUTE=(location.hash||'').slice(1).split('.').includes('teacher');
 async function hashPin(p){const txt='vlab-eq:'+p;try{const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt));return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');}catch(e){let h=0;for(const ch of txt)h=(h*31+ch.charCodeAt(0))|0;return 'x'+(h>>>0).toString(16);}}
 function getPin(){try{return localStorage.getItem(PIN_KEY);}catch(e){return null;}}
 function setPin(h){try{localStorage.setItem(PIN_KEY,h);return true;}catch(e){return false;}}
+function renderPinHint(){var st=document.getElementById('scrStart');if(!st)return;var h=document.getElementById('pinHint');if(getPin()){if(h)h.hidden=true;return;}if(!h){h=document.createElement('div');h.id='pinHint';h.className='panel';h.setAttribute('data-noi18n','');h.style.cssText='display:block;grid-column:1/-1;align-self:start;margin:0 0 14px;padding:12px 16px;border-left:4px solid currentColor;font-size:14px;line-height:1.6';h.innerHTML='<p style="margin:0 0 10px"><strong>선생님 안내</strong> · 이 기기에는 아직 교사 PIN이 없어요. 학생에게 나눠 주기 전에 오른쪽 위 <strong>교사 보기</strong>를 눌러 PIN을 정해 두세요. PIN을 정하면 이 안내는 사라지고, 이 기기에 모인 학생 기록은 교사 화면에서 볼 수 있어요.</p>';var b=document.createElement('button');b.type='button';b.className='btn sm';b.style.width='auto';b.textContent='지금 PIN 정하기';b.addEventListener('click',function(){document.getElementById('btnTeacher').click();});h.appendChild(b);st.insertBefore(h,st.firstChild);}h.hidden=false;}
+
 const RKEY='vlab-eq-records-v1';
 let RECS=[],LAST=null,UNLOCKED=false,TF='all';
 try{const v=JSON.parse(localStorage.getItem(RKEY)||'[]');if(Array.isArray(v))RECS=v;}catch(e){RECS=[];}
@@ -1471,7 +1474,7 @@ let lockMode='enter';
 function openLock(){
   lockMode=getPin()?'enter':'set';const set=lockMode==='set';
   $('#lockTitle').textContent=set?'교사 PIN을 정하세요':'교사 PIN을 입력하세요';
-  $('#lockLead').textContent=set?'이 기기에서 교사 화면을 처음 열었어요. 숫자 4~6자리를 정하면 다음부터 이 PIN으로 열어요. 교사 화면은 선생님 기기에서만 쓰세요.':'학생 기록과 정답, 분석 결과는 교사 PIN으로만 열 수 있어요.';
+  $('#lockLead').textContent=set?'이 기기에서 교사 화면을 처음 열었어요. 숫자 4~6자리를 정하면 다음부터 이 PIN으로 열어요. 학생에게 기기를 나눠 주기 전에 정해 두세요.':'학생 기록과 정답, 분석 결과는 교사 PIN으로만 열 수 있어요.';
   $('#lockRow2').hidden=!set;$('#lockGo').textContent=set?'정하고 열기':'열기';$('#lockForgotRow').hidden=set;
   const f=$('#lockForgot');delete f.dataset.armed;f.textContent='PIN을 잊었어요';$('#lockForgotTx').hidden=true;
   $('#lockCode').value='';$('#lockCode2').value='';$('#lockMsg').textContent='';
@@ -1536,7 +1539,7 @@ function bind(){
   $('#btnAgain').onclick=()=>{S=null;show('start');showResume();};
 }
 bind();applyFix();syncStart();showResume();
-$('#btnTeacher').hidden=!TROUTE;
+$('#btnTeacher').hidden=false;renderPinHint();
 if(TROUTE)openLock();
 requestAnimationFrame(frame);
 })();

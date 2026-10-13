@@ -1274,7 +1274,7 @@ function viewTitle(){
         <p class="intro">소금물을 부으면 켜지는 비상 랜턴이 어둡다는 신고가 들어왔어요. 1차 시험에서는 라벨이 섞인 전극판 네 장의 정체를 전압으로 밝히고, 2차 시험에서는 더 좋은 셀을 설계해요.</p>`}
         <div class="title-actions"><button type="button" class="${slots.length ? 'secondary' : 'primary'}" data-act="new">새 시험 시작</button></div>
         ${list}
-        <div class="title-foot"><p class="sync-note who">${esc(syncText())}</p><button type="button" class="linkbtn" data-act="tgate">교사 화면</button><a class="linkbtn" href="${PRIVACY_URL}" target="_blank" rel="noopener">개인정보 처리방침</a></div>
+        ${(!TS.pin && !cloud.db) ? `<p class="sync-note" style="flex-basis:100%"><strong>선생님 안내</strong> · 이 기기에는 아직 교사 PIN이 없어요. 학생에게 나눠 주기 전에 아래 <strong>교사 화면</strong>을 눌러 PIN을 정해 두세요.</p>` : ''}<div class="title-foot"><p class="sync-note who">${esc(syncText())}</p><button type="button" class="linkbtn" data-act="tgate">교사 화면</button><a class="linkbtn" href="${PRIVACY_URL}" target="_blank" rel="noopener">개인정보 처리방침</a></div>
       </div>
       <div>${monitorHTML()}</div>
     </div>
@@ -3600,7 +3600,7 @@ function modalHTML(){
   if(m.type === 'pin'){
     return `<div class="modal-in">
       <h2 id="mt">교사 화면</h2>
-      <p class="mlead">${m.mode === 'set' ? '처음 열었어요. 교사 화면에 쓸 숫자 4~6자리를 정하세요. 학생이 우연히 들어오지 않게 막는 용도예요.' : '교사 PIN을 입력하세요.'}</p>
+      <p class="mlead">${m.mode === 'set' ? '처음 열었어요. 교사 화면에 쓸 숫자 4~6자리를 정하세요. 학생이 우연히 들어오지 않게 막는 용도라, 학생에게 기기를 나눠 주기 전에 정해 두세요.' : '교사 PIN을 입력하세요.'}</p>
       <label class="f"><span>PIN</span><input type="password" inputmode="numeric" id="pin1" maxlength="6" autocomplete="off"></label>
       ${m.mode === 'set' ? '<label class="f" style="margin-top:10px"><span>한 번 더</span><input type="password" inputmode="numeric" id="pin2" maxlength="6" autocomplete="off"></label>' : ''}
       ${m.err ? `<p class="mmsg" role="alert">${esc(m.err)}</p>` : ''}
