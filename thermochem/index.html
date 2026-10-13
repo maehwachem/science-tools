@@ -1,0 +1,1423 @@
+<!doctype html><html lang="ko"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>열화학 가상 실험실</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+
+/* Layout: same family as 산·염기, 산화·환원, 반응 속도 가상 실험실. Phones stack the bench (pinned) over the controls;
+   wide screens put the bench beside the controls. The interface stays neutral so the chemistry carries the color. */
+:root{
+  --bg:#edf0ef; --surface:#ffffff; --surface-2:#f4f6f5; --ink:#162020; --ink-2:#4a5755; --ink-3:#7a8785;
+  --line:#d3dad8; --line-2:#e3e8e6; --primary:#162020; --on-primary:#ffffff;
+  --bad:#b0262f; --bad-bg:#fbe9ea; --good:#1b7444; --good-bg:#e4f2ea; --note:#6a5410; --note-bg:#f5eed6;
+  --glass:rgba(140,170,178,.10); --glass-line:#8ba0a3; --nliq:rgba(150,190,205,.40); --rim:rgba(30,45,45,.35);
+  --lcd:#1b2423; --lcd-ink:#d6efe3; --lcd-dim:#86a39a;
+  --wire-r:#c43a3a; --wire-k:#26302f;
+  --m-zn:#9eaab1; --m-fe:#5f6668; --m-cu:#b8693a; --m-ag:#d4d9dc; --m-c:#2e3334; --m-brass:#c9a547; --m-post:#a3adac;
+  --ion-cu:#2f74c8; --ion-fe:#6f9f5a; --gas:#ffffff; --cl2:#cbd65a; --bub:rgba(255,255,255,.8); --bridge:#ebe5cc;
+  --edot:#d99a00; --c-v:#1f6aa8; --c-i:#b5542b;
+  --m-x:#b7c0c4; --flame:#f0a030; --lime:#ffffff; --km:#4a1858; --pink:#d9468f; --mno2:#7a4a1f; --fe3:#d8b23a; --plate:#fbfcfc; --plate-ink:#2a3433;
+  --s1:#1f6aa8; --s2:#c4562b; --s3:#2f8a57; --s4:#8a4fb0; --s5:#b0891f; --s6:#5b6b70; --bath-cold:#9cc8e8; --bath-warm:#f0b48a; --sulfur:#efe6b8; --pot:#e3cf8f; --potb:#b89a5e; --marble:#e9e6df; --paper:#fbfaf6; --xmark:#1d2424; --bal:#cfd6d4; --thermo:#c8352b;
+  --led:#3f6fe0; --cap:#3a4644; --ice:#ffffff; --chem-line:rgba(30,45,45,.30);
+  --font-sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e1413; --surface:#162020; --surface-2:#1b2625; --ink:#e5ecea; --ink-2:#a7b3b0; --ink-3:#7a8783;
+  --line:#2a3634; --line-2:#212c2b; --primary:#e5ecea; --on-primary:#0e1413;
+  --bad:#ff8790; --bad-bg:#3a1c20; --good:#72d49e; --good-bg:#15301f; --note:#e8d28a; --note-bg:#322f1b;
+  --glass:rgba(170,205,212,.07); --glass-line:#68808a; --nliq:rgba(150,195,210,.22); --rim:rgba(0,0,0,.5);
+  --wire-r:#ff7b7b; --wire-k:#a9b8b5;
+  --m-zn:#8f9ba2; --m-fe:#7a8385; --m-cu:#c77a47; --m-ag:#c9cfd2; --m-c:#5a6263; --m-brass:#c9a547; --m-post:#7d8886;
+  --ion-cu:#4a8fe0; --ion-fe:#7fb36a; --gas:#dfe9e8; --cl2:#c3cf55; --bub:rgba(220,236,236,.6); --bridge:#5c5845;
+  --edot:#ffc94a; --c-v:#7fb9ea; --c-i:#f09b74; --lcd:#0b1110; --m-x:#a7b0b4; --flame:#ffb347; --lime:#e8eeee; --km:#6a2a80; --pink:#ee6aa8; --mno2:#9a6230; --fe3:#e2c050; --plate:#cfd7d5; --plate-ink:#1f2b29; --s1:#7fb9ea; --s2:#f09b74; --s3:#74c99a; --s4:#c39ae0; --s5:#e2c060; --s6:#a9b8b5; --bath-cold:#3f6e8c; --bath-warm:#8a5a3a; --sulfur:#d9cf9a; --pot:#c9b679; --potb:#9c8350; --marble:#cfcbc2; --paper:#d8d6cf; --xmark:#1d2424; --bal:#3a4644; --thermo:#ff7a6b; --led:#7ea2ff; --cap:#9aa8a6; --ice:#dfeaf0; --chem-line:rgba(220,235,235,.35); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0e1413; --surface:#162020; --surface-2:#1b2625; --ink:#e5ecea; --ink-2:#a7b3b0; --ink-3:#7a8783;
+  --line:#2a3634; --line-2:#212c2b; --primary:#e5ecea; --on-primary:#0e1413;
+  --bad:#ff8790; --bad-bg:#3a1c20; --good:#72d49e; --good-bg:#15301f; --note:#e8d28a; --note-bg:#322f1b;
+  --glass:rgba(170,205,212,.07); --glass-line:#68808a; --nliq:rgba(150,195,210,.22); --rim:rgba(0,0,0,.5);
+  --wire-r:#ff7b7b; --wire-k:#a9b8b5;
+  --m-zn:#8f9ba2; --m-fe:#7a8385; --m-cu:#c77a47; --m-ag:#c9cfd2; --m-c:#5a6263; --m-brass:#c9a547; --m-post:#7d8886;
+  --ion-cu:#4a8fe0; --ion-fe:#7fb36a; --gas:#dfe9e8; --cl2:#c3cf55; --bub:rgba(220,236,236,.6); --bridge:#5c5845;
+  --edot:#ffc94a; --c-v:#7fb9ea; --c-i:#f09b74; --lcd:#0b1110; --m-x:#a7b0b4; --flame:#ffb347; --lime:#e8eeee; --km:#6a2a80; --pink:#ee6aa8; --mno2:#9a6230; --fe3:#e2c050; --plate:#cfd7d5; --plate-ink:#1f2b29; --s1:#7fb9ea; --s2:#f09b74; --s3:#74c99a; --s4:#c39ae0; --s5:#e2c060; --s6:#a9b8b5; --bath-cold:#3f6e8c; --bath-warm:#8a5a3a; --sulfur:#d9cf9a; --pot:#c9b679; --potb:#9c8350; --marble:#cfcbc2; --paper:#d8d6cf; --xmark:#1d2424; --bal:#3a4644; --thermo:#ff7a6b; --led:#7ea2ff; --cap:#9aa8a6; --ice:#dfeaf0; --chem-line:rgba(220,235,235,.35); color-scheme:dark }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-sans);font-size:15px;line-height:1.55;word-break:keep-all;overflow-wrap:break-word}
+body[data-mode="exam"] .practice-only{display:none!important}
+.app{max-width:1100px;margin:0 auto;padding-inline:16px;padding-block:4px 80px}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.small{font-size:13px;color:var(--ink-2);margin:0}
+.lbl{font-size:12px;letter-spacing:.06em;color:var(--ink-3);font-weight:500;margin:0}
+.eyebrow{font-size:12.5px;letter-spacing:.08em;color:var(--ink-3);margin:0;font-weight:500}
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.02em}
+h1{font-size:clamp(30px,6vw,44px);line-height:1.15;font-weight:700}
+h2{font-size:24px;line-height:1.25;font-weight:700}
+h3{font-size:16px;line-height:1.4;font-weight:600;letter-spacing:-.01em}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.brand{display:flex;flex-direction:column;min-width:0}
+.brand-name{font-weight:700;font-size:16px}
+.brand-sub{font-size:12.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clock{font-family:var(--font-mono);font-size:14px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+
+.btn{font:inherit;font-size:14px;font-weight:500;line-height:1.2;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 13px;min-height:40px;cursor:pointer;transition:border-color .15s,background .15s}
+.btn:hover{border-color:var(--ink-3)}
+.btn:focus-visible,.sel:focus-visible,.num:focus-visible,.field input:focus-visible,input[type=range]:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.btn.primary{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.btn.ghost{background:transparent}
+.btn[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.sm{min-height:34px;padding:6px 11px;font-size:13px}
+.btn.big{min-height:50px;font-size:16px;padding-inline:22px}
+.btn.on{background:var(--bad);border-color:var(--bad);color:var(--on-primary)}
+
+.tools{display:flex;flex-wrap:wrap;gap:8px}
+.stack{display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.lab{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;align-items:start}
+@media (min-width:880px){.lab{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px}}
+.bench{position:sticky;top:env(safe-area-inset-top,0px);z-index:3;box-shadow:0 8px 18px -14px rgba(0,0,0,.45)}
+@media (min-width:880px){.bench{top:calc(env(safe-area-inset-top,0px) + 12px)}}
+.bench-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.hint{font-size:12.5px;color:var(--ink-2);text-align:right}
+#board{display:block;width:100%;height:auto;max-height:30vh;margin-inline:auto}
+@media (max-width:879px){.bench{padding:10px 12px;gap:6px}.meter{padding:3px 8px}.meter b{font-size:14px}.meter-k{font-size:10.5px}}
+@media (min-width:880px){#board{max-height:62vh}}
+#board text{font-family:var(--font-sans)}
+
+.guide{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;margin:0 0 12px;padding:10px 12px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:10px;font-size:14px}
+.guide-k{flex:none;font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--on-primary);background:var(--primary);border-radius:4px;padding:2px 6px}
+#guideTx{flex:1 1 16em;min-width:0}
+.assign{margin:0 0 12px;font-size:14px;color:var(--ink);background:var(--surface-2);border:1px solid var(--line-2);border-radius:10px;padding:9px 12px}
+.brief{display:block;margin:0 0 10px}
+.ppe-tx{font-size:12.5px;color:var(--ink-3)}
+.rolebar{display:flex;flex-wrap:wrap;gap:4px 14px;margin:0 0 10px;font-size:13px;color:var(--ink-2)}
+.rolebar b{font-weight:600;color:var(--ink)}
+.guide-who{flex:0 1 auto;max-width:100%;font-size:12px;font-weight:600;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:1px 8px}
+.members{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.members input{font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:42px;width:100%;min-width:0}
+.roles{display:flex;flex-direction:column;gap:8px}
+.role-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.role-name{min-width:5em;font-size:14px;font-weight:600;color:var(--ink)}
+.resume{border-color:var(--ink-3)}
+.brief summary{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;cursor:pointer}
+.brief-hint{font-size:13px;color:var(--ink-2)}
+.brief[open] summary{margin-bottom:10px}
+.brief .assign{margin:0 0 10px}
+.brief-list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14.5px;max-width:52em}
+.brief-list li::marker{color:var(--ink-3);font-family:var(--font-mono)}
+.jump{font-size:13px;color:var(--ink-2);margin-left:6px;white-space:nowrap}
+
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;min-width:0}
+.seg input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.seg label{flex:1;text-align:center;font-size:13px;padding:8px 4px;cursor:pointer;border-left:1px solid var(--line);color:var(--ink-2);min-width:0}
+.seg label:first-of-type{border-left:0}
+.seg input:checked + label{background:var(--primary);color:var(--on-primary)}
+.seg input:focus-visible + label{outline:2px solid var(--ink);outline-offset:-2px}
+.ppe{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:0 0 10px;padding:8px 10px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface)}
+.ppe .lbl{margin-right:4px}
+
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+@media (max-width:520px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.fld{display:flex;flex-direction:column;gap:5px;min-width:0}
+.num,.sel{font:inherit;font-family:var(--font-mono);font-size:16px;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-height:40px;width:7.5em;min-width:0}
+.sel{font-family:var(--font-sans);font-size:14px;width:100%;max-width:100%}
+.mrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.mrow .sel{width:auto;flex:1 1 9em}
+.unit{font-family:var(--font-mono);color:var(--ink-2);font-size:14px}
+input[type=range]{width:100%;accent-color:var(--ink)}
+.chk{position:relative;display:inline-flex;max-width:100%}
+.chk input{position:absolute;opacity:0;width:1px;height:1px}
+.chk span{display:inline-flex;align-items:center;min-height:34px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--ink-2);background:var(--surface);cursor:pointer;text-align:left}
+.chk input:checked + span{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.chk input:focus-visible + span{outline:2px solid var(--ink);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;max-height:230px;overflow:auto;padding:2px}
+.chips .chk span{border-radius:10px;font-size:12.5px;line-height:1.4}
+.divider{border:0;border-top:1px solid var(--line-2);margin:2px 0}
+
+.meters{display:flex;flex-wrap:wrap;gap:6px}
+.meter{display:inline-flex;align-items:baseline;gap:6px;padding:5px 10px;border-radius:8px;background:var(--lcd);color:var(--lcd-ink);font-family:var(--font-mono)}
+.meter-k{font-family:var(--font-sans);font-size:11px;color:var(--lcd-dim)}
+.meter b{font-size:16px;font-weight:500;font-variant-numeric:tabular-nums}
+
+.legend{display:flex;gap:12px;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+#cv{display:block;width:100%;height:170px}
+
+.tbl-wrap{overflow-x:auto;max-height:260px;overflow-y:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{font-weight:500;color:var(--ink-3);font-size:12px;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)}
+.tbl td{padding:6px 8px;border-bottom:1px solid var(--line-2);vertical-align:top}
+.tbl td.n,.tbl td.t{font-family:var(--font-mono);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink-2)}
+.tbl .empty td{color:var(--ink-3)}
+
+.task{display:flex;flex-direction:column;gap:10px;padding-block:12px;border-top:1px solid var(--line-2)}
+.task:first-child{border-top:0;padding-top:0}
+.rlist{display:flex;flex-direction:column;gap:2px}
+.rlist label{display:flex;gap:8px;align-items:flex-start;font-size:14px;padding:5px 0;cursor:pointer}
+.rlist input{accent-color:var(--ink);margin-top:4px;flex:none}
+.t-msg{margin:0;font-size:13px;color:var(--ink-2)}
+.t-msg.ok{color:var(--good)} .t-msg.no{color:var(--bad)}
+.wrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,11em);gap:8px;align-items:center;padding-block:6px;border-bottom:1px solid var(--line-2)}
+.wrow:last-child{border-bottom:0}
+@media (max-width:520px){.wrow{grid-template-columns:minmax(0,1fr)}}
+.wmsg{grid-column:1 / -1;font-size:12.5px;margin:0}
+.wmsg.ok{color:var(--good)} .wmsg.no{color:var(--bad)}
+.submit-row{display:flex;justify-content:flex-end}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));width:max-content;max-width:min(520px,calc(100% - 32px));background:var(--primary);color:var(--on-primary);padding:11px 16px;border-radius:10px;font-size:14px;z-index:40;box-shadow:0 10px 26px -12px rgba(0,0,0,.55)}
+.toast[data-kind="bad"]{background:var(--bad)}
+.toast[data-kind="good"]{background:var(--good)}
+
+.start{display:grid;gap:28px;padding-block:8px 20px}
+@media (min-width:880px){.start{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;padding-top:24px}}
+.intro{display:flex;flex-direction:column;gap:14px;min-width:0}
+.lede{margin:0;color:var(--ink-2);max-width:34em;font-size:15.5px}
+.series{margin:6px 0 0;display:flex;flex-direction:column;gap:10px;padding:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.series-row{display:flex;flex-wrap:wrap;gap:4px}
+.el{display:inline-flex;align-items:center;justify-content:center;min-width:2.4em;height:2.2em;padding-inline:4px;border:1px solid var(--line-2);border-radius:6px;font-family:var(--font-mono);font-size:13px;color:var(--ink-3)}
+.el.on{color:var(--ink);border-color:var(--ink-2);font-weight:500;background:var(--surface-2)}
+.el.h{border-style:dashed}
+.series-ax{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3)}
+.series figcaption{font-size:12px;color:var(--ink-3)}
+.start-form{display:flex;flex-direction:column;gap:18px;min-width:0}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend{padding:0;margin-bottom:8px}
+.opts{display:grid;gap:8px}
+@media (min-width:520px){.opts.two{grid-template-columns:1fr 1fr}}
+.opt{position:relative;display:block;cursor:pointer}
+.opt input{position:absolute;opacity:0;width:1px;height:1px}
+.opt-body{display:flex;flex-direction:column;gap:2px;height:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.opt-t{font-weight:700;font-size:15px}
+.opt-d{font-size:13px;color:var(--ink-2)}
+.opt input:checked + .opt-body{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.opt input:focus-visible + .opt-body{outline:2px solid var(--ink);outline-offset:2px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field input{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;min-height:46px}
+.err{margin:0;font-size:13px;color:var(--bad)}
+
+.done{max-width:760px;display:flex;flex-direction:column;gap:14px;padding-block:12px}
+.res{display:flex;flex-direction:column;gap:6px;padding-block:10px;border-bottom:1px solid var(--line-2)}
+.res:last-child{border-bottom:0}
+.res-top{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.okchip,.nochip,.chip{display:inline-block;font-size:12.5px;border-radius:6px;padding:2px 8px}
+.okchip{background:var(--good-bg);color:var(--good)}
+.nochip{background:var(--bad-bg);color:var(--bad)}
+.chip{color:var(--ink-2);border:1px solid var(--line)}
+.mchips{display:flex;flex-wrap:wrap;gap:6px}
+.tl{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column}
+.tl li{display:grid;grid-template-columns:48px minmax(0,1fr);gap:10px;padding-block:5px;border-bottom:1px solid var(--line-2);font-size:13.5px}
+.tl li:last-child{border-bottom:0}
+.tl-t{font-family:var(--font-mono);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.tl .k-bad .tl-x{color:var(--bad)}
+.tl .k-rec .tl-x{font-weight:500}
+.tl .k-note .tl-x{color:var(--ink-2)}
+
+/* submission & teacher */
+.top-right{display:flex;align-items:center;gap:10px;flex:none}
+.list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.chip.ex{color:var(--note);background:var(--note-bg);border-color:transparent}
+.copybox{width:100%;min-height:160px;font-family:var(--font-mono);font-size:12px;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px}
+.t-head{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-width:44em}
+.t-grid{display:grid;gap:12px;margin-bottom:12px}
+@media (min-width:880px){.t-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}}
+.t-list{display:grid;gap:12px;margin-top:12px}
+@media (min-width:880px){.t-list{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}}
+.rec-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.rec-who{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0}
+.rec-who strong{font-size:15px}
+.rec-head{margin:0;font-size:15px;font-weight:500}
+.bar-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(60px,36%) 44px;align-items:center;gap:10px;font-size:13.5px;padding-block:3px}
+.bar-sub{display:block;font-size:11.5px;color:var(--ink-3)}
+.bar{height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden;border:1px solid var(--line-2)}
+.bar span{display:block;height:100%;background:var(--bad)}
+.bar.ok span{background:var(--good)}
+.bar-n{text-align:right;color:var(--ink-3);font-size:12px}
+.btn[data-armed]{background:var(--bad);border-color:var(--bad);color:var(--on-primary)}
+details > summary{cursor:pointer;font-size:13.5px;color:var(--ink-2);padding-block:2px}
+#tExWrap{margin-top:12px}
+
+/* board */
+.b-glass{fill:var(--glass);stroke:var(--glass-line);stroke-width:1.5}
+.b-glass-o{fill:none;stroke:var(--glass-line);stroke-width:1.5}
+.b-liq{fill:var(--nliq)}
+.b-lcd{fill:var(--lcd)}
+.b-lcdt{fill:var(--lcd-ink);font-family:var(--font-mono)!important;font-size:15px}
+.w-r,.w-k{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.w-r{stroke:var(--wire-r)} .w-k{stroke:var(--wire-k)}
+.b-lab{fill:var(--ink-2);font-size:11px}
+.b-lab-s{fill:var(--ink-3);font-size:10px}
+.b-gas{fill:var(--gas);fill-opacity:.9}
+.b-bub{fill:var(--bub);stroke:var(--glass-line);stroke-width:.6}
+.b-tick{stroke:var(--ink-3);stroke-width:.8}
+.b-tick-t{fill:var(--ink-3);font-size:8.5px}
+.b-stand{fill:none;stroke:var(--ink-3);stroke-width:2.5;stroke-linecap:round}
+.b-lamp{fill:var(--glass);stroke:var(--glass-line);stroke-width:1.5}
+.b-flame{fill:var(--flame);fill-opacity:.85}
+.b-stopper{fill:var(--ink-3)}
+.b-tube{fill:none;stroke:var(--glass-line);stroke-width:3;stroke-linejoin:round}
+@media (prefers-reduced-motion: reduce){.btn{transition:none}}
+
+/* equilibrium lab (shared with rate lab) */
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.grid3{grid-template-columns:minmax(0,1fr)}}
+.factors{margin:6px 0 0;display:flex;flex-direction:column;gap:0;padding:6px 14px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.frow{display:grid;grid-template-columns:5.5em minmax(0,1fr);gap:10px;padding-block:8px;border-bottom:1px solid var(--line-2);font-size:14px}
+.frow:last-of-type{border-bottom:0}
+.fk{font-weight:700}
+.fv{color:var(--ink-2)}
+.factors figcaption{font-size:12px;color:var(--ink-3);padding-block:6px 4px}
+#cv{height:200px}
+.lg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--ink-2)}
+.lg i{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+.b-bath{fill-opacity:.55}
+.b-syr{fill:var(--glass);stroke:var(--glass-line);stroke-width:1.5}
+.b-plunger{fill:var(--ink-3)}
+.b-mno2s{fill:#1f1c1b}
+.b-pot{fill:var(--pot);stroke:var(--rim);stroke-width:.6}
+.b-potb{fill:var(--potb);stroke:var(--rim);stroke-width:.6}
+.b-bal{fill:var(--bal);stroke:var(--line);stroke-width:1}
+.b-marble{fill:var(--marble);stroke:var(--rim);stroke-width:.6}
+.b-cotton{fill:#ffffff;stroke:var(--line);stroke-width:.8}
+.b-paper{fill:var(--paper);stroke:var(--line);stroke-width:1}
+.b-x{stroke:var(--xmark);stroke-width:9;stroke-linecap:round}
+.b-turb{fill:var(--sulfur)}
+.b-rim{fill:none;stroke:var(--glass-line);stroke-width:3}
+.b-ring{fill:none;stroke-width:14;stroke-opacity:.55}
+
+.b-rack{fill:var(--surface-2);stroke:var(--line);stroke-width:1}
+.b-tubeo{fill:none;stroke:var(--glass-line);stroke-width:1.6}
+.b-chem{stroke:var(--chem-line);stroke-width:.6}
+.b-led{fill:var(--led)}
+.b-beam{stroke:var(--led);stroke-width:3;stroke-opacity:.45;stroke-dasharray:4 3}
+.b-ice{fill:var(--ice);fill-opacity:.85;stroke:var(--line);stroke-width:.8}
+.b-cap{fill:var(--cap)}
+.b-sel{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-dasharray:3 3}
+.b-ppt{fill:#f4f4f2;fill-opacity:.9}
+.b-steam{fill:none;stroke:var(--ink-3);stroke-width:1.2;stroke-linecap:round;opacity:.6}
+.calc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (max-width:520px){.calc{grid-template-columns:minmax(0,1fr)}}
+.unit{font-size:12px;color:var(--ink-3)}
+
+.b-thermo{fill:var(--surface);fill-opacity:.9;stroke:var(--glass-line);stroke-width:1}
+.b-thermo-l{fill:var(--thermo)}
+.b-thermo-rod{stroke:var(--glass-line);stroke-width:7;stroke-linecap:round}
+.b-thermo-in{stroke:var(--surface);stroke-width:5;stroke-linecap:round}
+.b-thermo-col{stroke:var(--thermo);stroke-width:2;stroke-linecap:round}
+.b-thermo-t{font-size:10px;fill:var(--thermo);font-weight:500}
+.b-cup{fill:var(--surface-2);stroke:var(--line);stroke-width:1.4}
+.b-cup2{fill:var(--surface);stroke:var(--glass-line);stroke-width:1}
+.b-lid{fill:var(--line);stroke:var(--glass-line);stroke-width:1}
+.b-stir{stroke:var(--ink-3);stroke-width:2.5;fill:none;stroke-linecap:round}
+.b-cyl{fill:var(--glass);stroke:var(--glass-line);stroke-width:1.5}
+.b-grain{fill:#f4f4f0;stroke:var(--rim);stroke-width:.5}
+
+.role{margin:2px 0 8px;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.role b{color:var(--ink);font-weight:600}
+
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><span class="brand-name">열화학 가상 실험실</span><span class="brand-sub" id="hdrSub">열화학 실험대 · 용해 · 중화 · 헤스 법칙</span></div>
+    <div class="top-right"><span class="clock" id="clock" hidden>00:00</span><button type="button" id="btnTeacher" class="btn sm">교사 보기</button></div>
+  </header>
+
+  <details id="brief" class="panel brief" open hidden>
+    <summary><span class="lbl">탐구 과제</span><span class="brief-hint">실험 전에 먼저 읽고, 기록을 모아 아래에서 답하세요</span></summary>
+    <p class="assign" id="assignTx" hidden></p>
+    <p class="role" id="roleTx" hidden></p>
+    <ol class="brief-list" id="briefList"></ol>
+  </details>
+
+  <p id="guideBar" class="guide practice-only" hidden><span class="guide-k">다음</span><span class="guide-who" id="guideWho" hidden></span><span id="guideTx"></span></p>
+
+  <div id="ppeBar" class="ppe" role="group" aria-label="보호 장비" hidden>
+    <span class="lbl">보호 장비</span>
+    <button type="button" class="btn sm ppe-b" data-ppe="coat" aria-pressed="false">실험복</button>
+    <button type="button" class="btn sm ppe-b" data-ppe="goggles" aria-pressed="false">보안경</button>
+    <button type="button" class="btn sm ppe-b" data-ppe="gloves" aria-pressed="false">장갑</button>
+    <span class="ppe-tx" id="ppeTx"></span>
+  </div>
+  <div id="roleBar" class="rolebar" hidden></div>
+
+  <!-- START -->
+  <section id="scrStart" class="start">
+    <div class="intro">
+      <p class="eyebrow">가상 과학실 · 열화학</p>
+      <h1>열을 재는 실험대</h1>
+      <p class="lede">스타이로폼 컵 열량계에 온도계를 꽂고, 반응 전후의 온도를 시간마다 읽어 q = m·c·ΔT로 열량을 구합니다. 입력한 열량과 반응 엔탈피는 내가 읽은 온도 기록으로 계산한 값과 맞아야 인정됩니다. 모든 조작은 시간 순서대로 기록됩니다.</p>
+      <figure class="factors" aria-label="계산식과 반응">
+        <div class="frow"><span class="fk">열량</span><span class="fv">q = m · c · ΔT (c = 4.18 J/(g·℃))</span></div>
+        <div class="frow"><span class="fk">용해</span><span class="fv">NaOH · NH₄NO₃ · CaCl₂가 물에 녹을 때</span></div>
+        <div class="frow"><span class="fk">중화</span><span class="fv">H⁺ + OH⁻ → H₂O, 부피 비를 바꿔 중화점 찾기</span></div>
+        <div class="frow"><span class="fk">헤스 법칙</span><span class="fv">ΔH₃ = ΔH₁ + ΔH₂ 확인</span></div>
+        <figcaption>계산식과 각 방에서 다루는 반응</figcaption>
+      </figure>
+    </div>
+    <form id="startForm" class="start-form" novalidate>
+      <div id="resume" class="panel resume" hidden>
+        <span class="lbl">진행 중이던 실험</span>
+        <p class="small" id="resumeTx"></p>
+        <div class="tools"><button type="button" id="resumeGo" class="btn primary">이어서 하기</button><button type="button" id="resumeDrop" class="btn ghost">버리고 새로 시작</button></div>
+      </div>
+      <p class="assign" id="fixNote" hidden></p>
+      <fieldset>
+        <legend class="lbl">실험실</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="room" value="sol" id="rmSol" checked><span class="opt-body"><span class="opt-t">용해 엔탈피</span><span class="opt-d">수산화 나트륨, 질산 암모늄, 염화 칼슘을 물에 녹이며 온도 변화를 잽니다. 발열과 흡열을 구분하고 1 mol당 용해 엔탈피를 구합니다.</span></span></label>
+          <label class="opt"><input type="radio" name="room" value="neu" id="rmNeu"><span class="opt-body"><span class="opt-t">중화 엔탈피</span><span class="opt-d">염산(또는 질산)과 수산화 나트륨 수용액을 부피 비를 바꿔 섞고, 온도가 가장 많이 오르는 비율에서 중화점을 찾습니다. 물 1 mol이 생길 때의 중화 엔탈피를 구합니다.</span></span></label>
+          <label class="opt"><input type="radio" name="room" value="hess" id="rmHess"><span class="opt-body"><span class="opt-t">헤스 법칙</span><span class="opt-d">고체 NaOH의 용해, NaOH 수용액과 염산의 중화, 고체 NaOH와 염산의 반응을 각각 재서 ΔH₃ = ΔH₁ + ΔH₂인지 확인합니다. 뚜껑을 덮지 않았을 때 생기는 오차도 봅니다.</span></span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend class="lbl">모드</legend>
+        <div class="opts two">
+          <label class="opt"><input type="radio" name="mode" value="practice" id="mdP" checked><span class="opt-body"><span class="opt-t">연습</span><span class="opt-d">다음 단계 안내와 즉시 피드백이 나옵니다.</span></span></label>
+          <label class="opt"><input type="radio" name="mode" value="exam" id="mdE"><span class="opt-body"><span class="opt-t">평가</span><span class="opt-d">안내 없이 진행하고, 학생마다 다른 조건이 배정됩니다.</span></span></label>
+        </div>
+      </fieldset>
+      <fieldset id="teamField">
+        <legend class="lbl">참여 방식</legend>
+        <div class="opts two">
+          <label class="opt"><input type="radio" name="team" value="solo" id="tmS" checked><span class="opt-body"><span class="opt-t">개별</span><span class="opt-d">혼자 실험합니다.</span></span></label>
+          <label class="opt"><input type="radio" name="team" value="group" id="tmG"><span class="opt-body"><span class="opt-t">조별 (연습만)</span><span class="opt-d">조원과 역할을 정하고 한 기기로 함께 실험합니다.</span></span></label>
+        </div>
+        <p class="small" id="tmExam" hidden>평가는 개별로만 진행합니다.</p>
+        <div id="grpBox" class="stack" hidden>
+          <span class="lbl">조원 이름 (2명 이상)</span>
+          <div class="members"><input id="gm0" type="text" placeholder="조원 1" autocomplete="off"><input id="gm1" type="text" placeholder="조원 2" autocomplete="off"><input id="gm2" type="text" placeholder="조원 3" autocomplete="off"><input id="gm3" type="text" placeholder="조원 4" autocomplete="off"><input id="gm4" type="text" placeholder="조원 5" autocomplete="off"></div>
+          <span class="lbl">역할 (여러 개 고를 수 있어요 · 조원마다 하나 이상)</span>
+          <div class="roles" id="grRoles"></div>
+          <p id="grpErr" class="err" role="alert" hidden></p>
+        </div>
+      </fieldset>
+      <label class="field"><span class="lbl" id="stNameLbl">이름 또는 번호 (필수)</span><input id="stName" type="text" placeholder="예: 3학년 2반 7번" autocomplete="off" aria-describedby="stErr"></label>
+      <p id="stErr" class="err" role="alert" hidden>이름 또는 번호를 입력해야 실험을 시작할 수 있어요.</p>
+      <button class="btn primary big" type="submit">실험 시작</button>
+    </form>
+  </section>
+
+  <!-- LAB -->
+  <section id="scrLab" hidden>
+    <div class="lab">
+      <div class="panel bench">
+        <div class="bench-head"><span class="lbl">실험대</span><span class="hint" id="benchHint"></span></div>
+        <svg id="board" viewBox="0 0 360 300" role="img" aria-label="실험대"></svg>
+        <div class="meters" id="mMod"></div>
+      </div>
+      <div class="stack">
+        <div class="panel" id="pRoom"></div>
+        <div class="panel" id="pChart">
+          <div class="bench-head"><span class="lbl" id="chartLbl">내 측정 그래프</span></div>
+          <canvas id="cv" aria-label="측정 그래프"></canvas>
+          <div class="lg" id="lg"></div>
+        </div>
+        <div class="panel" id="pRecords">
+          <span class="lbl">관찰 기록</span>
+          <div class="tbl-wrap"><table class="tbl" id="recTbl"></table></div>
+        </div>
+        <div class="panel" id="pTasks">
+          <span class="lbl">탐구 과제 · 답하기</span>
+          <div id="tasks"></div>
+        </div>
+        <div class="panel" id="pClean">
+          <span class="lbl">정리 · 폐액 처리</span>
+          <p class="small">분류 기준: 중금속 이온이 있으면 중금속 폐액 · 그 밖에는 pH 5 이하면 산 폐액, pH 9 이상이면 염기 폐액, 그 사이면 중성 무기 폐액</p>
+          <div id="wasteList"></div>
+          <div class="submit-row"><button type="button" id="btnFinish" class="btn primary">실험 마치기</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DONE -->
+  <section id="scrDone" class="done" hidden>
+    <p class="eyebrow" id="doneEye"></p>
+    <h2 id="doneH"></h2>
+    <p class="small" id="doneMeta"></p>
+    <div class="panel" id="saveFail" hidden>
+      <span class="lbl">저장하지 못함</span>
+      <p class="small">브라우저 저장 공간에 기록을 쓰지 못했어요. 아래 ‘제출용 기록 복사’로 기록부터 옮겨 두세요. 진행 중이던 기록은 지우지 않았으니, 새로고침해도 이어서 할 수 있어요.</p>
+      <div class="tools"><button type="button" id="doneRetry" class="btn sm">다시 저장</button></div>
+    </div>
+    <div class="panel">
+      <span class="lbl">제출하기</span>
+      <p class="small">아직 선생님께 전달되지 않았어요. 기록을 복사해 웨일 클래스 과제에 붙여 넣으면 제출됩니다. 마지막 줄의 분석 코드는 지우지 마세요.</p>
+      <div class="tools"><button type="button" id="doneCopy" class="btn primary">제출용 기록 복사</button></div>
+      <textarea id="copyBox" class="copybox" hidden readonly aria-label="복사할 기록"></textarea>
+    </div>
+    <div id="doneBody" class="stack"></div>
+    <div class="tools"><button type="button" id="btnAgain" class="btn">처음으로</button></div>
+  </section>
+
+  <!-- TEACHER LOCK -->
+  <section id="scrLock" hidden>
+    <form id="lockForm" class="done">
+      <p class="eyebrow">교사 화면</p>
+      <h2 id="lockTitle">교사 PIN을 입력하세요</h2>
+      <p class="small" id="lockLead">학생 기록과 정답, 분석 결과는 교사 PIN으로만 열 수 있어요.</p>
+      <div class="mrow"><input id="lockCode" class="num" type="password" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="교사 PIN"></div>
+      <div class="mrow" id="lockRow2" hidden><input id="lockCode2" class="num" type="password" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="한 번 더" aria-label="교사 PIN 한 번 더"></div>
+      <div class="tools"><button type="submit" class="btn primary" id="lockGo">열기</button></div>
+      <p id="lockMsg" class="small" role="status"></p>
+      <div class="tools" id="lockForgotRow" hidden><button type="button" id="lockForgot" class="btn sm ghost">PIN을 잊었어요</button></div>
+      <p class="small" id="lockForgotTx" hidden>PIN은 되살릴 수 없어요. 대신 이 기기에 모인 학생 기록을 모두 지우고 PIN을 새로 정할 수 있어요. 학생이 낸 제출 글은 웨일 클래스에 남아 있으니 다시 불러오면 돼요.</p>
+    </form>
+  </section>
+
+  <!-- TEACHER -->
+  <section id="scrTeacher" hidden>
+    <div class="t-head">
+      <p class="eyebrow">교사 화면</p>
+      <h2>학생 실험 기록</h2>
+      <p class="small" id="tIntro"></p>
+    </div>
+    <div class="t-grid">
+      <div class="panel">
+        <span class="lbl">학생용 링크 만들기</span>
+        <p class="small">실험실과 모드를 정해 두면 학생은 고르지 않고 그대로 시작합니다.</p>
+        <div class="grid2">
+          <label class="fld"><span class="lbl">실험실</span><select id="lkRoom" class="sel"><option value="all">학생이 고름</option><option value="sol">용해 엔탈피</option><option value="neu">중화 엔탈피</option><option value="hess">헤스 법칙</option></select></label>
+          <label class="fld"><span class="lbl">모드</span><select id="lkMode" class="sel"><option value="free">학생이 고름</option><option value="practice">연습</option><option value="exam">평가</option></select></label>
+        </div>
+        <p class="small" id="lkOut"></p>
+        <div class="tools"><button type="button" id="lkCopy" class="btn sm">복사</button></div>
+        <textarea id="lkBox" class="copybox" hidden readonly style="min-height:56px" aria-label="복사할 링크"></textarea>
+      </div>
+      <div class="panel">
+        <span class="lbl">제출 기록 불러오기</span>
+        <p class="small">웨일 클래스에 올라온 학생 제출 글을 복사해 붙여 넣으세요. 여러 명의 글을 한꺼번에 붙여 넣어도 됩니다.</p>
+        <textarea id="tImport" class="copybox" style="min-height:96px" aria-label="학생 제출 글 붙여 넣기"></textarea>
+        <div class="tools"><button type="button" id="tImportBtn" class="btn primary">불러오기</button></div>
+      </div>
+    </div>
+    <div class="seg" id="tFilter" role="radiogroup" aria-label="실험실로 거르기" style="margin-bottom:12px"></div>
+    <div class="t-grid">
+      <div class="panel"><span class="lbl" id="tTaskLbl">과제별 결과</span><div id="tTasks"></div></div>
+      <div class="panel"><span class="lbl" id="tTopLbl">자주 나온 실수</span><div id="tTop"></div></div>
+    </div>
+    <div id="tList" class="t-list"></div>
+    <details id="tExWrap" class="panel"><summary id="tExSum"></summary><div id="tExList" class="t-list"></div></details>
+    <textarea id="tCopyBox" class="copybox" hidden readonly aria-label="복사할 기록" style="margin-top:12px"></textarea>
+    <div class="tools" style="margin-top:14px"><button type="button" id="tClear" class="btn sm ghost">이 기기의 학생 기록 지우기</button></div>
+  </section>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const REDUCED=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const jit=p=>1+p*(Math.random()*2-1);
+const mmss=s=>{s=Math.max(0,Math.floor(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');};
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let toastT;
+function toast(msg,kind){const t=$('#toast');t.textContent=msg;t.dataset.kind=kind||'';t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{t.hidden=true;},3400);}
+
+/* ---------- 설정값 (교과서에 맞춰 바꿀 수 있음) ---------- */
+const ROOM_T=22;          // 실험실 온도 (℃)
+const C_W=4.18;           // 용액의 비열 J/(g·℃)
+const C_CAL=12;           // 열량계(컵, 온도계, 젓개)의 열용량 J/℃ (학생 계산에서는 무시)
+const K_LID=0.0005;       // 뚜껑을 덮었을 때 열이 빠져나가는 빠르기 (1/s)
+const K_OPEN=0.0035;      // 뚜껑을 열었을 때 (1/s)
+const NAOH_AIR=60;        // 수산화 나트륨을 단 뒤 이 시간(s)이 지나면 수분을 흡수하기 시작
+const DH_NEU=-57.1;       // 강산 + 강염기 중화 엔탈피 (kJ/mol 물)
+const SOLID={
+  naoh:{nm:'수산화 나트륨',f:'NaOH',M:40.00,dH:-44.5,g:2.00},
+  nh4no3:{nm:'질산 암모늄',f:'NH₄NO₃',M:80.04,dH:25.7,g:4.00},
+  cacl2:{nm:'염화 칼슘',f:'CaCl₂',M:110.98,dH:-81.3,g:2.80}
+};
+const ACID={hcl:{nm:'염산',f:'HCl'},hno3:{nm:'질산',f:'HNO₃'}};
+const RXN={1:'반응 ① NaOH(s) → NaOH(aq)',2:'반응 ② NaOH(aq) + HCl(aq) → NaCl(aq) + H₂O(l)',3:'반응 ③ NaOH(s) + HCl(aq) → NaCl(aq) + H₂O(l)'};
+const CIRC={1:'①',2:'②',3:'③'};
+
+/* 이 실험에서 온도의 역할 */
+const TEMP_ROLE={
+  sol:'<b>온도의 역할</b> · 재는 값(종속 변인)이에요. 녹을 때 나오거나 흡수한 열이 온도 변화로 나타나요. 열이 컵 밖으로 새면 온도 변화가 실제보다 작게 측정돼요.',
+  neu:'<b>온도의 역할</b> · 재는 값(종속 변인)이에요. 중화할 때 나온 열이 온도 변화로 나타나요. 두 용액의 처음 온도가 같아야 ΔT가 정확해요.',
+  hess:'<b>온도의 역할</b> · 재는 값(종속 변인)이에요. 세 반응의 ΔT로 ΔH를 구해요. 뚜껑을 열면 열이 새어 ΔT가 작게 측정되는 것도 비교해요.'
+};
+const ROOMS={
+  sol:{nm:'용해 엔탈피',sh:'용해',sub:'열화학 · 고체가 물에 녹을 때',hint:'열량계와 전자저울'},
+  neu:{nm:'중화 엔탈피',sh:'중화',sub:'열화학 · 산과 염기의 중화',hint:'열량계와 눈금실린더'},
+  hess:{nm:'헤스 법칙',sh:'헤스',sub:'열화학 · ΔH₃ = ΔH₁ + ΔH₂',hint:'열량계'}
+};
+const ROOM_ORDER=['sol','neu','hess'];
+const WASTE=[['acid','산 폐액'],['base','염기 폐액'],['heavy','중금속 폐액'],['neutral','중성 무기 폐액']];
+const WREASON={heavy:'중금속 이온이 들어 있어 중금속 폐액으로 모아요.',acid:'산성이에요 (pH 5 이하).',base:'염기성이에요 (pH 9 이상).',neutral:'중금속 이온이 없고 산성도 염기성도 아니에요.'};
+const sameExcept=(a,b,key)=>Object.keys(a).every(k=>k===key?a[k]!==b[k]:a[k]===b[k]);
+const meter=(k,v)=>`<span class="meter"><span class="meter-k">${k}</span><b>${v}</b></span>`;
+const selHTML=(key,lab,opts,val,dis)=>`<label class="fld"><span class="lbl">${lab}</span><select class="sel" data-cond="${key}"${dis?' disabled':''}>${opts.map(([v,l])=>`<option value="${v}"${String(v)===String(val)?' selected':''}>${l}</option>`).join('')}</select></label>`;
+const btn=(a,l,k)=>`<button type="button" class="btn sm${k==='p'?' primary':k==='g'?' ghost':''}" data-act="${a}">${l}</button>`;
+const nv=id=>{const e=document.getElementById(id);if(!e)return null;const v=parseFloat(String(e.value).replace(/,/g,'').replace('−','-'));return isFinite(v)?v:null;};
+const numIn=(id,unit,lab)=>`<div class="mrow"><label class="small" for="${id}" style="min-width:8.5em">${lab}</label><input id="${id}" class="num" inputmode="decimal" autocomplete="off"><span class="unit">${unit}</span></div>`;
+/* 온도계: 실제 실험에서 꽂는 자리에 그린다 (막대 + 액체 기둥 + 구부) */
+function thermoSVG(x,y0,y1,T){const L=y1-y0-8,h=Math.max(3,Math.min(L,(T+10)/110*L));
+  return `<rect x="${x-3}" y="${y0}" width="6" height="${y1-y0}" rx="3" class="b-thermo"/><rect x="${x-1}" y="${(y1-h).toFixed(1)}" width="2" height="${h.toFixed(1)}" class="b-thermo-l"/><circle cx="${x}" cy="${y1}" r="4.2" class="b-thermo-l"/>`;}
+
+let S=null;
+const elapsed=()=>Math.floor((Date.now()-S.t0)/1000);
+function log(kind,text){S.log.push({t:elapsed(),kind,text});}
+function bad(key,text){S.mist.push({key,text});log('bad',text);}
+function badOnce(key,text){if(S.flags['b-'+key])return;S.flags['b-'+key]=1;bad(key,text);}
+
+function initState(room,mode,name){
+  S={room,mode,name,t0:Date.now(),finished:false,speed:1,hood:false,group:null,records:[],log:[],mist:[],mwaste:[],wch:{},tasks:{},tsel:{},
+    ppe:{coat:false,goggles:false,gloves:false},ppeLogged:{},flags:{},assign:null,m:null};
+  MODS[room].init();
+}
+
+/* ---------- records ---------- */
+function addRecord(r){r.n=S.records.length+1;r.at=elapsed();S.records.push(r);renderRecords();renderEvAll();return r;}
+function renderRecords(){
+  const t=$('#recTbl');
+  if(!S.records.length){t.innerHTML='<tbody><tr class="empty"><td>아직 기록이 없어요. 측정을 끝내면 시행마다 온도 기록이 여기에 쌓입니다.</td></tr></tbody>';return;}
+  t.innerHTML='<thead><tr><th>#</th><th>시각</th><th>구분</th><th>내용</th></tr></thead><tbody>'+S.records.slice().reverse().map(r=>`<tr><td class="n">${r.n}</td><td class="t">${mmss(r.at)}</td><td>${esc(r.label)}</td><td>${esc(r.text)}</td></tr>`).join('')+'</tbody>';
+}
+const speedHTML=()=>`<div class="fld"><span class="lbl">시간 배속</span><div class="seg" id="spdSeg" role="radiogroup" aria-label="시간 배속"></div></div>`;
+const SPEEDS=[[1,'×1'],[5,'×5'],[20,'×20']];
+function speedSeg(){seg($('#spdSeg'),'sspd',SPEEDS,S.speed,v=>{S.speed=+v;log('act',`시간 배속 ×${v}`);});}
+
+/* ---------- 방마다 다른 부분 ---------- */
+const RC={
+sol:{
+  assign(){return S.mode==='exam'?{solid:pick(['naoh','nh4no3','cacl2'])}:{solid:'naoh'};},
+  cond(){return{solid:S.assign.solid,water:50,amt:1};},
+  selects(c,dis){const s=SOLID[c.solid];return selHTML('solid','고체',Object.entries(SOLID).map(([k,v])=>[k,`${v.nm} (${v.f})`]),c.solid,dis)
+    +selHTML('amt','고체의 양',[[1,`${s.g.toFixed(2)} g`],[2,`${(s.g*2).toFixed(2)} g`]],c.amt,dis)+selHTML('water','물',[[50,'50.0 mL'],[100,'100.0 mL']],c.water,dis);},
+  note:'물의 밀도 1.00 g/mL, 용액의 질량 = 물의 질량 + 고체의 질량, 비열 4.18 J/(g·℃)로 계산하고 열량계가 흡수하는 열은 무시해요. 수산화 나트륨은 공기 중의 수분을 흡수하므로 달자마자 넣어요.',
+  liquid:c=>c.water, fillLbl:()=>'컵에 물 넣기', fillTxt:c=>`물 ${c.water}.0 mL`,
+  solid:c=>c.solid, gram:c=>SOLID[c.solid].g*c.amt,
+  addLbl:c=>`${SOLID[c.solid].nm} 넣기 · 시간 재기`, addVol:()=>0,
+  heat(c,mol){return -SOLID[c.solid].dH*1000*mol;}, tau:()=>[20,70],
+  msol:(c,mass)=>c.water+mass, nmol:(c,mass)=>mass/SOLID[c.solid].M,
+  condTxt:(c,mass)=>`물 ${c.water}.0 g + ${SOLID[c.solid].nm}(${SOLID[c.solid].f}) ${mass.toFixed(2)} g`,
+  recCond:(c)=>({...c}),
+  name:c=>`${SOLID[c.solid].nm} ${(SOLID[c.solid].g*c.amt).toFixed(2)} g, 물 ${c.water} mL`,
+  plan(){const A=S.assign.solid,p=[{solid:A,water:50,amt:1},{solid:A,water:50,amt:2}];for(const k of ['naoh','nh4no3'])if(k!==A)p.push({solid:k,water:50,amt:1});return p;},
+  waste(c){return c.solid==='naoh'?{key:'s-naoh',desc:'수산화 나트륨 수용액',kind:'base',why:'수산화 나트륨이 녹아 염기성이에요.'}
+    :c.solid==='nh4no3'?{key:'s-nh4',desc:'질산 암모늄 수용액',kind:'acid',why:'암모늄 이온 때문에 약한 산성(pH 약 4.6)이라 기준(pH 5 이하)에 따라 산 폐액으로 모아요.'}
+    :{key:'s-ca',desc:'염화 칼슘 수용액',kind:'neutral',why:'칼슘은 중금속이 아니고, 용액은 중성이에요.'};}
+},
+neu:{
+  assign(){return S.mode==='exam'?{va:pick([20,25,30])}:{va:25};},
+  cond(){return{acid:'hcl',va:10};},
+  selects(c,dis){return selHTML('acid','산',[['hcl','1.00 M 염산 (HCl)'],['hno3','1.00 M 질산 (HNO₃)']],c.acid,dis)
+    +selHTML('va','산 + 1.00 M NaOH (합 50 mL)',[10,20,25,30,40].map(v=>[v,`산 ${v} mL + NaOH ${50-v} mL`]),c.va,dis);},
+  note:'두 용액은 처음 온도가 같아요. 섞은 용액의 질량은 50.0 g (밀도 1.00 g/mL), 비열 4.18 J/(g·℃)로 계산하고 열량계가 흡수하는 열은 무시해요.',
+  liquid:c=>c.va, fillLbl:c=>`컵에 1.00 M ${ACID[c.acid].f} ${c.va} mL 넣기`, fillTxt:c=>`1.00 M ${ACID[c.acid].f} ${c.va}.0 mL`,
+  solid:()=>null, gram:()=>0,
+  addLbl:c=>`NaOH ${50-c.va} mL 붓기 · 시간 재기`, addVol:c=>50-c.va,
+  heat(c){return -DH_NEU*1000*Math.min(c.va,50-c.va)/1000;}, tau:()=>[3,12],
+  msol:()=>50, nmol:c=>Math.min(c.va,50-c.va)/1000,
+  condTxt:c=>`1.00 M ${ACID[c.acid].f} ${c.va}.0 mL + 1.00 M NaOH ${50-c.va}.0 mL`,
+  recCond:c=>({...c}),
+  name:c=>`${ACID[c.acid].f} ${c.va} mL + NaOH ${50-c.va} mL`,
+  plan(){const v=S.assign.va,p=[10,20,25,30,40].map(x=>({acid:'hcl',va:x}));p.push({acid:'hno3',va:v});return p;},
+  waste(c){return c.va>25?{key:'n-acid',desc:'산이 남은 중화 용액',kind:'acid',why:'산을 더 많이 넣어 산성이에요.'}
+    :c.va<25?{key:'n-base',desc:'염기가 남은 중화 용액',kind:'base',why:'NaOH를 더 많이 넣어 염기성이에요.'}
+    :{key:'n-neu',desc:'완전히 중화된 용액',kind:'neutral',why:'산과 염기가 같은 양이라 중성 염 수용액이에요.'};}
+},
+hess:{
+  assign(){return S.mode==='exam'?{lidRxn:pick([1,2,3])}:{lidRxn:3};},
+  cond(){return{rxn:1};},
+  selects(c,dis){return selHTML('rxn','반응',[1,2,3].map(k=>[k,RXN[k]]),c.rxn,dis);},
+  note:'세 반응 모두 0.0500 mol 기준이에요. 밀도 1.00 g/mL, 비열 4.18 J/(g·℃). 용액의 질량은 반응 ①·③은 100.0 g + NaOH 질량, 반응 ②는 100.0 g이에요. 열량계가 흡수하는 열은 무시해요. 뚜껑은 비교 실험을 할 때만 열어 둬요.',
+  liquid:c=>c.rxn===2?50:100, fillLbl:c=>c.rxn===1?'컵에 물 100 mL 넣기':c.rxn===2?'컵에 1.00 M HCl 50 mL 넣기':'컵에 0.50 M HCl 100 mL 넣기',
+  fillTxt:c=>c.rxn===1?'물 100.0 mL':c.rxn===2?'1.00 M HCl 50.0 mL':'0.50 M HCl 100.0 mL',
+  solid:c=>c.rxn===2?null:'naoh', gram:c=>c.rxn===2?0:2.00,
+  addLbl:c=>c.rxn===2?'1.00 M NaOH 50 mL 붓기 · 시간 재기':'수산화 나트륨 넣기 · 시간 재기', addVol:c=>c.rxn===2?50:0,
+  heat(c,mol){if(c.rxn===1)return 44.5e3*mol;if(c.rxn===2)return 57.1e3*0.05;return 44.5e3*mol+57.1e3*Math.min(mol,0.05);},
+  tau:c=>c.rxn===2?[3,12]:[20,70],
+  msol:(c,mass)=>c.rxn===2?100:100+mass, nmol:(c,mass)=>c.rxn===2?0.05:mass/40.00,
+  condTxt:(c,mass)=>c.rxn===1?`물 100.0 g + NaOH ${mass.toFixed(2)} g`:c.rxn===2?'1.00 M HCl 50.0 mL + 1.00 M NaOH 50.0 mL':`0.50 M HCl 100.0 mL + NaOH ${mass.toFixed(2)} g`,
+  recCond:(c,lid)=>({rxn:c.rxn,lid}),
+  name:c=>`반응 ${CIRC[c.rxn]}${c.lid==='off'?', 뚜껑 열어 둠':c.lid==='mixed'?', 측정 중 뚜껑 여닫음':''}`,
+  plan(){return [{rxn:1,lid:'on'},{rxn:2,lid:'on'},{rxn:3,lid:'on'},{rxn:S.assign.lidRxn,lid:'off'}];},
+  waste(c,mass){if(c.rxn===1)return{key:'h-base',desc:'수산화 나트륨 수용액 (반응 ①)',kind:'base',why:'수산화 나트륨이 녹아 염기성이에요.'};
+    if(c.rxn===2)return{key:'h-neu2',desc:'중화된 염화 나트륨 수용액 (반응 ②)',kind:'neutral',why:'NaOH와 HCl이 0.0500 mol씩 같아 중성 염 수용액이에요.'};
+    const nNa=(mass||2)/40.00,ex=nNa-0.05,g=(mass||2).toFixed(2),d=`반응 ③ 뒤 용액 (NaOH ${g} g + 0.50 M HCl 100 mL)`;
+    return Math.abs(ex)<1e-5?{key:'h3-'+g,desc:d,kind:'neutral',why:'NaOH 0.0500 mol과 HCl 0.0500 mol이 같아 중성이에요.'}
+      :ex>0?{key:'h3-'+g,desc:d,kind:'base',why:`NaOH ${nNa.toFixed(4)} mol이 HCl 0.0500 mol보다 많아 NaOH가 남아 염기성이에요.`}
+      :{key:'h3-'+g,desc:d,kind:'acid',why:`NaOH ${nNa.toFixed(4)} mol이 HCl 0.0500 mol보다 적어 HCl이 남아 산성이에요.`};}
+}};
+
+/* ---------- 열량계 (세 방이 함께 씀) ---------- */
+const PH={setup:'준비',filled:'넣음',running:'측정 중',done:'끝남'};
+function makeMod(room){
+  const rc=RC[room];
+  return {
+  init(){S.assign=rc.assign();S.m={cond:rc.cond(),phase:'setup',T:ROOM_T,thermo:false,lid:false,stir:false,everStir:false,t:0,clock:0,pre:[],reads:[],weighed:null,
+    Qtot:0,Qrel:0,Csys:1,T0:null,run:0,lastRead:-99,lastRec:null};},
+  controls(){
+    const m=S.m,c=m.cond,dis=m.phase!=='setup',sol=rc.solid(c);
+    $('#pRoom').innerHTML=`<span class="lbl">실험 조건</span>
+      <div class="grid3">${rc.selects(c,dis)}</div>
+      <p class="small">${rc.note}</p>
+      <p class="small">조건은 새로 준비할 때만 바꿀 수 있어요.</p>
+      <span class="lbl">열량계 준비</span>
+      <div class="tools">${btn('fill',rc.fillLbl(c))}${btn('thermo','뚜껑 구멍으로 온도계 꽂기')}${btn('lid',m.lid?'뚜껑 열기':'뚜껑 덮기')}</div>
+      <span class="lbl">측정</span>
+      <div class="tools">${btn('read','온도계 읽기','p')}${sol?btn('weigh',`약포지에 ${SOLID[sol].nm} ${rc.gram(c).toFixed(2)} g 달기`):''}${btn('stir',m.stir?'젓기 멈추기':'젓개로 젓기')}</div>
+      <div class="tools">${btn('add',rc.addLbl(c),'p')}${btn('stop','측정 끝내기')}${btn('new','컵 비우고 새로 준비','g')}</div>
+      ${speedHTML()}<p class="small" id="mStat" aria-live="polite"></p>`;
+    speedSeg();this.status();
+  },
+  act(a){
+    const m=S.m,c=m.cond,sol=rc.solid(c);
+    if(a==='fill'){if(m.phase!=='setup'){toast('이미 넣었어요. 새로 하려면 컵을 비우세요.');return;}
+      checkPPE();m.phase='filled';m.T=Math.round((ROOM_T-1+2*Math.random())*10)/10;m.pre=[];m.reads=[];m.clock=0;m.weighed=null;m.everStir=false;m.T0=null;
+      log('act',`열량계 컵에 ${rc.fillTxt(c)}를 넣음`);this.controls();}
+    if(a==='thermo'){if(m.thermo){toast('이미 꽂혀 있어요.');return;}m.thermo=true;log('act','뚜껑 구멍으로 온도계를 꽂아 용액에 잠기게 함');this.controls();}
+    if(a==='lid'){m.lid=!m.lid;if(m.phase==='running'){m.lidMixed=true;badOnce('lid-open','측정 중에 뚜껑을 여닫음');}log('act',m.lid?'뚜껑을 덮음':'뚜껑을 엶');this.controls();}
+    if(a==='stir'){m.stir=!m.stir;if(m.stir&&m.phase==='running')m.everStir=true;log('act',m.stir?'젓개로 젓기 시작':'젓기를 멈춤');this.controls();}
+    if(a==='weigh'){if(!sol){toast('이 반응은 고체를 쓰지 않아요.');return;}if(m.phase!=='filled'){toast(m.phase==='setup'?'먼저 컵에 용액을 넣으세요.':'이미 반응을 시작했어요.');return;}
+      checkPPE();const g=Math.round(rc.gram(c)*jit(0.012)*100)/100;m.weighed={g,at:m.clock};
+      log('act',`약포지에 ${SOLID[sol].nm} ${g.toFixed(2)} g을 달아 놓음`);toast(`전자저울 ${g.toFixed(2)} g`,'good');}
+    if(a==='read'){if(!m.thermo){toast('온도계를 먼저 꽂으세요.');return;}if(m.phase==='setup'){toast('컵에 용액을 먼저 넣으세요.');return;}
+      const T=Math.round(m.T*10)/10;
+      if(m.phase==='filled'){m.pre.push({t:Math.round(m.clock),T});log('rec',`넣기 전 온도 ${T.toFixed(1)} ℃`);toast(`넣기 전 ${T.toFixed(1)} ℃`,'good');}
+      else if(m.phase==='running'){const t=Math.round(m.t);m.reads.push({t,T});m.lastRead=m.t;log('rec',`시행 ${m.run} · ${t}초 · ${T.toFixed(1)} ℃`);toast(`${t}초 · ${T.toFixed(1)} ℃`,'good');}
+      else toast('측정이 끝났어요.');}
+    if(a==='add'){
+      if(m.phase!=='filled'){toast(m.phase==='setup'?'먼저 컵에 용액을 넣으세요.':'이미 넣었어요. 새로 하려면 컵을 비우세요.');return;}
+      if(sol&&!m.weighed){toast('먼저 약포지에 고체를 다세요.');return;}
+      checkPPE();
+      m.T0=m.pre.length?m.pre[m.pre.length-1].T:null;
+      if(m.T0==null)bad('no-t0',`넣기 전 처음 온도를 읽지 않고 반응시킴`);
+      if(!m.lid&&room!=='hess')badOnce('no-lid','뚜껑을 덮지 않고 반응시킴 (열이 빠져나감)');
+      const mass=sol?m.weighed.g:0,mol=sol?mass/SOLID[sol].M:0;let pre=0;
+      /* NaOH를 오래 두면 공기 중의 수분을 흡수해 일부가 약포지 위에서 미리 녹는다: 몰수는 그대로, 그 부분의 용해열만 컵 밖으로 빠져나간다 */
+      if(sol==='naoh'){const ex=m.clock-m.weighed.at;if(ex>NAOH_AIR){pre=Math.min(0.15,(ex-NAOH_AIR)*0.002);bad('naoh-air',`수산화 나트륨을 단 뒤 ${Math.round(ex)}초 동안 공기 중에 둠 (수분을 흡수해 일부가 미리 녹으면서 그 열이 컵 밖으로 나감)`);}}
+      m.Qtot=rc.heat(c,mol)-pre*44.5e3*mol;m.Qrel=0;m.Csys=rc.msol(c,mass)*C_W+C_CAL;m.mass=mass;m.lidStart=m.lid;m.lidMixed=false;
+      m.phase='running';m.t=0;m.run++;m.reads=m.T0!=null?[{t:0,T:m.T0}]:[];m.lastRead=0;if(m.stir)m.everStir=true;
+      log('act',`시행 ${m.run} 시작: ${rc.condTxt(c,mass)}${m.lid?'':' · 뚜껑 없음'}${m.T0!=null?` · 처음 ${m.T0.toFixed(1)} ℃`:''}`);this.controls();}
+    if(a==='stop'){
+      if(m.phase!=='running'){toast('진행 중인 측정이 없어요.');return;}
+      const post=m.reads.filter(r=>r.t>0);if(!post.length){toast('넣은 뒤에 온도를 한 번 이상 읽고 끝내세요.');return;}
+      m.phase='done';
+      if(Math.abs(m.Qrel)<Math.abs(m.Qtot)*0.9)bad('stop-early',`시행 ${m.run}: 온도가 아직 변하는 중에 측정을 끝냄`);
+      if(!m.everStir)bad('no-stir',`시행 ${m.run}: 젓지 않고 측정함`);
+      const T0=m.T0,base=T0!=null?T0:post[0].T,ext=post.reduce((b,r)=>Math.abs(r.T-base)>Math.abs(b.T-base)?r:b,post[0]);
+      const dT=T0!=null?Math.round((ext.T-T0)*10)/10:null,mass=m.mass;
+      const lidState=m.lidMixed?'mixed':m.lidStart?'on':'off',early=Math.abs(m.Qrel)<Math.abs(m.Qtot)*0.9;
+      const rcond=rc.recCond(c,lidState);
+      const rec=addRecord({kind:'trun',run:m.run,cond:rcond,lid:lidState==='on',lidState,early,stirred:m.everStir,T0,Text:ext.T,dT,mass:rc.solid(c)?mass:null,msol:rc.msol(c,mass),nmol:rc.nmol(c,mass),reads:m.reads.slice(),
+        label:`시행 ${m.run}`,text:`${rc.condTxt(c,mass)}${lidState==='off'?' · 뚜껑 없음':lidState==='mixed'?' · 측정 중 뚜껑 여닫음':''} · 처음 ${T0!=null?T0.toFixed(1)+' ℃':'안 잼'} · 읽은 값 ${post.slice(0,8).map(r=>`${r.t}초 ${r.T.toFixed(1)}`).join(', ')}${post.length>8?' …':''} ℃ · ${ext.T>=base?'최고':'최저'} ${ext.T.toFixed(1)} ℃`});
+      m.lastRec=rec.n;log('rec',`기록 #${rec.n}: 시행 ${m.run} 마침`);toast(`시행 ${m.run} 기록했어요`,'good');this.controls();}
+    if(a==='new'){if(m.phase==='setup'){toast('이미 빈 컵이에요.');return;}
+      if(m.phase==='running')log('note',`시행 ${m.run}: 끝내지 않고 비움`);
+      if(m.phase==='running'||m.phase==='done')S.mwaste.push(rc.waste(c,m.mass));
+      else S.mwaste.push(this.unreacted());
+      Object.assign(m,{phase:'setup',T:ROOM_T,thermo:false,lid:false,stir:false,everStir:false,t:0,pre:[],reads:[],weighed:null,Qtot:0,Qrel:0,T0:null});
+      log('act','컵을 비우고 씻음 (온도계도 빼서 씻음)');this.controls();}
+    this.status();
+  },
+  unreacted(){const c=S.m.cond;if(S.room==='neu')return{key:'n-acidonly',desc:'반응시키지 않은 산 용액',kind:'acid',why:'산 용액이라 산성이에요.'};
+    if(S.room==='hess'&&c.rxn!==1)return{key:'h-acidonly',desc:'반응시키지 않은 염산',kind:'acid',why:'염산이라 산성이에요.'};
+    return{key:'x-water',desc:'아무것도 녹이지 않은 물',kind:'neutral',why:'물이에요.'};},
+  setCond(k,v){S.m.cond[k]=(k==='solid'||k==='acid')?v:+v;log('act',`조건: ${rc.condTxt(S.m.cond,rc.gram(S.m.cond))}`);this.controls();},
+  tick(dt){const m=S.m;if(m.phase==='setup')return;m.clock+=dt;
+    const k=m.lid?K_LID:K_OPEN;
+    if(m.phase==='running'){m.t+=dt;if(m.stir)m.everStir=true;const tau=rc.tau(m.cond)[m.stir?0:1],dQ=(m.Qtot-m.Qrel)*(1-Math.exp(-dt/tau));m.Qrel+=dQ;m.T+=dQ/m.Csys;}
+    m.T+=-(m.phase==='filled'?k*0.3:k)*(m.T-ROOM_T)*dt;},
+  status(){const m=S.m;$('#mMod').innerHTML=meter('온도계',m.thermo&&m.phase!=='setup'?`${m.T.toFixed(1)} ℃`:'-')+meter('스톱워치',mmss(m.t))+meter('젓기',m.stir?'젓는 중':'멈춤');
+    const st=$('#mStat');if(st)st.textContent=`${rc.name(m.cond)} · ${PH[m.phase]} · 온도계 ${m.thermo?'꽂음':'안 꽂음'} · 뚜껑 ${m.lid?'덮음':'열림'}${m.weighed&&m.phase==='filled'?` · 약포지 ${m.weighed.g.toFixed(2)} g`:''}`;},
+  build(){
+    const m=S.m,c=m.cond,sol=rc.solid(c),now=performance.now();let g='';
+    const ix=y=>[72+(y-124)*0.1,188-(y-124)*0.1];
+    g+=`<path d="M64 120 L80 272 H180 L196 120 Z" class="b-cup"/><path d="M72 124 L86 266 H174 L188 124 Z" class="b-cup2"/>`;
+    if(m.phase!=='setup'){
+      const vol=rc.liquid(c)+(m.phase==='filled'?0:rc.addVol(c)),y=Math.max(140,246-vol*0.9),[l,r]=ix(y),[lb,rb]=ix(264);
+      const liq=`M${l.toFixed(1)} ${y.toFixed(1)} L${(lb+1).toFixed(1)} 264 H${(rb-1).toFixed(1)} L${r.toFixed(1)} ${y.toFixed(1)} Z`;
+      g+=`<path d="${liq}" class="b-liq"/>`;
+      const d=m.T-ROOM_T;if(Math.abs(d)>1)g+=`<path d="${liq}" style="fill:${d>0?`rgba(214,70,40,${Math.min(.45,d/25).toFixed(3)})`:`rgba(40,110,220,${Math.min(.45,-d/18).toFixed(3)})`}"/>`;
+      if(m.phase==='running'&&sol&&Math.abs(m.Qrel)<Math.abs(m.Qtot)*0.95){const left=1-Math.abs(m.Qrel)/Math.max(1e-9,Math.abs(m.Qtot));
+        for(let i=0;i<Math.ceil(8*left);i++)g+=`<circle cx="${100+i*9}" cy="${260-(i%2)*3}" r="2.6" class="b-grain"/>`;}
+    }
+    const off=m.stir&&!REDUCED?Math.sin(now/170)*10:0;
+    g+=`<line x1="152" y1="${52+off}" x2="152" y2="${246+off}" class="b-stir"/><ellipse cx="146" cy="${248+off}" rx="20" ry="4" class="b-stir"/>`;
+    if(m.lid)g+=`<rect x="58" y="110" width="144" height="11" rx="3" class="b-lid"/>`;
+    else g+=`<rect x="220" y="276" width="64" height="8" rx="3" class="b-lid"/><text x="252" y="296" text-anchor="middle" class="b-lab-s">뚜껑</text>`;
+    if(m.thermo)g+=thermoSVG(112,24,250,m.T)+`<text x="104" y="22" text-anchor="end" class="b-thermo-t">온도계</text>`;
+    else{const fr=Math.max(.05,Math.min(1,(ROOM_T+10)/110));g+=`<line x1="214" y1="34" x2="334" y2="34" class="b-thermo-rod"/><line x1="214" y1="34" x2="334" y2="34" class="b-thermo-in"/><line x1="214" y1="34" x2="${214+120*fr}" y2="34" class="b-thermo-col"/><circle cx="214" cy="34" r="4.6" class="b-thermo-l"/><text x="274" y="24" text-anchor="middle" class="b-thermo-t">온도계 (아직 안 꽂음)</text>`;}
+    g+=`<text x="130" y="292" text-anchor="middle" class="b-lab">열량계 · 스타이로폼 컵 두 겹</text>`;
+    if(sol){g+=`<rect x="226" y="206" width="116" height="44" rx="8" class="b-bal"/><rect x="268" y="216" width="66" height="24" rx="4" class="b-lcd"/><text x="328" y="233" text-anchor="end" class="b-lcdt">${m.weighed&&m.phase==='filled'?m.weighed.g.toFixed(2):'0.00'} g</text><text x="246" y="232" class="b-lab-s">저울</text>`;
+      g+=`<path d="M236 206 L262 196 L288 206 Z" class="b-paper"/>`;
+      if(m.weighed&&m.phase==='filled')g+=[0,1,2,3,4,5].map(i=>`<circle cx="${252+i*4}" cy="${201-(i%2)*2}" r="2.4" class="b-grain"/>`).join('');
+      g+=`<text x="284" y="190" text-anchor="middle" class="b-lab-s">약포지 · ${SOLID[sol].f}</text>`;}
+    else{const V=rc.addVol(c),full=m.phase!=='running'&&m.phase!=='done',h=V*2.6;
+      g+=`<rect x="266" y="100" width="34" height="150" rx="3" class="b-cyl"/><rect x="260" y="248" width="46" height="6" rx="2" class="b-cyl"/>`;
+      if(full&&m.phase!=='setup')g+=`<rect x="268" y="${(248-h).toFixed(1)}" width="30" height="${h.toFixed(1)}" class="b-liq"/>`;
+      for(let v=10;v<=50;v+=10)g+=`<line x1="290" y1="${248-v*2.6}" x2="298" y2="${248-v*2.6}" class="b-tick"/>`;
+      g+=`<text x="283" y="90" text-anchor="middle" class="b-lab-s">1.00 M NaOH ${V} mL</text>`;}
+    $('#board').innerHTML=g;
+  },
+  guide(){
+    const m=S.m,c=m.cond,sol=rc.solid(c),R=S.records.filter(r=>r.kind==='trun'),A=S.assign;
+    if(m.phase==='setup'){
+      const ok=r=>r.T0!=null&&r.stirred&&(S.room==='hess'||r.lid);
+      const need=rc.plan().find(p=>!R.some(r=>ok(r)&&Object.keys(p).every(k=>String(r.cond[k])===String(p[k]))));
+      if(!need)return '탐구 과제에 답하고, 관찰 기록에서 근거를 고르세요.';
+      return `‘${rc.name(need)}’ 조건으로 맞추고 ‘${rc.fillLbl({...c,...need})}’를 누르세요.`;
+    }
+    if(m.phase==='filled'){
+      if(!m.thermo)return '뚜껑 구멍으로 온도계를 꽂아 구부가 용액에 잠기게 하세요. 컵 바닥에 닿지 않게 해요.';
+      const wantLid=!(S.room==='hess'&&rc.plan().slice(3).some(p=>p.rxn===c.rxn)&&R.some(r=>r.cond.rxn===c.rxn&&r.cond.lid==='on'));
+      if(wantLid&&!m.lid)return '열이 빠져나가지 않게 뚜껑을 덮으세요.';
+      if(!wantLid&&m.lid)return '이번에는 비교를 위해 뚜껑을 열어 둔 채로 해 보세요.';
+      if(!m.pre.length)return '넣기 전에 처음 온도를 읽으세요. 온도가 일정한지 두세 번 읽어 봐도 좋아요.';
+      if(sol&&!m.weighed)return `약포지에 ${SOLID[sol].nm}을 다세요.${sol==='naoh'?' 수산화 나트륨은 공기 중의 수분을 흡수하니 달자마자 넣어요.':''}`;
+      if(!m.stir)return '젓개로 젓기 시작하세요. 넣는 동안에도 계속 저어요.';
+      return `${rc.addLbl(c).replace(/ · 시간 재기$/,'')} 시간을 재세요.`.replace(/기 시간/,'고 시간');
+    }
+    if(m.phase==='running'){
+      if(!m.stir)return '젓개로 계속 저어 주세요.';
+      if(m.t-m.lastRead>20)return '15초쯤마다 온도계를 읽으세요. 최고(최저) 온도를 놓치지 않게 해요.';
+      if(Math.abs(m.Qrel)>Math.abs(m.Qtot)*0.97){const post=m.reads.filter(r=>r.t>0),base=m.T0!=null?m.T0:(post[0]||{T:m.T}).T;
+        const ext=post.length?post.reduce((b,r)=>Math.abs(r.T-base)>Math.abs(b.T-base)?r:b,post[0]):null;
+        if(ext&&post[post.length-1]!==ext)return '온도가 최고(최저)를 지나 돌아오기 시작했어요. 측정을 끝내세요.';}
+      return '계속 저으면서 온도를 읽으세요.';
+    }
+    return '컵을 비우고 다음 조건으로 준비하세요.';
+  },
+  live(){const m=S.m;if(m.phase==='setup')return[];return [m.phase==='filled'?this.unreacted():rc.waste(m.cond,m.mass)];}
+  };
+}
+const MODS={sol:makeMod('sol'),neu:makeMod('neu'),hess:makeMod('hess')};
+
+/* ---------- chart ---------- */
+function niceMax(x){if(x<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(x)));for(const k of [1,1.2,1.6,2,2.5,3,4,5,6,8,10])if(k*p>=x-1e-12)return k*p;return 10*p;}
+const SC=['--s1','--s2','--s3','--s4','--s5','--s6'];
+function drawChart(){
+  const cv=$('#cv'),w=cv.clientWidth;if(!w)return;
+  const dpr=window.devicePixelRatio||1,h=200;
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}
+  const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);
+  const cs=getComputedStyle(document.documentElement),col=k=>cs.getPropertyValue(k).trim();
+  c.font='11px "IBM Plex Mono", ui-monospace, monospace';
+  const Lm=58,Rm=20,B=30,T=12,lg=$('#lg'),pw=w-Lm-Rm,ph=h-T-B;
+  const plot=(x0,x1,y0,y1,xl,yl,xf,yf,nx=4)=>{c.strokeStyle=col('--line-2');c.lineWidth=1;c.fillStyle=col('--ink-3');
+    for(let k=0;k<=4;k++){const y=T+k/4*ph;c.beginPath();c.moveTo(Lm,y);c.lineTo(Lm+pw,y);c.stroke();c.textAlign='right';c.fillText(yf(y1-(y1-y0)*k/4),Lm-5,y+4);}
+    for(let k=0;k<=nx;k++){const x=Lm+k/nx*pw;c.textAlign='center';c.fillText(xf(x0+(x1-x0)*k/nx),x,h-16);}
+    c.textAlign='center';c.fillText(xl,Lm+pw/2,h-3);c.save();c.translate(11,T+ph/2);c.rotate(-Math.PI/2);c.fillText(yl,0,0);c.restore();
+    return{X:v=>Lm+(v-x0)/(x1-x0)*pw,Y:v=>T+(1-(v-y0)/(y1-y0))*ph};};
+  const empty=t=>{c.fillStyle=col('--ink-3');c.textAlign='center';c.fillText(t,w/2,h/2);lg.innerHTML='';};
+  const R=S.records.filter(r=>r.kind==='trun'),m=S.m;
+  if(S.room==='neu'){
+    $('#chartLbl').textContent='산의 부피와 온도 변화 (산 + NaOH = 50 mL)';
+    const pts=R.filter(r=>r.dT!=null);
+    if(!pts.length){empty('측정을 끝내면 점이 찍힙니다');return;}
+    const ymax=niceMax(Math.max(2,...pts.map(r=>Math.abs(r.dT)))*1.15);
+    const P=plot(0,50,0,ymax,'산의 부피 (mL)','ΔT (℃)',v=>String(Math.round(v)),v=>v.toFixed(1),5);
+    for(const r of pts){c.beginPath();c.arc(P.X(r.cond.va+(r.cond.acid==='hno3'?0.9:0)),P.Y(Math.abs(r.dT)),r.lid?4.5:3,0,Math.PI*2);c.fillStyle=col(r.cond.acid==='hcl'?'--s1':'--s2');c.fill();}
+    lg.innerHTML=`<span><i style="background:var(--s1)"></i>HCl + NaOH</span>${pts.some(r=>r.cond.acid==='hno3')?'<span><i style="background:var(--s2)"></i>HNO₃ + NaOH</span>':''}`;
+    return;
+  }
+  $('#chartLbl').textContent='내가 읽은 온도 (넣은 순간 = 0초)';
+  const series=R.slice(-4).map(r=>({n:r.run,name:S.room==='hess'?RC.hess.name(r.cond):RC[S.room].name(r.cond),reads:r.reads}));
+  if(m.phase==='running'&&m.reads.length)series.push({n:m.run,name:RC[S.room].name(m.cond),reads:m.reads,live:true});
+  if(!series.length){empty('넣은 뒤 온도를 읽으면 그래프가 그려집니다');return;}
+  let xmax=60,ylo=99,yhi=-99;for(const s of series)for(const r of s.reads){xmax=Math.max(xmax,r.t);ylo=Math.min(ylo,r.T);yhi=Math.max(yhi,r.T);}
+  xmax=niceMax(xmax);ylo=Math.floor(ylo-1);yhi=Math.ceil(yhi+1);if((yhi-ylo)%4)yhi+=4-(yhi-ylo)%4;
+  const P=plot(0,xmax,ylo,yhi,'시간 (s)','온도 (℃)',v=>String(Math.round(v)),v=>String(+v.toFixed(1)));
+  series.forEach((s,i)=>{const cl=col(SC[i%SC.length]);c.strokeStyle=cl;c.fillStyle=cl;c.lineWidth=2;c.beginPath();
+    s.reads.forEach((r,j)=>{const x=P.X(r.t),y=P.Y(r.T);j?c.lineTo(x,y):c.moveTo(x,y);});c.stroke();
+    s.reads.forEach(r=>{c.beginPath();c.arc(P.X(r.t),P.Y(r.T),3,0,Math.PI*2);c.fill();});});
+  lg.innerHTML=series.map((s,i)=>`<span><i style="background:var(${SC[i%SC.length]})"></i>시행 ${s.n}${s.live?' (진행 중)':''} · ${esc(s.name)}</span>`).join('');
+}
+
+/* ---------- tasks ---------- */
+function radios(name,opts){return `<div class="rlist">${opts.map(([v,l])=>`<label><input type="radio" name="${name}" value="${v}"><span>${l}</span></label>`).join('')}</div>`;}
+const rv=name=>{const e=document.querySelector(`input[name="${name}"]:checked`);return e?e.value:null;};
+function pairs(rs,key){const out=[];for(let i=0;i<rs.length;i++)for(let j=i+1;j<rs.length;j++)if(sameExcept(rs[i].cond,rs[j].cond,key))out.push([rs[i],rs[j]]);return out;}
+function noneSel(sel,msgs){if(!sel.length)msgs.unshift('근거를 고르지 않았어요.');}
+const nums=rs=>rs.map(r=>'#'+r.n).join(', ');
+/* 기록으로 계산한 열량과 반응 엔탈피 */
+/* q(용액) = m·c·ΔT (부호 그대로), 열량계가 흡수한 열을 무시하면 ΔH = −q(용액) ÷ n */
+function calc(r){if(r.T0==null||r.dT==null||r.dT===0)return null;const q=r.msol*C_W*r.dT;return{q,dH:-q/r.nmol/1000};}
+/* 근거로 쓸 수 있는 시행만 남긴다 */
+function valid(sel,msgs,needLid){
+  let ok=sel;
+  const noT=ok.filter(r=>r.T0==null);if(noT.length){msgs.push(`${nums(noT)}: 처음 온도를 읽지 않은 시행이라 ΔT를 구할 수 없어요.`);ok=ok.filter(r=>r.T0!=null);}
+  const er=ok.filter(r=>r.early);if(er.length){msgs.push(`${nums(er)}: 온도가 아직 변하는 중에 측정을 끝낸 시행이라 최고(최저) 온도를 알 수 없어요.`);ok=ok.filter(r=>!r.early);}
+  if(needLid){const nl=ok.filter(r=>!r.lid);if(nl.length){msgs.push(`${nums(nl)}: 측정하는 내내 뚜껑을 덮지 않은 시행이라 쓰지 않아요.`);ok=ok.filter(r=>r.lid);}}
+  else{const mx=ok.filter(r=>r.lidState==='mixed');if(mx.length){msgs.push(`${nums(mx)}: 측정 중에 뚜껑을 여닫은 시행이라 비교에 쓰지 않아요.`);ok=ok.filter(r=>r.lidState!=='mixed');}}
+  return ok;
+}
+const near=(a,b,tol)=>a!=null&&b!=null&&Math.abs(a-b)<=Math.abs(b)*tol;
+function checkCalc(a,v,msgs){
+  if(a.q==null||a.h==null){msgs.push('두 값을 모두 입력하세요.');return false;}
+  if(!v){msgs.push('근거가 부족해 계산을 확인할 수 없어요.');return false;}
+  const qOK=near(a.q,v.q,0.04),hOK=near(a.h,v.dH,0.06)&&Math.sign(a.h)===Math.sign(v.dH);
+  if(!qOK)msgs.push(near(Math.abs(a.q),Math.abs(v.q),0.04)?'q(용액)의 부호를 확인하세요. 용액의 온도가 내려가면 ΔT가 음수라 q(용액) = mcΔT도 음수예요.':'입력한 q(용액)이 고른 기록으로 계산한 값과 맞지 않아요.');
+  else if(!hOK)msgs.push(Math.sign(a.h)!==Math.sign(v.dH)?'ΔH의 부호를 확인하세요. ΔH = −q(용액) ÷ n이라 용액의 온도가 오르면 ΔH는 음수예요.':'입력한 ΔH가 고른 기록으로 계산한 값과 맞지 않아요.');
+  return qOK&&hOK;
+}
+const calcInputs=(i,qLab,hLab)=>`<div class="calc">${numIn(`t${i}q`,'J',qLab)}${numIn(`t${i}h`,'kJ/mol',hLab)}</div>`;
+const TASKS={
+sol:[
+ {kinds:['trun'],
+  q:()=>'물에 녹일 때 온도가 내려가는 고체는 어느 것이고, 그 용해는 어떤 반응인가요? 수산화 나트륨과 질산 암모늄을 비교하세요.',
+  inputs:i=>radios(`t${i}a`,[['nh4no3-endo','질산 암모늄 · 흡열 반응 (주위에서 열을 흡수한다)'],['naoh-endo','수산화 나트륨 · 흡열 반응'],['nh4no3-exo','질산 암모늄 · 발열 반응 (주위로 열을 방출한다)']]),
+  read:i=>({c:rv(`t${i}a`)}),ansText:a=>({'nh4no3-endo':'질산 암모늄 · 흡열','naoh-endo':'수산화 나트륨 · 흡열','nh4no3-exo':'질산 암모늄 · 발열'}[a.c]||'?'),
+  eval(a,sel){const msgs=[],ok=valid(sel,msgs,false);
+    const na=ok.filter(r=>r.cond.solid==='naoh'),nh=ok.filter(r=>r.cond.solid==='nh4no3');
+    noneSel(sel,msgs);if(sel.length&&(!na.length||!nh.length))msgs.push('수산화 나트륨 시행과 질산 암모늄 시행을 함께 골라야 해요.');
+    const up=na.some(r=>r.dT>0.5),down=nh.some(r=>r.dT<-0.5);
+    const sup=a.c==='nh4no3-endo'?up&&down:a.c==='naoh-endo'?na.some(r=>r.dT<-0.5)&&nh.some(r=>r.dT>0.5):false;
+    if(na.length&&nh.length&&!sup&&a.c)msgs.push('고른 기록이 답과 맞지 않아요.');
+    return{correct:a.c==='nh4no3-endo',evOK:sup,msgs};}},
+ {kinds:['trun'],
+  q:()=>`${S.mode==='exam'?SOLID[S.assign.solid].nm+' 시행 하나를':'시행 하나를'} 골라 용액의 열량 q(용액) = mcΔT와 고체 1 mol이 녹을 때의 용해 엔탈피 ΔH를 구하세요.`,
+  inputs:i=>calcInputs(i,'용액의 열량 q(용액)','용해 엔탈피 ΔH')+'<p class="small">용액의 질량은 물과 고체 질량의 합이에요. 온도가 내려가면 ΔT와 q(용액)는 음수예요. 열량계가 흡수한 열은 무시하므로 ΔH = −q(용액) ÷ n이에요.</p>',
+  read:i=>({q:nv(`t${i}q`),h:nv(`t${i}h`)}),ansText:a=>`q ${a.q==null?'?':a.q} J · ΔH ${a.h==null?'?':a.h} kJ/mol`,
+  eval(a,sel){const msgs=[];let ok=valid(sel,msgs,true);
+    if(S.mode==='exam'&&ok.some(r=>r.cond.solid!==S.assign.solid)){msgs.push(`배정된 고체(${SOLID[S.assign.solid].nm})가 아닌 시행은 쓰지 않아요.`);ok=ok.filter(r=>r.cond.solid===S.assign.solid);}
+    noneSel(sel,msgs);if(sel.length&&ok.length!==1)msgs.push(ok.length?'계산할 시행은 하나만 골라요.':'계산에 쓸 시행을 골라야 해요.');
+    const v=ok.length===1?calc(ok[0]):null;
+    return{correct:checkCalc(a,v,msgs),evOK:!!v,msgs};}},
+ {kinds:['trun'],
+  q:()=>`같은 양의 물에 ${S.mode==='exam'?SOLID[S.assign.solid].nm+'을':'같은 고체를'} 2배로 녹이면 온도 변화와 1 mol당 용해 엔탈피는 어떻게 되나요?`,
+  inputs:i=>radios(`t${i}a`,[['dT2-same','온도 변화는 약 2배, 1 mol당 ΔH는 거의 같다'],['dT2-H2','온도 변화도, 1 mol당 ΔH도 약 2배가 된다'],['same-same','온도 변화도 ΔH도 거의 같다']]),
+  read:i=>({c:rv(`t${i}a`)}),ansText:a=>({'dT2-same':'ΔT 2배 · ΔH 같음','dT2-H2':'ΔT 2배 · ΔH 2배','same-same':'둘 다 같음'}[a.c]||'?'),
+  eval(a,sel){const msgs=[];let ok=valid(sel,msgs,true);
+    if(S.mode==='exam'&&ok.some(r=>r.cond.solid!==S.assign.solid)){msgs.push(`배정된 고체(${SOLID[S.assign.solid].nm})가 아닌 시행은 쓰지 않아요.`);ok=ok.filter(r=>r.cond.solid===S.assign.solid);}
+    const P=pairs(ok,'amt');let sup=false;
+    for(const [x,y] of P){const big=x.cond.amt>y.cond.amt?x:y,sm=big===x?y:x,vb=calc(big),vs=calc(sm);if(!vb||!vs)continue;
+      const rT=big.dT/sm.dT,rH=vb.dH/vs.dH;
+      if((a.c==='dT2-same'&&rT>1.6&&rT<2.4&&rH>0.85&&rH<1.18)||(a.c==='dT2-H2'&&rT>1.6&&rT<2.4&&rH>1.6)||(a.c==='same-same'&&rT>0.85&&rT<1.15))sup=true;}
+    noneSel(sel,msgs);if(sel.length&&!P.length)msgs.push('고체의 양만 다르고 나머지 조건이 같은 두 시행을 골라야 해요.');else if(P.length&&!sup&&a.c)msgs.push('고른 기록이 답과 맞지 않아요.');
+    return{correct:a.c==='dT2-same',evOK:sup,msgs};}}
+],
+neu:[
+ {kinds:['trun'],
+  q:()=>'산과 NaOH 수용액(모두 1.00 M)을 합이 50 mL가 되게 섞을 때, 온도가 가장 많이 오르는 부피 비(산 : NaOH)는 무엇이고 그 까닭은 무엇인가요?',
+  inputs:i=>radios(`t${i}a`,[['1:1','1 : 1 · H⁺와 OH⁻가 남김없이 반응해 생기는 물의 양이 가장 많아서'],['2:3','2 : 3 · NaOH가 많을수록 열이 많이 나서'],['3:2','3 : 2 · 산이 많을수록 열이 많이 나서']]),
+  read:i=>({c:rv(`t${i}a`)}),ansText:a=>a.c?a.c.replace(':',' : '):'?',
+  eval(a,sel){const msgs=[],ok=valid(sel,msgs,true);
+    const acids=new Set(ok.map(r=>r.cond.acid));if(acids.size>1)msgs.push('산의 종류가 같은 시행끼리 비교해요.');
+    const grp=acids.size===1?ok:[];const vs=new Set(grp.map(r=>r.cond.va)),both=[...vs].some(v=>v<25)&&[...vs].some(v=>v>25),enough=vs.size>=3&&both;
+    let sup=false;if(enough){const best=grp.reduce((b,r)=>Math.abs(r.dT)>Math.abs(b.dT)?r:b,grp[0]);sup=best.cond.va==={'1:1':25,'2:3':20,'3:2':30}[a.c];}
+    noneSel(sel,msgs);if(sel.length&&!enough)msgs.push('산이 25 mL보다 적은 시행과 많은 시행을 포함해, 부피 비가 서로 다른 시행을 세 개 이상 골라야 해요.');else if(enough&&!sup&&a.c)msgs.push('고른 기록에서 온도가 가장 많이 오른 비율이 답과 달라요.');
+    return{correct:a.c==='1:1',evOK:sup,msgs};}},
+ {kinds:['trun'],
+  q:()=>`${S.mode==='exam'?`산 ${S.assign.va} mL + NaOH ${50-S.assign.va} mL 시행`:'시행 하나'}를 골라 용액의 열량 q(용액) = mcΔT와 물 1 mol이 생길 때의 중화 엔탈피 ΔH를 구하세요.`,
+  inputs:i=>calcInputs(i,'용액의 열량 q(용액)','중화 엔탈피 ΔH')+'<p class="small">ΔH = −q(용액) ÷ n이에요. 생긴 물의 양 n은 산과 염기 중 적은 쪽의 양과 같아요.</p>',
+  read:i=>({q:nv(`t${i}q`),h:nv(`t${i}h`)}),ansText:a=>`q ${a.q==null?'?':a.q} J · ΔH ${a.h==null?'?':a.h} kJ/mol`,
+  eval(a,sel){const msgs=[];let ok=valid(sel,msgs,true);
+    if(S.mode==='exam'&&ok.some(r=>r.cond.va!==S.assign.va)){msgs.push(`배정된 부피 비(산 ${S.assign.va} mL)가 아닌 시행은 쓰지 않아요.`);ok=ok.filter(r=>r.cond.va===S.assign.va);}
+    noneSel(sel,msgs);if(sel.length&&ok.length!==1)msgs.push(ok.length?'계산할 시행은 하나만 골라요.':'계산에 쓸 시행을 골라야 해요.');
+    const v=ok.length===1?calc(ok[0]):null;
+    return{correct:checkCalc(a,v,msgs),evOK:!!v,msgs};}},
+ {kinds:['trun'],
+  q:()=>'염산 대신 질산을 같은 부피 비로 NaOH와 반응시키면 물 1 mol당 중화 엔탈피는 어떻게 되나요?',
+  inputs:i=>radios(`t${i}a`,[['same','거의 같다 · 알짜 이온 반응이 H⁺ + OH⁻ → H₂O로 같아서'],['hcl','염산이 더 크다'],['hno3','질산이 더 크다']]),
+  read:i=>({c:rv(`t${i}a`)}),ansText:a=>({same:'거의 같음',hcl:'염산이 큼',hno3:'질산이 큼'}[a.c]||'?'),
+  eval(a,sel){const msgs=[],ok=valid(sel,msgs,true),P=pairs(ok,'acid');let sup=false;
+    for(const [x,y] of P){const h=x.cond.acid==='hcl'?x:y,n=h===x?y:x,q=h.dT/n.dT;
+      if((a.c==='same'&&q>0.9&&q<1.1)||(a.c==='hcl'&&q>=1.1)||(a.c==='hno3'&&q<=0.9))sup=true;}
+    noneSel(sel,msgs);if(sel.length&&!P.length)msgs.push('산의 종류만 다르고 부피 비가 같은 두 시행을 골라야 해요.');else if(P.length&&!sup&&a.c)msgs.push('고른 기록이 답과 맞지 않아요.');
+    return{correct:a.c==='same',evOK:sup,msgs};}}
+],
+hess:[
+ {kinds:['trun'],
+  q:()=>'반응 ①, ②, ③의 ΔH를 각각 구하세요 (모두 0.0500 mol 기준, kJ/mol).',
+  inputs:i=>`<div class="calc">${numIn(`t${i}a`,'kJ/mol','ΔH₁ (반응 ①)')}${numIn(`t${i}b`,'kJ/mol','ΔH₂ (반응 ②)')}${numIn(`t${i}c`,'kJ/mol','ΔH₃ (반응 ③)')}</div>`,
+  read:i=>({h:[nv(`t${i}a`),nv(`t${i}b`),nv(`t${i}c`)]}),ansText:a=>`ΔH₁ ${a.h[0]??'?'} · ΔH₂ ${a.h[1]??'?'} · ΔH₃ ${a.h[2]??'?'} kJ/mol`,
+  eval(a,sel){const msgs=[],ok=valid(sel,msgs,true),by=[1,2,3].map(k=>ok.filter(r=>r.cond.rxn===k));
+    noneSel(sel,msgs);
+    if(sel.length&&by.some(x=>x.length!==1))msgs.push('반응 ①, ②, ③의 시행을 하나씩 골라야 해요 (뚜껑을 덮은 시행).');
+    const v=by.every(x=>x.length===1)?by.map(x=>calc(x[0])):null;
+    let correct=false;
+    if(a.h.some(x=>x==null))msgs.push('세 값을 모두 입력하세요.');
+    else if(v&&v.every(Boolean)){const okk=v.map((x,j)=>near(a.h[j],x.dH,0.07));correct=okk.every(Boolean);
+      okk.forEach((o,j)=>{if(!o)msgs.push(`입력한 ΔH${['₁','₂','₃'][j]} 값이 고른 기록으로 계산한 값과 맞지 않아요.`);});}
+    return{correct,evOK:!!(v&&v.every(Boolean)),msgs};}},
+ {kinds:['trun'],
+  q:()=>'ΔH₁ + ΔH₂와 ΔH₃는 어떤 관계인가요?',
+  inputs:i=>radios(`t${i}a`,[['equal','거의 같다 · 반응 경로가 달라도 처음과 나중 상태가 같으면 반응열의 합은 같다'],['bigger','ΔH₁ + ΔH₂의 크기가 훨씬 크다'],['smaller','ΔH₁ + ΔH₂의 크기가 훨씬 작다']]),
+  read:i=>({c:rv(`t${i}a`)}),ansText:a=>({equal:'ΔH₃ ≈ ΔH₁ + ΔH₂',bigger:'합이 더 큼',smaller:'합이 더 작음'}[a.c]||'?'),
+  eval(a,sel){const msgs=[],ok=valid(sel,msgs,true),by=[1,2,3].map(k=>ok.filter(r=>r.cond.rxn===k));let sup=false;
+    const v=by.every(x=>x.length===1)?by.map(x=>calc(x[0])):null;
+    if(v&&v.every(Boolean)){const q=(v[0].dH+v[1].dH)/v[2].dH;sup=a.c==='equal'?Math.abs(q-1)<=0.12:a.c==='bigger'?q>1.12:a.c==='smaller'?q<0.88:false;}
+    noneSel(sel,msgs);if(sel.length&&!v)msgs.push('반응 ①, ②, ③의 시행을 하나씩 골라야 해요 (뚜껑을 덮은 시행).');else if(v&&!sup&&a.c)msgs.push('고른 기록이 답과 맞지 않아요.');
+    return{correct:a.c==='equal',evOK:sup,msgs};}},
+ {kinds:['trun'],
+  q:()=>`뚜껑을 덮지 않고 반응 ${CIRC[S.assign.lidRxn]}의 실험을 하면, 구한 ΔH의 크기(절댓값)는 뚜껑을 덮었을 때와 비교해 어떤가요?`,
+  inputs:i=>radios(`t${i}a`,[['smaller','작게 나온다 · 열의 일부가 컵 밖으로 빠져나가서'],['bigger','크게 나온다'],['same','거의 같다']]),
+  read:i=>({c:rv(`t${i}a`)}),ansText:a=>({smaller:'작게 나옴',bigger:'크게 나옴',same:'거의 같음'}[a.c]||'?'),
+  eval(a,sel){const msgs=[],K=S.assign.lidRxn;let ok=valid(sel,msgs,false);
+    if(ok.some(r=>r.cond.rxn!==K)){msgs.push(`반응 ${CIRC[K]}의 시행이 아닌 것은 쓰지 않아요.`);ok=ok.filter(r=>r.cond.rxn===K);}
+    const P=pairs(ok,'lid');let sup=false;
+    for(const [x,y] of P){const on=x.cond.lid==='on'?x:y,off=on===x?y:x,vo=calc(on),vf=calc(off);if(!vo||!vf)continue;const q=Math.abs(vf.dH)/Math.abs(vo.dH);
+      if((a.c==='smaller'&&q<0.97)||(a.c==='bigger'&&q>1.03)||(a.c==='same'&&q>=0.97&&q<=1.03))sup=true;}
+    noneSel(sel,msgs);if(sel.length&&!P.length)msgs.push(`반응 ${CIRC[K]}에서 뚜껑을 덮고 한 시행과 덮지 않고 한 시행을 함께 골라야 해요.`);else if(P.length&&!sup&&a.c)msgs.push('고른 기록이 답과 맞지 않아요.');
+    return{correct:a.c==='smaller',evOK:sup,msgs};}}
+]};
+function renderTasks(){
+  const T=TASKS[S.room];
+  $('#tasks').innerHTML=T.map((t,i)=>`<article class="task" id="task${i}"><p class="eyebrow">과제 ${i+1}</p><h3>${t.q()}</h3><div class="stack" style="gap:6px">${t.inputs(i)}</div>
+    <div class="stack" style="gap:6px"><span class="lbl">근거 · 관찰 기록에서 고르기</span><div class="chips" id="ev${i}"></div></div>
+    <div class="tools"><button type="button" class="btn sm" data-judge="${i}">판정 기록</button></div><p class="t-msg" id="tm${i}" aria-live="polite"></p></article>`).join('');
+  T.forEach((t,i)=>{if(!(S.tsel[i] instanceof Set))S.tsel[i]=new Set();renderEv(i);});
+  $('#briefList').innerHTML=T.map((t,i)=>`<li><span>${t.q()}</span> <a href="#task${i}" class="jump" data-jump="${i}">답하러 가기</a></li>`).join('');
+}
+function renderEv(i){
+  const box=$('#ev'+i);if(!box)return;
+  const kinds=TASKS[S.room][i].kinds,recs=S.records.filter(r=>kinds.includes(r.kind)),sel=S.tsel[i];
+  box.innerHTML=recs.length?recs.map(r=>`<label class="chk"><input type="checkbox" data-ev="${i}" value="${r.n}"${sel.has(r.n)?' checked':''}><span>#${r.n} ${esc(r.label)} — ${esc(r.text)}</span></label>`).join(''):'<p class="small">아직 고를 기록이 없어요.</p>';
+}
+function renderEvAll(){if(S&&TASKS[S.room])TASKS[S.room].forEach((t,i)=>renderEv(i));}
+function judge(i){
+  const t=TASKS[S.room][i],a=t.read(i),sel=[...S.tsel[i]].map(n=>S.records[n-1]).filter(Boolean);
+  const r=t.eval(a,sel);
+  S.tasks[i]={ans:t.ansText(a),ev:[...S.tsel[i]].sort((x,y)=>x-y),...r};
+  log('rec',`과제 ${i+1} 판정 기록: ${t.ansText(a)} · 근거 ${S.tasks[i].ev.length?S.tasks[i].ev.map(n=>'#'+n).join(' '):'없음'}`);
+  const m=$('#tm'+i);
+  if(S.mode==='exam'){m.className='t-msg';m.textContent='기록했어요. 다시 기록하면 바뀝니다.';return;}
+  m.className='t-msg '+(r.correct&&r.evOK?'ok':'no');
+  m.textContent=(r.correct?'답이 맞아요.':'답을 다시 생각해 보세요.')+' '+(r.evOK?'근거도 충분해요.':'근거가 부족해요.')+(r.msgs.length?' '+r.msgs.join(' '):'');
+}
+
+/* ---------- waste ---------- */
+function liveWaste(){
+  const all=(S.mwaste||[]).concat(MODS[S.room].live()),g=new Map();
+  for(const w of all){const x=g.get(w.key);if(x)x.n++;else g.set(w.key,{...w,n:1});}
+  return [...g.values()].map(w=>({uid:w.key,kind:w.kind,why:w.why,desc:w.desc+(w.n>1?` · ${w.n}개`:'')}));
+}
+function renderWaste(){
+  const items=liveWaste(),box=$('#wasteList');
+  if(!items.length){box.innerHTML='<p class="small">아직 처리할 용액이 없어요. 실험에 쓴 용액이 여기에 모입니다.</p>';return;}
+  box.innerHTML=items.map(w=>{const c=S.wch[w.uid]||'';let msg='';
+    if(c&&S.mode==='practice')msg=c===w.kind?`<p class="wmsg ok">맞아요. ${w.why||WREASON[w.kind]}</p>`:`<p class="wmsg no">다시 생각해 보세요.</p>`;
+    return `<div class="wrow"><span class="small" style="color:var(--ink)">${esc(w.desc)}</span><select class="sel" data-w="${esc(w.uid)}" aria-label="폐액통"><option value="">폐액통 고르기</option>${WASTE.map(([k,l])=>`<option value="${k}"${c===k?' selected':''}>${l}</option>`).join('')}</select>${msg}</div>`;}).join('');
+}
+let wSig='';
+function renderWasteMaybe(){const s=liveWaste().map(w=>w.uid+w.desc).join(',');if(s!==wSig){wSig=s;renderWaste();}}
+
+/* ---------- PPE, guide, group ---------- */
+const ROLE={op:'실험 조작',rec:'관찰·기록',safe:'안전·정리'};
+const roleNames=(g,k)=>[].concat(g.roles[k]||[]).join(', ');
+function ppeMissing(){return [['coat','실험복'],['goggles','보안경'],['gloves','장갑']].filter(([k])=>!S.ppe[k]).map(x=>x[1]);}
+function checkPPE(){
+  const m=ppeMissing();if(!m.length)return;
+  const k=m.join();if(!S.ppeLogged[k]){S.ppeLogged[k]=1;bad('ppe','보호 장비 미착용: '+m.join(', '));}
+  if(S.mode==='practice')toast('먼저 보호 장비를 착용하세요: '+m.join(', '),'bad');
+}
+function guide(){const m=ppeMissing();if(m.length)return '보호 장비부터 착용하세요: '+m.join(', ');return MODS[S.room].guide();}
+function guideRole(t){
+  if(/보호 장비|보안경|장갑|실험복|폐액|정리|치우|처리/.test(t))return 'safe';
+  if(/과제|근거|읽으세요|읽어|기록하세요|재세요|기다리/.test(t))return 'rec';
+  return 'op';
+}
+function renderGuide(){
+  const t=guide();$('#guideTx').textContent=t;
+  const who=$('#guideWho');who.hidden=!S.group;
+  if(S.group){const k=guideRole(t);who.textContent=`${ROLE[k]} · ${roleNames(S.group,k)}`;}
+}
+function renderPPE(){
+  const miss=ppeMissing();
+  $('#ppeTx').textContent=miss.length?(S.group?'조원 모두 착용했으면 누르세요.':'착용한 것을 누르세요.'):(S.group?'조원 모두 착용함':'모두 착용함');
+  const g=S.group;$('#roleBar').hidden=!g;
+  if(g)$('#roleBar').innerHTML=Object.entries(ROLE).map(([k,l])=>`<span>${l} <b>${esc(roleNames(g,k))}</b></span>`).join('')+`<span>조원 <b>${esc(g.members.join(', '))}</b></span>`;
+}
+function seg(el,name,opts,val,onCh){
+  el.innerHTML=opts.map(([v,l])=>`<input type="radio" name="${name}" id="${name}_${v}" value="${v}"${String(v)===String(val)?' checked':''}><label for="${name}_${v}">${l}</label>`).join('');
+  el.onchange=e=>{if(e.target.name===name)onCh(e.target.value);};
+}
+
+/* ---------- finish ---------- */
+function finish(){
+  const items=liveWaste(),miss=items.filter(w=>!S.wch[w.uid]);
+  if(miss.length&&S.mode==='practice'&&!S.flags.finWarn){S.flags.finWarn=1;toast(`처리하지 않은 폐액이 ${miss.length}개 있어요. 그래도 마치려면 한 번 더 누르세요.`,'bad');return;}
+  const WL=liveWaste();
+  for(const w of WL){const c=S.wch[w.uid];if(!c)bad('waste-left',`폐액을 처리하지 않음: ${w.desc}`);else if(c!==w.kind)bad('waste-wrong',`폐액을 잘못 버림: ${w.desc} → ${WASTE.find(x=>x[0]===c)[1]}`);}
+  log('act','실험을 마침');S.finished=true;
+  const rec=buildRec(WL);RECS.push(rec);const ok=persist();LAST=rec;if(ok)clearSave();
+  renderDone(rec,ok);show('done');
+}
+
+/* ---------- screens & loop ---------- */
+function show(w){
+  const M={start:'#scrStart',lab:'#scrLab',done:'#scrDone',lock:'#scrLock',teacher:'#scrTeacher'};
+  for(const k in M)$(M[k]).hidden=k!==w;
+  $('#ppeBar').hidden=w!=='lab';$('#roleBar').hidden=w!=='lab'||!(S&&S.group);$('#brief').hidden=w!=='lab';$('#guideBar').hidden=w!=='lab';$('#brief').open=true;$('#clock').hidden=w!=='lab';
+  const tb=$('#btnTeacher');tb.hidden=w==='lab'||!TROUTE;  // 교사 화면은 #teacher 주소로 연 기기에서만tb.textContent=(w==='lock'||w==='teacher')?'돌아가기':'교사 보기';
+  if(w!=='lab'&&w!=='done')$('#hdrSub').textContent='열화학 실험대 · 용해 · 중화 · 헤스 법칙';
+  window.scrollTo(0,0);
+}
+function startLab(room,mode,name,group){
+  clearSave();initState(room,mode,name);S.group=group||null;
+  log('act',`실험 시작: ${ROOMS[room].nm} · ${mode==='exam'?'평가':'연습'}${S.group?' · 조별':''}`);
+  if(S.group)log('note',`조원 ${S.group.members.join(', ')} · ${Object.entries(ROLE).map(([k,l])=>`${l} ${roleNames(S.group,k)}`).join(' / ')}`);
+  enterLab();
+}
+function enterLab(){
+  const room=S.room,MD=MODS[room];
+  document.body.dataset.mode=S.mode;
+  $('#hdrSub').textContent=ROOMS[room].sub;$('#benchHint').textContent=ROOMS[room].hint;
+  $$('.ppe-b').forEach(b=>b.setAttribute('aria-pressed',String(!!S.ppe[b.dataset.ppe])));
+  const as=$('#assignTx'),at=assignText(room,S.assign,S.mode);as.hidden=!at;as.textContent=at;
+  const rt=$('#roleTx');if(rt){rt.innerHTML=TEMP_ROLE[room]||'';rt.hidden=!TEMP_ROLE[room];}
+  MD.controls();MD.build();renderRecords();renderTasks();renderWaste();renderPPE();renderGuide();
+  show('lab');
+}
+let last=performance.now(),acc=0,saveAcc=0;
+function frame(now){
+  const dt=Math.min(0.1,(now-last)/1000);last=now;
+  if(S&&!S.finished&&!$('#scrLab').hidden){
+    const MD=MODS[S.room];let h=dt*S.speed;while(h>1e-9){const s=Math.min(h,0.5);MD.tick(s);h-=s;}
+    MD.build();
+    acc+=dt;
+    if(acc>0.25){acc=0;MD.status();drawChart();$('#clock').textContent=mmss(elapsed());if(S.mode==='practice')renderGuide();renderWasteMaybe();saveAcc+=0.25;if(saveAcc>=3){saveAcc=0;saveNow();}}
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- saved records, submission ---------- */
+/* 교사 PIN: 기기마다 처음 연 사람이 정하고, 해시만 이 기기에 남긴다. 소스에는 코드가 없다. */
+const PIN_KEY='vlab-thermo-pin';
+const TROUTE=(location.hash||'').slice(1).split('.').includes('teacher');
+async function hashPin(p){const txt='vlab-thermo:'+p;try{const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(txt));return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');}catch(e){let h=0;for(const ch of txt)h=(h*31+ch.charCodeAt(0))|0;return 'x'+(h>>>0).toString(16);}}
+function getPin(){try{return localStorage.getItem(PIN_KEY);}catch(e){return null;}}
+function setPin(h){try{localStorage.setItem(PIN_KEY,h);return true;}catch(e){return false;}}
+const RKEY='vlab-thermo-records-v1';
+let RECS=[],LAST=null,UNLOCKED=false,TF='all';
+try{const v=JSON.parse(localStorage.getItem(RKEY)||'[]');if(Array.isArray(v))RECS=v;}catch(e){RECS=[];}
+function persist(){try{localStorage.setItem(RKEY,JSON.stringify(RECS.slice(-200)));return true;}catch(e){return false;}}
+/* 제출 코드: 학생 화면에는 분석을 보여 주지 않고, 교사 화면에서 불러올 때만 풀어 본다 (가벼운 가림 처리) */
+const XK='vlab-thermo-2026',CODE='VTHERMO1:';
+function encodeRec(r){const bytes=new TextEncoder().encode(JSON.stringify(r));let s='';bytes.forEach((b,i)=>{s+=String.fromCharCode(b^XK.charCodeAt(i%XK.length));});return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function decodeRec(code){let b=code.replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';const s=atob(b),bytes=new Uint8Array(s.length);for(let i=0;i<s.length;i++)bytes[i]=s.charCodeAt(i)^XK.charCodeAt(i%XK.length);return JSON.parse(new TextDecoder().decode(bytes));}
+function fmtDate(iso){const d=new Date(iso);if(isNaN(d))return'';return `${d.getMonth()+1}.${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+const TT={sol:['발열과 흡열 용해','용해 엔탈피 구하기','양을 늘렸을 때 ΔT와 ΔH'],neu:['중화점의 부피 비','중화 엔탈피 구하기','산의 종류와 중화 엔탈피'],hess:['세 반응의 ΔH','헤스 법칙','뚜껑과 열 손실']};
+const MK={ppe:'보호 장비 미착용','no-t0':'처음 온도를 읽지 않고 반응시킴','no-lid':'뚜껑을 덮지 않고 반응시킴','no-stir':'젓지 않고 측정','lid-open':'측정 중에 뚜껑을 여닫음','naoh-air':'NaOH를 공기 중에 오래 둠','stop-early':'온도가 변하는 중에 측정을 끝냄','waste-wrong':'폐액을 잘못 버림','waste-left':'폐액을 처리하지 않음'};
+const SRC={local:'이 기기',import:'불러옴'};
+const wasteName=k=>k?(WASTE.find(x=>x[0]===k)||['','?'])[1]:'처리 안 함';
+const evText=ev=>ev&&ev.length?ev.map(n=>'#'+n).join(' '):'없음';
+function assignText(room,a,mode){
+  if(mode!=='exam'||!a)return '';
+  if(room==='sol')return `배정 조건 · 용해 엔탈피 계산과 양 비교는 ${SOLID[a.solid].nm} 시행으로`;
+  if(room==='neu')return `배정 조건 · 중화 엔탈피 계산은 산 ${a.va} mL + NaOH ${50-a.va} mL 시행으로`;
+  if(room==='hess')return `배정 조건 · 뚜껑 비교는 반응 ${CIRC[a.lidRxn]} 시행으로`;
+  return '';
+}
+function headline(r){const c=r.tasks.filter(t=>t&&t.correct).length,e=r.tasks.filter(t=>t&&t.evOK).length,n=r.tasks.filter(t=>!t).length,N=r.tasks.length;return `답 ${c}/${N} · 근거 ${e}/${N}`+(n?` · 판정 안 한 과제 ${n}개`:'');}
+const groupLine=r=>r.group?[`조원: ${r.group.members.join(', ')} (${Object.entries(ROLE).map(([k,l])=>`${l} ${roleNames(r.group,k)}`).join(' / ')})`]:[];
+function buildRec(WL){
+  return{v:1,id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),src:'local',name:S.name,room:S.room,mode:S.mode,group:S.group||undefined,at:new Date().toISOString(),dur:elapsed(),assign:S.assign,
+    tasks:TASKS[S.room].map((t,i)=>{const x=S.tasks[i];return x?{ans:x.ans,ev:x.ev,correct:x.correct,evOK:x.evOK,msgs:x.msgs}:null;}),
+    recs:S.records.map(r=>({n:r.n,s:r.label,x:r.text})),
+    waste:WL.map(w=>({desc:w.desc,kind:w.kind,why:w.why||'',choice:S.wch[w.uid]||null})),
+    mistakes:S.mist.map(m=>({key:m.key,text:m.text})),
+    log:S.log.map(l=>({t:l.t,kind:l.kind,text:l.text}))};
+}
+const recLines=r=>r.recs.length?['관찰 기록:',...r.recs.map(x=>`- #${x.n} ${x.s} — ${x.x}`)]:[];
+function studentText(r){
+  return [`[열화학 가상 실험실 · 제출] ${r.name}`,`${ROOMS[r.room].nm} · ${r.mode==='exam'?'평가':'연습'}${r.group?' · 조별':''} · ${fmtDate(r.at)} · 소요 ${mmss(r.dur)}`,...groupLine(r),
+    ...(assignText(r.room,r.assign,r.mode)?[assignText(r.room,r.assign,r.mode)]:[]),
+    '내 답:',...r.tasks.map((t,i)=>`- 과제 ${i+1}: ${t?`${t.ans} · 근거 ${evText(t.ev)}`:'판정 기록 없음'}`),
+    ...recLines(r),
+    `과정 기록 ${r.log.length}개와 분석 결과는 선생님 화면에서 확인합니다.`,'분석 코드 (지우지 마세요):',CODE+encodeRec({...r,src:undefined})].join('\n');
+}
+function teacherText(r){
+  return [`[열화학 가상 실험실] ${r.name}`,`${ROOMS[r.room].nm} · ${r.mode==='exam'?'평가':'연습'}${r.group?' · 조별':''} · 소요 ${mmss(r.dur)}`,...groupLine(r),...(assignText(r.room,r.assign,r.mode)?[assignText(r.room,r.assign,r.mode)]:[]),`결과: ${headline(r)}`,
+    '과제:',...r.tasks.map((t,i)=>`- 과제 ${i+1} ${TT[r.room][i]}: `+(t?`${t.ans} · 답 ${t.correct?'맞음':'틀림'} · 근거 ${t.evOK?'충분':'부족'} (${evText(t.ev)})`+(t.msgs.length?' · '+t.msgs.join(' '):''):'판정 기록 없음')),
+    `실수: ${r.mistakes.length?r.mistakes.map(m=>m.text).join(' / '):'없음'}`,
+    ...(r.waste.length?['폐액:',...r.waste.map(w=>`- ${w.desc} → ${wasteName(w.choice)}`+(w.choice===w.kind?'':` (맞는 곳: ${wasteName(w.kind)})`))]:[]),
+    ...recLines(r),'과정 기록:',...r.log.map(e=>`${mmss(e.t)} ${e.text}`)].join('\n');
+}
+function validRec(r){
+  const isS=v=>typeof v==='string',isN=v=>typeof v==='number'&&isFinite(v),isA=Array.isArray,isW=k=>WASTE.some(w=>w[0]===k);
+  if(!r||typeof r!=='object'||!isS(r.id)||!r.id||!ROOMS[r.room]||!isS(r.name)||!['practice','exam'].includes(r.mode)||!isN(r.dur))return false;
+  if(r.at!=null&&!isS(r.at))return false;
+  if(!isA(r.tasks)||r.tasks.length>TT[r.room].length||!r.tasks.every(t=>t===null||(t&&typeof t==='object'&&isS(t.ans)&&isA(t.ev)&&t.ev.every(isN)&&typeof t.correct==='boolean'&&typeof t.evOK==='boolean'&&isA(t.msgs)&&t.msgs.every(isS))))return false;
+  if(!isA(r.recs)||!r.recs.every(x=>x&&typeof x==='object'&&isN(x.n)&&isS(x.s)&&isS(x.x)))return false;
+  if(!isA(r.waste)||!r.waste.every(w=>w&&typeof w==='object'&&isS(w.desc)&&isW(w.kind)&&(w.why==null||isS(w.why))&&(w.choice==null||isW(w.choice))))return false;
+  if(!isA(r.mistakes)||!r.mistakes.every(x=>x&&typeof x==='object'&&isS(x.key)&&isS(x.text)))return false;
+  if(!isA(r.log)||!r.log.every(e=>e&&typeof e==='object'&&isN(e.t)&&isS(e.kind)&&isS(e.text)))return false;
+  if(r.group!=null&&!(typeof r.group==='object'&&isA(r.group.members)&&r.group.members.every(isS)&&r.group.roles&&typeof r.group.roles==='object'))return false;
+  return true;
+}
+function importCodes(text){
+  const re=new RegExp(CODE.replace(':','\\:')+'[A-Za-z0-9_-]+','g'),found=text.match(re)||[];let added=0,dup=0,badN=0;
+  for(const m of found){try{const r=decodeRec(m.slice(CODE.length));if(!validRec(r)){badN++;continue;}
+    if(RECS.some(x=>x.id===r.id)){dup++;continue;}RECS.push({...r,src:'import'});added++;}catch(e){badN++;}}
+  const saved=persist();return{found:found.length,added,dup,badN,saved};
+}
+let okMsg='복사했어요.';
+function copyText(txt,boxSel){
+  const box=$(boxSel);
+  const fallback=()=>{box.value=txt;box.hidden=false;box.focus();box.select();toast('아래 내용을 선택해 복사하세요.');};
+  try{const p=navigator.clipboard&&navigator.clipboard.writeText(txt);if(!p){fallback();return;}p.then(()=>{box.hidden=true;toast(okMsg,'good');},fallback);}catch(e){fallback();}
+}
+const timeline=lg=>`<ol class="tl">${lg.map(e=>`<li class="k-${e.kind}"><span class="tl-t">${mmss(e.t)}</span><span class="tl-x">${esc(e.text)}</span></li>`).join('')}</ol>`;
+const mistakeChips=r=>r.mistakes.length?`<div class="mchips">${r.mistakes.map(m=>`<span class="nochip">${esc(m.text)}</span>`).join('')}</div>`:'<span class="okchip">기록된 실수 없음</span>';
+function tasksInner(r){
+  return r.tasks.map((t,i)=>`<div class="res"><div class="res-top"><strong>과제 ${i+1}</strong><span class="small">${TT[r.room][i]}</span>`+(!t?'<span class="nochip">판정 기록 없음</span></div></div>':
+    `<span class="${t.correct?'okchip':'nochip'}">답 ${t.correct?'맞음':'틀림'}</span><span class="${t.evOK?'okchip':'nochip'}">근거 ${t.evOK?'충분':'부족'}</span></div><p class="small">${esc(t.ans)} · 근거 ${evText(t.ev)}</p>${t.msgs.length?`<p class="small">${esc(t.msgs.join(' '))}</p>`:''}</div>`)).join('');
+}
+function wasteInner(r){
+  return r.waste.length?r.waste.map(w=>`<div class="res"><div class="res-top"><span>${esc(w.desc)}</span><span class="${w.choice===w.kind?'okchip':'nochip'}">${wasteName(w.choice)}</span></div>${w.choice!==w.kind?`<p class="small">맞는 곳: ${wasteName(w.kind)}. ${esc(w.why||WREASON[w.kind])}</p>`:''}</div>`).join(''):'<p class="small">버릴 폐액이 없었어요.</p>';
+}
+const recsInner=r=>r.recs.length?`<ul class="list">${r.recs.map(x=>`<li><span class="mono">#${x.n}</span> ${esc(x.s)} — ${esc(x.x)}</li>`).join('')}</ul>`:'<p class="small">관찰 기록이 없어요.</p>';
+function renderDone(r,saved=true){
+  const exam=r.mode==='exam';
+  $('#doneEye').textContent=(saved?'기록 저장 완료':'기록 저장 실패')+(exam?' · 평가':' · 연습 결과');
+  $('#doneH').textContent=!saved?'이 기기에 기록을 저장하지 못했습니다':exam?'이 기기에 기록을 저장했습니다':headline(r);
+  $('#saveFail').hidden=saved;
+  $('#doneMeta').textContent=`${r.name}${r.group?' · 조별 ('+r.group.members.join(', ')+')':''} · ${ROOMS[r.room].nm} · 소요 ${mmss(r.dur)} · 과정 기록 ${r.log.length}개`;
+  const recs=`<div class="panel"><details><summary>관찰 기록 ${r.recs.length}개 보기</summary>${recsInner(r)}</details></div>`;
+  $('#doneBody').innerHTML=exam
+    ?`<div class="panel"><span class="lbl">내 답</span><ul class="list">${r.tasks.map((t,i)=>`<li>과제 ${i+1}: ${t?`${esc(t.ans)} · 근거 ${evText(t.ev)}`:'판정 기록 없음'}</li>`).join('')}</ul></div>`+recs
+    :`<div class="panel"><span class="lbl">탐구 과제</span>${tasksInner(r)}</div><div class="panel"><span class="lbl">폐액 처리</span>${wasteInner(r)}</div><div class="panel"><span class="lbl">다시 짚어 볼 조작</span>${mistakeChips(r)}</div>`+recs+`<div class="panel"><details><summary>과정 기록 ${r.log.length}개 보기</summary>${timeline(r.log)}</details></div>`;
+  $('#copyBox').hidden=true;
+}
+
+/* ---------- example records (marked 예시) ---------- */
+const ex=(o,rows)=>({...o,example:true,src:'example',log:rows.map(([t,kind,text])=>({t,kind,text}))});
+const EXAMPLES=[
+  ex({id:'ex1',name:'3학년 2반 4번',room:'sol',mode:'exam',at:'2026-10-08T01:10:00Z',dur:1188,assign:{solid:'naoh'},
+    tasks:[{ans:'질산 암모늄 · 흡열',ev:[1,3],correct:true,evOK:true,msgs:[]},{ans:'q 2044 J · ΔH 40.5 kJ/mol',ev:[1],correct:false,evOK:true,msgs:['ΔH의 부호를 확인하세요. 온도가 오르면 발열 반응이에요.']},{ans:'ΔT 2배 · ΔH 같음',ev:[1,2],correct:true,evOK:true,msgs:[]}],
+    recs:[{n:1,s:'시행 1',x:'물 50.0 g + 수산화 나트륨(NaOH) 2.02 g · 처음 22.3 ℃ · 읽은 값 15초 26.4, 30초 29.3, 45초 30.9, 60초 31.5, 75초 31.7, 90초 31.7, 105초 31.6 ℃ · 최고 31.7 ℃'},
+      {n:2,s:'시행 2',x:'물 50.0 g + 수산화 나트륨(NaOH) 4.03 g · 처음 22.1 ℃ · 읽은 값 15초 30.0, 30초 35.6, 45초 38.6, 60초 40.0, 75초 40.5, 90초 40.6, 105초 40.5 ℃ · 최고 40.6 ℃'},
+      {n:3,s:'시행 3',x:'물 50.0 g + 질산 암모늄(NH₄NO₃) 4.01 g · 처음 22.4 ℃ · 읽은 값 15초 20.4, 30초 18.9, 45초 18.0, 60초 17.5, 75초 17.3, 90초 17.3, 105초 17.4 ℃ · 최저 17.3 ℃'}],
+    waste:[{desc:'수산화 나트륨 수용액 · 2개',kind:'base',choice:'base'},{desc:'질산 암모늄 수용액',kind:'acid',choice:'acid'}],
+    mistakes:[{key:'no-stir',text:'시행 3: 젓지 않고 측정함'}]},[
+    [0,'act','실험 시작: 용해 엔탈피 · 평가'],[4,'act','실험복 착용'],[5,'act','보안경 착용'],[6,'act','장갑 착용'],
+    [20,'act','열량계 컵에 물 50.0 mL를 넣음'],[26,'act','뚜껑 구멍으로 온도계를 꽂아 용액에 잠기게 함'],[30,'act','뚜껑을 덮음'],[44,'rec','넣기 전 온도 22.3 ℃'],
+    [50,'act','약포지에 수산화 나트륨 2.02 g을 달아 놓음'],[56,'act','젓개로 젓기 시작'],[60,'act','시행 1 시작: 물 50.0 g + 수산화 나트륨(NaOH) 2.02 g · 처음 22.3 ℃'],
+    [180,'rec','기록 #1: 시행 1 마침'],[420,'rec','기록 #2: 시행 2 마침'],[560,'act','시행 3 시작: 물 50.0 g + 질산 암모늄(NH₄NO₃) 4.01 g · 처음 22.4 ℃'],
+    [680,'bad','시행 3: 젓지 않고 측정함'],[680,'rec','기록 #3: 시행 3 마침'],
+    [940,'rec','과제 1 판정 기록: 질산 암모늄 · 흡열 · 근거 #1 #3'],[1050,'rec','과제 2 판정 기록: q 2044 J · ΔH 40.5 kJ/mol · 근거 #1'],[1120,'rec','과제 3 판정 기록: ΔT 2배 · ΔH 같음 · 근거 #1 #2'],[1188,'act','실험을 마침']]),
+  ex({id:'ex2',name:'3학년 2반 13번',room:'neu',mode:'practice',at:'2026-10-08T01:12:00Z',dur:1406,assign:{va:25},
+    tasks:[{ans:'1 : 1',ev:[1,2,3,4,5],correct:true,evOK:true,msgs:[]},{ans:'q 1338 J · ΔH -53.5 kJ/mol',ev:[3],correct:true,evOK:true,msgs:[]},{ans:'거의 같음',ev:[3,6],correct:true,evOK:true,msgs:[]}],
+    recs:[{n:1,s:'시행 1',x:'1.00 M HCl 10.0 mL + 1.00 M NaOH 40.0 mL · 처음 22.0 ℃ · 읽은 값 10초 24.2, 20초 24.5, 30초 24.5, 45초 24.4 ℃ · 최고 24.5 ℃'},
+      {n:2,s:'시행 2',x:'1.00 M HCl 20.0 mL + 1.00 M NaOH 30.0 mL · 처음 21.9 ℃ · 읽은 값 10초 26.3, 20초 27.0, 30초 27.0, 45초 26.9 ℃ · 최고 27.0 ℃'},
+      {n:3,s:'시행 3',x:'1.00 M HCl 25.0 mL + 1.00 M NaOH 25.0 mL · 처음 22.2 ℃ · 읽은 값 10초 27.7, 20초 28.6, 30초 28.6, 45초 28.5 ℃ · 최고 28.6 ℃'},
+      {n:4,s:'시행 4',x:'1.00 M HCl 30.0 mL + 1.00 M NaOH 20.0 mL · 처음 22.0 ℃ · 읽은 값 10초 26.4, 20초 27.1, 30초 27.1, 45초 27.0 ℃ · 최고 27.1 ℃'},
+      {n:5,s:'시행 5',x:'1.00 M HCl 40.0 mL + 1.00 M NaOH 10.0 mL · 처음 22.1 ℃ · 읽은 값 10초 24.3, 20초 24.6, 30초 24.6, 45초 24.5 ℃ · 최고 24.6 ℃'},
+      {n:6,s:'시행 6',x:'1.00 M HNO₃ 25.0 mL + 1.00 M NaOH 25.0 mL · 처음 22.3 ℃ · 읽은 값 10초 27.8, 20초 28.6, 30초 28.6, 45초 28.5 ℃ · 최고 28.6 ℃'}],
+    waste:[{desc:'염기가 남은 중화 용액 · 2개',kind:'base',choice:'neutral'},{desc:'완전히 중화된 용액 · 2개',kind:'neutral',choice:'neutral'},{desc:'산이 남은 중화 용액 · 2개',kind:'acid',choice:'acid'}],
+    mistakes:[{key:'waste-wrong',text:'폐액을 잘못 버림: 염기가 남은 중화 용액 · 2개 → 중성 무기 폐액'}]},[
+    [0,'act','실험 시작: 중화 엔탈피 · 연습'],[4,'act','실험복 착용'],[5,'act','보안경 착용'],[6,'act','장갑 착용'],
+    [20,'act','열량계 컵에 1.00 M HCl 10.0 mL를 넣음'],[25,'act','뚜껑 구멍으로 온도계를 꽂아 용액에 잠기게 함'],[28,'act','뚜껑을 덮음'],[40,'rec','넣기 전 온도 22.0 ℃'],[44,'act','젓개로 젓기 시작'],
+    [48,'act','시행 1 시작: 1.00 M HCl 10.0 mL + 1.00 M NaOH 40.0 mL · 처음 22.0 ℃'],[100,'rec','기록 #1: 시행 1 마침'],[260,'rec','기록 #2: 시행 2 마침'],[420,'rec','기록 #3: 시행 3 마침'],
+    [580,'rec','기록 #4: 시행 4 마침'],[740,'rec','기록 #5: 시행 5 마침'],[900,'rec','기록 #6: 시행 6 마침'],
+    [1180,'rec','과제 1 판정 기록: 1 : 1 · 근거 #1 #2 #3 #4 #5'],[1290,'rec','과제 2 판정 기록: q 1338 J · ΔH -53.5 kJ/mol · 근거 #3'],[1350,'rec','과제 3 판정 기록: 거의 같음 · 근거 #3 #6'],
+    [1400,'bad','폐액을 잘못 버림: 염기가 남은 중화 용액 · 2개 → 중성 무기 폐액'],[1406,'act','실험을 마침']]),
+  ex({id:'ex3',name:'3학년 2반 21번',room:'hess',mode:'exam',at:'2026-10-08T01:15:00Z',dur:1530,assign:{lidRxn:3},
+    tasks:[{ans:'ΔH₁ -42.4 · ΔH₂ -55.2 · ΔH₃ -97.7 kJ/mol',ev:[1,2,3],correct:true,evOK:true,msgs:[]},{ans:'ΔH₃ ≈ ΔH₁ + ΔH₂',ev:[1,2,3],correct:true,evOK:true,msgs:[]},{ans:'거의 같음',ev:[3,4],correct:false,evOK:false,msgs:['고른 기록이 답과 맞지 않아요.']}],
+    recs:[{n:1,s:'시행 1',x:'물 100.0 g + NaOH 2.01 g · 처음 22.1 ℃ · 읽은 값 15초 24.4, 30초 25.9, 45초 26.6, 60초 26.9, 75초 27.1, 90초 27.1, 105초 27.0 ℃ · 최고 27.1 ℃'},
+      {n:2,s:'시행 2',x:'1.00 M HCl 50.0 mL + 1.00 M NaOH 50.0 mL · 처음 22.0 ℃ · 읽은 값 10초 27.6, 20초 28.5, 30초 28.6, 45초 28.6, 60초 28.5 ℃ · 최고 28.6 ℃'},
+      {n:3,s:'시행 3',x:'0.50 M HCl 100.0 mL + NaOH 1.99 g · 처음 22.2 ℃ · 읽은 값 15초 27.4, 30초 30.4, 45초 32.0, 60초 32.9, 75초 33.4, 90초 33.6, 105초 33.5 ℃ · 최고 33.6 ℃'},
+      {n:4,s:'시행 4',x:'0.50 M HCl 100.0 mL + NaOH 2.02 g · 뚜껑 없음 · 처음 22.0 ℃ · 읽은 값 15초 26.6, 30초 29.2, 45초 30.6, 60초 31.3, 75초 31.6, 90초 31.6, 105초 31.4 ℃ · 최고 31.6 ℃'}],
+    waste:[{desc:'수산화 나트륨 수용액 (반응 ①)',kind:'base',choice:'base'},{desc:'중화된 염화 나트륨 수용액 (반응 ②)',kind:'neutral',choice:'neutral'},{desc:'반응 ③ 뒤 용액 (NaOH 1.99 g + 0.50 M HCl 100 mL)',kind:'acid',choice:'acid'},{desc:'반응 ③ 뒤 용액 (NaOH 2.02 g + 0.50 M HCl 100 mL)',kind:'base',choice:'neutral'}],
+    mistakes:[{key:'naoh-air',text:'수산화 나트륨을 단 뒤 95초 동안 공기 중에 둠 (수분을 흡수해 일부가 미리 녹으면서 그 열이 컵 밖으로 나감)'},{key:'waste-wrong',text:'폐액을 잘못 버림: 반응 ③ 뒤 용액 (NaOH 2.02 g + 0.50 M HCl 100 mL) → 중성 무기 폐액'}]},[
+    [0,'act','실험 시작: 헤스 법칙 · 평가'],[4,'act','실험복 착용'],[5,'act','보안경 착용'],[6,'act','장갑 착용'],
+    [20,'act','열량계 컵에 물 100.0 mL를 넣음'],[25,'act','뚜껑 구멍으로 온도계를 꽂아 용액에 잠기게 함'],[28,'act','뚜껑을 덮음'],[40,'rec','넣기 전 온도 22.1 ℃'],
+    [44,'act','약포지에 수산화 나트륨 2.01 g을 달아 놓음'],[48,'act','젓개로 젓기 시작'],[52,'act','시행 1 시작: 물 100.0 g + NaOH 2.01 g · 처음 22.1 ℃'],[170,'rec','기록 #1: 시행 1 마침'],
+    [330,'rec','기록 #2: 시행 2 마침'],[560,'rec','기록 #3: 시행 3 마침'],[700,'act','약포지에 수산화 나트륨 2.02 g을 달아 놓음'],
+    [795,'bad','수산화 나트륨을 단 뒤 95초 동안 공기 중에 둠 (수분을 흡수해 일부가 미리 녹으면서 그 열이 컵 밖으로 나감)'],[795,'act','시행 4 시작: 0.50 M HCl 100.0 mL + NaOH 2.02 g · 뚜껑 없음 · 처음 22.0 ℃'],[920,'rec','기록 #4: 시행 4 마침'],
+    [1300,'rec','과제 1 판정 기록: ΔH₁ -42.4 · ΔH₂ -55.2 · ΔH₃ -97.7 kJ/mol · 근거 #1 #2 #3'],[1400,'rec','과제 2 판정 기록: ΔH₃ ≈ ΔH₁ + ΔH₂ · 근거 #1 #2 #3'],[1480,'rec','과제 3 판정 기록: 거의 같음 · 근거 #3 #4'],[1525,'bad','폐액을 잘못 버림: 반응 ③ 뒤 용액 (NaOH 2.02 g + 0.50 M HCl 100 mL) → 중성 무기 폐액'],[1530,'act','실험을 마침']])
+];
+
+/* ---------- teacher view ---------- */
+function taskChips(r){return `<div class="mchips">${r.tasks.map((t,i)=>`<span class="${t&&t.correct&&t.evOK?'okchip':'nochip'}">과제 ${i+1} · ${t?`답 ${t.correct?'○':'×'} 근거 ${t.evOK?'○':'×'}`:'미기록'}</span>`).join('')}</div>`;}
+function recCard(r){
+  const as=assignText(r.room,r.assign,r.mode);
+  return `<article class="panel">
+    <div class="rec-top"><div class="rec-who"><strong>${esc(r.name)}</strong><span class="chip">${ROOMS[r.room].nm}</span><span class="chip">${r.mode==='exam'?'평가':'연습'}</span>${r.group?'<span class="chip">조별</span>':''}${r.example?'<span class="chip ex">예시</span>':`<span class="chip">${SRC[r.src]||'이 기기'}</span>`}</div>
+      <span class="small mono">${fmtDate(r.at)} · ${mmss(r.dur)}</span></div>
+    ${as?`<p class="small">${esc(as)}</p>`:''}${r.group?`<p class="small">${esc(groupLine(r)[0])}</p>`:''}
+    <p class="rec-head">${esc(headline(r))}</p>
+    ${taskChips(r)}
+    <span class="lbl">실수</span>${mistakeChips(r)}
+    <details><summary>과제 답과 근거</summary>${tasksInner(r)}</details>
+    <details><summary>관찰 기록 ${r.recs.length}개</summary>${recsInner(r)}</details>
+    <details><summary>폐액 처리 ${r.waste.length}건</summary>${wasteInner(r)}</details>
+    <details><summary>과정 기록 ${r.log.length}개</summary>${timeline(r.log)}</details>
+    <div class="tools"><button type="button" class="btn sm" data-copy="${esc(r.id)}">분석 내용 복사</button></div></article>`;
+}
+function renderTeacher(){
+  if(RECS.some(r=>!validRec(r))){RECS=RECS.filter(validRec);persist();}
+  const pool=r=>TF==='all'||r.room===TF;
+  const real=RECS.filter(pool).slice().reverse(),exs=EXAMPLES.filter(pool);
+  const nLocal=RECS.filter(r=>r.src!=='import').length,nImp=RECS.length-nLocal;
+  $('#tIntro').textContent=`학생 기록 ${RECS.length}건 (이 기기에서 저장 ${nLocal}건, 제출 글에서 불러옴 ${nImp}건). 통계는 학생 기록만으로 계산하고, 예시 기록은 맨 아래에 따로 둡니다.`;
+  seg($('#tFilter'),'tf',[['all','전체'],...ROOM_ORDER.map(k=>[k,ROOMS[k].sh])],TF,v=>{TF=v;renderTeacher();});
+  const rooms=TF==='all'?ROOM_ORDER.filter(k=>real.some(r=>r.room===k)):[TF];
+  $('#tTaskLbl').textContent='과제별 결과 · 답과 근거가 모두 맞은 학생';
+  $('#tTasks').innerHTML=!real.length?'<p class="small">아직 학생 기록이 없어요.</p>':rooms.map(k=>{const rs=real.filter(r=>r.room===k);
+    if(!rs.length)return `<p class="small">${ROOMS[k].nm}: 아직 기록이 없어요.</p>`;
+    return `<div class="stack" style="gap:2px"><span class="small" style="color:var(--ink);font-weight:500">${ROOMS[k].nm} · ${rs.length}명</span>`+TT[k].map((ti,i)=>{
+      const a=rs.filter(r=>r.tasks[i]&&r.tasks[i].correct).length,e=rs.filter(r=>r.tasks[i]&&r.tasks[i].evOK).length,b=rs.filter(r=>r.tasks[i]&&r.tasks[i].correct&&r.tasks[i].evOK).length;
+      return `<div class="bar-row"><span>${i+1}. ${ti}<span class="bar-sub">답 맞음 ${a} · 근거 충분 ${e}</span></span><span class="bar ok"><span style="width:${Math.round(b/rs.length*100)}%"></span></span><span class="bar-n mono">${b}/${rs.length}</span></div>`;}).join('')+'</div>';}).join('');
+  const cnt={};real.forEach(r=>new Set(r.mistakes.map(m=>m.key)).forEach(k=>{cnt[k]=(cnt[k]||0)+1;}));
+  const rows=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  $('#tTopLbl').textContent=`자주 나온 실수 · 학생 기록 ${real.length}건 기준`;
+  $('#tTop').innerHTML=!real.length?'<p class="small">아직 학생 기록이 없어요. 위 칸에 학생 제출 글을 붙여 넣거나, 이 기기에서 실험을 마치면 여기에 모입니다.</p>'
+    :rows.length?rows.map(([k,n])=>`<div class="bar-row"><span>${esc(MK[k]||k)}</span><span class="bar"><span style="width:${Math.round(n/real.length*100)}%"></span></span><span class="bar-n mono">${n}/${real.length}</span></div>`).join('')
+    :'<p class="small">학생 기록에서 기록된 실수가 없어요.</p>';
+  $('#tList').innerHTML=real.map(r=>{try{return recCard(r);}catch(e){return '';}}).join('');
+  $('#tExSum').textContent=`예시 기록 ${exs.length}건 · 통계에 포함되지 않음`;
+  $('#tExList').innerHTML=exs.map(recCard).join('');
+  $('#tExWrap').open=!real.length;$('#tCopyBox').hidden=true;$('#tClear').hidden=!RECS.length;
+  renderLink();
+}
+let FRAMED=true;try{FRAMED=window.self!==window.top;}catch(e){FRAMED=true;}
+function linkHash(){const t=[$('#lkRoom').value,$('#lkMode').value].filter(v=>v&&v!=='all'&&v!=='free');return t.length?'#'+t.join('.'):'';}
+function linkFull(h){return FRAMED?h:location.origin+location.pathname+h;}
+function renderLink(){
+  const h=linkHash();$('#lkBox').hidden=true;
+  if(!h){if(FRAMED)$('#lkOut').textContent='지금은 학생이 실험실과 모드를 직접 고릅니다. 공유 링크를 그대로 주면 됩니다.';else $('#lkOut').innerHTML=`지금은 학생이 실험실과 모드를 직접 고릅니다. 학생용 주소: <span class="mono" style="word-break:break-all">${esc(location.origin+location.pathname)}</span> (끝에 #teacher가 없는 주소)`;$('#lkCopy').hidden=true;return;}
+  $('#lkCopy').hidden=false;
+  $('#lkOut').innerHTML=FRAMED?`공유 링크 끝에 이 표시를 붙여 학생에게 주세요: <b class="mono">${esc(h)}</b>`:`학생용 주소: <span class="mono" style="word-break:break-all">${esc(linkFull(h))}</span>`;
+}
+const HT=(location.hash||'').slice(1).split('.').filter(Boolean);
+const FIX={room:ROOM_ORDER.find(x=>HT.includes(x))||null,mode:['practice','exam'].find(x=>HT.includes(x))||null};
+function applyFix(){
+  if(FIX.room)$$('input[name=room]').forEach(i=>{i.checked=i.value===FIX.room;i.closest('.opt').hidden=i.value!==FIX.room;});
+  if(FIX.mode)$$('input[name=mode]').forEach(i=>{i.checked=i.value===FIX.mode;i.closest('.opt').hidden=i.value!==FIX.mode;});
+  const n=[FIX.room?ROOMS[FIX.room].nm:null,FIX.mode?(FIX.mode==='exam'?'평가':'연습'):null].filter(Boolean);
+  $('#fixNote').hidden=!n.length;$('#fixNote').textContent='선생님이 정한 설정: '+n.join(' · ');
+}
+
+/* ---------- group mode (start screen) ---------- */
+const groupNames=()=>[0,1,2,3,4].map(i=>$('#gm'+i).value.trim()).filter(Boolean);
+const grSel={};
+function syncRoleOpts(){
+  const names=groupNames();
+  $('#grRoles').innerHTML=names.length?names.map(n=>`<div class="role-row"><span class="role-name">${esc(n)}</span>${Object.entries(ROLE).map(([k,l])=>`<label class="chk"><input type="checkbox" data-gname="${esc(n)}" value="${k}"${(grSel[n]||[]).includes(k)?' checked':''}><span>${l}</span></label>`).join('')}</div>`).join(''):'<p class="small">조원 이름을 적으면 역할을 고를 수 있어요.</p>';
+}
+function readGroup(){
+  const members=groupNames();
+  if(members.length<2)return{err:'조원 이름을 2명 이상 적으세요.'};
+  if(new Set(members).size!==members.length)return{err:'같은 이름이 두 번 있어요. 이름 뒤에 번호를 붙여 구분하세요.'};
+  const roles={op:[],rec:[],safe:[]};members.forEach(n=>(grSel[n]||[]).forEach(k=>roles[k].push(n)));
+  if(Object.values(roles).some(a=>!a.length))return{err:'실험 조작, 관찰·기록, 안전·정리에 각각 한 명 이상 정하세요.'};
+  const idle=members.filter(n=>!(grSel[n]||[]).length);if(idle.length)return{err:`역할이 없는 조원이 있어요: ${idle.join(', ')}`};
+  return{members,roles};
+}
+function syncStart(){
+  const exam=$('#mdE').checked;
+  if(exam&&$('#tmG').checked)$('#tmS').checked=true;
+  $('#tmG').disabled=exam;$('#tmG').closest('.opt').style.opacity=exam?.45:'';$('#tmExam').hidden=!exam;
+  const grp=$('#tmG').checked;$('#grpBox').hidden=!grp;
+  $('#stNameLbl').textContent=grp?'조 이름 (필수)':'이름 또는 번호 (필수)';
+  $('#stName').placeholder=grp?'예: 3학년 2반 2조':'예: 3학년 2반 7번';
+  $('#stErr').textContent=grp?'조 이름을 입력해야 실험을 시작할 수 있어요.':'이름 또는 번호를 입력해야 실험을 시작할 수 있어요.';
+  syncRoleOpts();
+}
+
+/* ---------- 새로고침 뒤 이어서 하기 (이 기기에만 저장) ---------- */
+const SKEY='vlab-thermo-progress-v1';
+function snapState(){
+  const ans=$$('#tasks input, #tasks select').filter(e=>!e.dataset.ev).map(e=>({id:e.id,name:e.name,type:e.type,value:e.value,checked:e.checked}));
+  return JSON.stringify({v:1,at:Date.now(),S,ans},(k,v)=>v instanceof Set?{__set:[...v]}:v);
+}
+function saveNow(){if(!S||S.finished)return;try{localStorage.setItem(SKEY,snapState());}catch(e){/* 저장 공간이 없으면 건너뜀 */}}
+function clearSave(){try{localStorage.removeItem(SKEY);}catch(e){}}
+function loadSave(){
+  try{const t=localStorage.getItem(SKEY);if(!t)return null;
+    const d=JSON.parse(t,(k,v)=>v&&typeof v==='object'&&Array.isArray(v.__set)?new Set(v.__set):v);
+    return d&&d.v===1&&d.S&&ROOMS[d.S.room]?d:null;}catch(e){return null;}
+}
+function showResume(){
+  const d=loadSave();$('#resume').hidden=!d;
+  if(d)$('#resumeTx').textContent=`${d.S.name}${d.S.group?' (조별)':''} · ${ROOMS[d.S.room].nm} · ${d.S.mode==='exam'?'평가':'연습'} · ${fmtDate(new Date(d.at).toISOString())}에 마지막으로 저장 · 과정 기록 ${d.S.log.length}개`;
+}
+function restoreSave(){
+  const d=loadSave();if(!d){showResume();return;}
+  S=d.S;S.finished=false;
+  log('note','새로고침 뒤 저장된 상태에서 이어서 함');
+  enterLab();
+  for(const a of d.ans||[]){
+    if(a.type==='radio'||a.type==='checkbox'){const e=document.querySelector(`#tasks input[name="${a.name}"][value="${a.value}"]`);if(e)e.checked=a.checked;}
+    else if(a.id){const e=document.getElementById(a.id);if(e)e.value=a.value;}
+  }
+}
+
+let lockMode='enter';
+function openLock(){
+  lockMode=getPin()?'enter':'set';const set=lockMode==='set';
+  $('#lockTitle').textContent=set?'교사 PIN을 정하세요':'교사 PIN을 입력하세요';
+  $('#lockLead').textContent=set?'이 기기에서 교사 화면을 처음 열었어요. 숫자 4~6자리를 정하면 다음부터 이 PIN으로 열어요. 교사 화면은 선생님 기기에서만 쓰세요.':'학생 기록과 정답, 분석 결과는 교사 PIN으로만 열 수 있어요.';
+  $('#lockRow2').hidden=!set;$('#lockGo').textContent=set?'정하고 열기':'열기';$('#lockForgotRow').hidden=set;
+  const f=$('#lockForgot');delete f.dataset.armed;f.textContent='PIN을 잊었어요';$('#lockForgotTx').hidden=true;
+  $('#lockCode').value='';$('#lockCode2').value='';$('#lockMsg').textContent='';
+  show('lock');setTimeout(()=>$('#lockCode').focus(),50);
+}
+function enterTeacher(){UNLOCKED=true;renderTeacher();show('teacher');}
+
+/* ---------- wiring ---------- */
+function bind(){
+  $('#pRoom').addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(b&&S){MODS[S.room].act(b.dataset.act);renderGuide();renderWasteMaybe();}});
+  $('#pRoom').addEventListener('change',e=>{const k=e.target.dataset.cond;if(k&&S){MODS[S.room].setCond(k,e.target.value);renderGuide();}});
+  $('#tasks').addEventListener('change',e=>{const i=e.target.dataset.ev;if(i==null)return;const n=+e.target.value;e.target.checked?S.tsel[i].add(n):S.tsel[i].delete(n);});
+  $('#tasks').addEventListener('click',e=>{const b=e.target.closest('[data-judge]');if(b)judge(+b.dataset.judge);});
+  $('#briefList').addEventListener('click',e=>{const a=e.target.closest('[data-jump]');if(!a)return;e.preventDefault();$('#task'+a.dataset.jump).scrollIntoView({block:'center',behavior:REDUCED?'auto':'smooth'});});
+  $('#wasteList').addEventListener('change',e=>{const u=e.target.dataset.w;if(!u)return;S.wch[u]=e.target.value;const w=liveWaste().find(x=>String(x.uid)===u);log('act',`폐액: ${w?w.desc:'용액'} → ${(WASTE.find(x=>x[0]===e.target.value)||['','고르지 않음'])[1]}`);renderWaste();});
+  $('#btnFinish').onclick=finish;
+  $$('.ppe-b').forEach(b=>b.onclick=()=>{const k=b.dataset.ppe;S.ppe[k]=!S.ppe[k];b.setAttribute('aria-pressed',S.ppe[k]);log('act',`${S.group?'조원 모두 ':''}${b.textContent} ${S.ppe[k]?'착용':'벗음'}`);renderPPE();renderGuide();});
+  $('#btnTeacher').onclick=()=>{const w=$('#scrLock').hidden&&$('#scrTeacher').hidden;if(!w){show('start');showResume();return;}if(UNLOCKED){renderTeacher();show('teacher');}else openLock();};
+  $('#lockForm').addEventListener('submit',async e=>{e.preventDefault();
+    const p1=$('#lockCode').value.trim(),p2=$('#lockCode2').value.trim(),msg=t=>{$('#lockMsg').textContent=t;};
+    if(!/^\d{4,6}$/.test(p1)){msg('숫자 4~6자리로 입력하세요.');$('#lockCode').select();return;}
+    if(lockMode==='set'){
+      if(p1!==p2){msg('두 번 입력한 PIN이 달라요.');$('#lockCode2').select();return;}
+      if(setPin(await hashPin(p1)))toast('교사 PIN을 정했어요.','good');else toast('이 브라우저에는 PIN을 저장할 수 없어서, 이번에만 열어요.');
+      enterTeacher();
+    }else if((await hashPin(p1))===getPin())enterTeacher();
+    else{msg('PIN이 맞지 않아요.');$('#lockCode').select();}});
+  $('#lockForgot').onclick=()=>{const b=$('#lockForgot');
+    if(!b.dataset.armed){b.dataset.armed='1';b.textContent='한 번 더 누르면 기록을 지우고 PIN을 새로 정해요';$('#lockForgotTx').hidden=false;return;}
+    RECS=[];persist();try{localStorage.removeItem(PIN_KEY);}catch(e){}
+    openLock();toast('이 기기의 학생 기록을 지웠어요. 새 PIN을 정하세요.');};
+  $('#doneRetry').onclick=()=>{if(!LAST)return;if(persist()){clearSave();renderDone(LAST,true);toast('저장했어요.','good');}else toast('이번에도 저장하지 못했어요. 기록을 복사해 두세요.','bad');};
+  $('#doneCopy').onclick=()=>{if(!LAST)return;okMsg='복사했어요. 웨일 클래스 과제에 붙여 넣으세요.';copyText(studentText(LAST),'#copyBox');};
+  $('#tImportBtn').onclick=()=>{const res=importCodes($('#tImport').value);
+    if(!res.found){toast(`분석 코드(${CODE}로 시작하는 줄)를 찾지 못했어요.`);return;}
+    toast(`불러옴 ${res.added}건`+(res.dup?` · 이미 있음 ${res.dup}건`:'')+(res.badN?` · 읽지 못함 ${res.badN}건`:''),res.added?'good':'');
+    if(res.added)$('#tImport').value='';if(res.added&&!res.saved)toast('불러왔지만 이 기기에 저장하지 못했어요. 새로고침하면 사라집니다.','bad');renderTeacher();};
+  $('#scrTeacher').addEventListener('click',e=>{const b=e.target.closest('[data-copy]');if(!b)return;const r=[...RECS,...EXAMPLES].find(x=>x.id===b.dataset.copy);if(r){okMsg='분석 내용을 복사했어요.';copyText(teacherText(r),'#tCopyBox');}});
+  $('#lkRoom').onchange=renderLink;$('#lkMode').onchange=renderLink;
+  $('#lkCopy').onclick=()=>{const h=linkHash();if(!h)return;okMsg=FRAMED?'복사했어요. 공유 링크 끝에 붙이세요.':'학생용 주소를 복사했어요.';copyText(linkFull(h),'#lkBox');};
+  let armT;
+  $('#tClear').onclick=e=>{const b=e.currentTarget;
+    if(!b.dataset.armed){b.dataset.armed='1';b.textContent='한 번 더 누르면 이 기기의 학생 기록을 모두 지웁니다';clearTimeout(armT);armT=setTimeout(()=>{delete b.dataset.armed;b.textContent='이 기기의 학생 기록 지우기';},4000);return;}
+    clearTimeout(armT);delete b.dataset.armed;b.textContent='이 기기의 학생 기록 지우기';RECS=[];persist();renderTeacher();toast('이 기기의 학생 기록을 지웠어요.');};
+  $('#grRoles').addEventListener('change',e=>{const c=e.target;if(!c.dataset.gname)return;const set=new Set(grSel[c.dataset.gname]||[]);c.checked?set.add(c.value):set.delete(c.value);grSel[c.dataset.gname]=[...set];$('#grpErr').hidden=true;});
+  $$('input[name=team],input[name=mode]').forEach(i=>i.addEventListener('change',syncStart));
+  [0,1,2,3,4].forEach(i=>$('#gm'+i).addEventListener('input',syncRoleOpts));
+  $('#resumeGo').onclick=restoreSave;
+  $('#resumeDrop').onclick=()=>{clearSave();$('#resume').hidden=true;toast('저장된 실험을 버렸어요.');};
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow();});
+  window.addEventListener('pagehide',saveNow);
+  $('#startForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const name=$('#stName').value.trim();
+    if(!name){$('#stErr').hidden=false;$('#stName').focus();return;}
+    $('#stErr').hidden=true;
+    let grp=null;
+    if($('#tmG').checked&&rv('mode')!=='exam'){grp=readGroup();if(grp.err){$('#grpErr').textContent=grp.err;$('#grpErr').hidden=false;return;}}
+    $('#grpErr').hidden=true;
+    startLab(rv('room'),rv('mode'),name,grp);
+  });
+  $('#btnAgain').onclick=()=>{S=null;show('start');showResume();};
+}
+bind();applyFix();syncStart();showResume();
+$('#btnTeacher').hidden=!TROUTE;
+if(TROUTE)openLock();
+requestAnimationFrame(frame);
+})();
+
+</script>
+
+</body></html>
