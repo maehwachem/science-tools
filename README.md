@@ -8,6 +8,7 @@
 - [산화·환원 가상 실험실](https://maehwachem.github.io/science-tools/redox/): 금속의 반응성, 산화 환원 적정, 화학 전지, 전기분해, 연료 전지를 화면 속 회로판으로 연습·평가
 - [환경 대응팀](https://maehwachem.github.io/science-tools/acid-base/): 하천 오염 대응팀 역할극. 산·염기 실제 실험 기록·액성 판정·중화 반응 분석·종합 대응 보고서
 - [산·염기 가상 실험실](https://maehwachem.github.io/science-tools/acid-base/virtual.html): 지시약 액성 판별과 중화 반응(중학교), 중화 적정(고등학교)을 화면 속 실험대로 연습·평가
+- [산·염기 중화 반응 수업 슬라이드](https://maehwachem.github.io/science-tools/lectures/neutralization.html): 이온 모형으로 보는 중화 반응, 18장
 - [마이크로비트 전압 기록기](https://maehwachem.github.io/science-tools/sensor/): 마이크로비트로 셀 전압을 블루투스로 받아 기록 (마이크로비트 코드: `sensor/microbit-voltlog.ts`)
 - [마이크로비트 온도 기록기](https://maehwachem.github.io/science-tools/sensor/temp.html): 방수 온도 센서(DS18B20) 값을 블루투스로 받아 기록 (마이크로비트 코드: `sensor/microbit-templog.ts`)
 - [마이크로비트 처음 시작하기](https://maehwachem.github.io/science-tools/sensor/start.html): 각 부분, 연결, MakeCode, 첫 프로그램, 센서 예제, 문제 해결
@@ -16,12 +17,17 @@
 - [화학자의 항해](https://maehwachem.github.io/science-tools/chem-voyage/): 섬의 뒷이야기. 몰 농도·희석, 몰랄 농도·어는점 내림, 삼투·삼투압, 3장 (화학 1장, 물질과 에너지 1~3장)
 - [화학자의 항해 · 모둠판](https://maehwachem.github.io/science-tools/chem-voyage/team.html): 같은 조 최대 5명이 함께 항해. 서로 다른 기기끼리 이으려면 학교 서버(Supabase) 정보를 넣은 수업용 파일이 필요
 - [용액 조제실](https://maehwachem.github.io/science-tools/solution-lab/): 저울·부피 플라스크·피펫으로 용액을 만들고 냉각 곡선에서 어는점을 읽는 한 차시 가상 실험실
+- [몰 농도 수업 슬라이드](https://maehwachem.github.io/science-tools/lectures/molarity.html): 몰 농도 정의부터 묽히기까지 19장 (빈칸 번호는 학습지와 같음)
 - [몰 농도 학습지](https://maehwachem.github.io/science-tools/worksheets/molarity.html): 몰 농도 개념부터 용액 만들기·묽히기까지 (학생용, 인쇄 가능)
+- [기체 가상 실험실](https://maehwachem.github.io/science-tools/gas/): 보일·샤를 법칙, 수상 치환으로 분자량과 몰 부피
+- [열화학 가상 실험실](https://maehwachem.github.io/science-tools/thermochem/): 용해·중화 엔탈피, 헤스 법칙
+- [반응 속도 가상 실험실](https://maehwachem.github.io/science-tools/kinetics/): 기체 발생, 질량 감소, 앙금 생성으로 반응 속도 비교
+- [화학 평형 가상 실험실](https://maehwachem.github.io/science-tools/equilibrium/): 평형 상수(흡광도), 온도·압력과 평형 이동
 - [대기 대순환](https://maehwachem.github.io/science-tools/earth/general-circulation.html): 에너지 불균형, 전향력, 세 순환, 바람과 기압대를 장면별로 살펴보는 인터랙티브 자료
 - [엘니뇨와 라니냐](https://maehwachem.github.io/science-tools/earth/el-nino.html): 적도 태평양 단면으로 보는 엘니뇨·라니냐와 남방 진동
 - [개인정보 처리방침](https://maehwachem.github.io/science-tools/battery/privacy.html) (배터리 도구)
 
-산·염기 가상 실험실과 산화·환원 가상 실험실의 교사 화면은 주소 끝에 `#teacher`를 붙여 선생님 기기에서 엽니다 (처음 열 때 교사 PIN을 정함). 학생 기기에는 마지막으로 마친 기록 하나만 3시간 동안 남고, 다음 실험을 시작하면 지워집니다.
+가상 실험실(산·염기, 산화·환원, 기체, 열화학, 반응 속도, 화학 평형)의 교사 화면은 주소 끝에 `#teacher`를 붙여 선생님 기기에서 엽니다 (처음 열 때 교사 PIN을 정함). 산·염기와 산화·환원 실험실은 학생 기기에 마지막으로 마친 기록 하나만 3시간 동안 남기고, 다음 실험을 시작하면 지웁니다. 기체·열화학·반응 속도·화학 평형 실험실은 마친 기록을 그 기기에 쌓아 두며, 교사 화면의 '이 기기의 학생 기록 지우기'로 지웁니다.
 
 게임과 조제실의 교사용 도구(수업용 파일 만들기, 명단·개인 코드, 공용 기기 기록 관리)는 각 도구 안에 들어 있습니다.
 
