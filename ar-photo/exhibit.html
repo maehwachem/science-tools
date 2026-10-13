@@ -59,6 +59,11 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 ol.steps{margin:0;padding-left:20px;line-height:1.7;color:#3d3431}
 #photoIn,#fileIn{display:none}
 body.view .edit-only{display:none!important}
+#xrUi{position:fixed;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:max(14px,env(safe-area-inset-top)) 14px max(18px,env(safe-area-inset-bottom));pointer-events:none;background:transparent}
+#xrUi[hidden]{display:none!important}
+.xr-msg{align-self:center;max-width:520px;margin:0;background:rgba(0,0,0,.6);color:#fff;border-radius:14px;padding:10px 14px;font-size:15px;line-height:1.5;text-align:center}
+.xr-bar{display:flex;gap:10px;justify-content:center}
+.xr-bar .btn{pointer-events:auto;min-width:120px;background:rgba(255,255,255,.92)}
 body:not(.view) .view-only{display:none!important}
 </style>
 </head>
@@ -111,13 +116,13 @@ body:not(.view) .view-only{display:none!important}
     <h2 id="h-view">미리 보기와 AR</h2>
     <p class="msg warn view-only" id="vErr" hidden></p>
     <model-viewer id="mv" loading="eager" camera-controls shadow-intensity="0.8" exposure="1.1" camera-orbit="0deg 55deg auto" interaction-prompt="none"
-      ar ar-modes="webxr quick-look" ar-placement="floor" ar-scale="auto" alt="전시관 미리 보기"></model-viewer>
+      ar ar-modes="quick-look" ar-placement="floor" ar-scale="auto" alt="전시관 미리 보기"></model-viewer>
     <button type="button" class="btn primary" id="arBtn" disabled>공간에 펼치기 (AR)</button>
     <p class="msg" id="arMsg" hidden></p>
     <ol class="steps">
       <li>넓고 평평한 곳에 서서 ‘공간에 펼치기’를 눌러요.</li>
-      <li>휴대폰을 천천히 움직여 바닥을 비추면 전시관이 놓여요. 놓을 자리는 손가락으로 끌어 옮길 수 있어요.</li>
-      <li>전시대는 실제 크기(높이 약 1.6 m)예요. 걸어서 다가가 읽어 보세요.</li>
+      <li><b>안드로이드</b>: 바닥을 비추면 초록 원이 나타나요. 원을 전시가 시작될 자리에 맞추고 화면을 누르면, 그 자리에서부터 앞쪽으로 전시가 펼쳐져요. 다시 놓으려면 ‘다시 놓기’를 눌러요.<br><b>아이폰</b>: 바닥을 비추면 전시관이 놓여요. 손가락으로 끌어 옮길 수 있어요.</li>
+      <li>전시대는 실제 크기(판 위쪽 높이 약 1.8 m)예요. 걸어서 다가가 읽어 보세요.</li>
     </ol>
     <p class="note view-only">나도 전시를 만들어 보려면 <a href="exhibit.html">AR 전시관 편집기</a>를 여세요.</p>
     <p class="note">아이폰은 사파리, 안드로이드는 크롬(ARCore 지원 기기)에서 돼요. 아이폰은 AR 화면의 셔터로 사진도 찍을 수 있어요.</p>
@@ -137,6 +142,14 @@ body:not(.view) .view-only{display:none!important}
     <button type="button" class="btn danger" id="clearBtn">새 전시 시작 (전부 지우기)</button>
   </section>
 </main>
+
+<div id="xrUi" hidden>
+  <p id="xrMsg" class="xr-msg">준비하는 중…</p>
+  <div class="xr-bar">
+    <button type="button" class="btn" id="xrAgain" hidden>다시 놓기</button>
+    <button type="button" class="btn" id="xrClose">닫기</button>
+  </div>
+</div>
 
 <dialog id="qrDlg" aria-labelledby="qrH">
   <div class="dlg" style="align-items:center;text-align:center">
@@ -308,7 +321,7 @@ $('#clearBtn').onclick=()=>{
   E={title:'',intro:'',slug:'',layout:E.layout,gap:E.gap,items:[]};$('#fileMsg').hidden=true;changed();};
 
 /* ---------- 3D 전시관 만들기 ---------- */
-const PW=0.6,PH=0.8,PY=1.2;   // 판 가로·세로(m), 판 중심 높이
+const PW=0.7,PH=1.0,PY=1.3;   // 판 가로·세로(m), 판 중심 높이 → 판 아래 0.8 m, 위 1.8 m
 function wrap(x,text,maxW,maxLines){
   const out=[];let line='';
   const words=String(text).replace(/\s+/g,' ').trim().split(' ');
@@ -325,21 +338,24 @@ function wrap(x,text,maxW,maxLines){
 const FONT='"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif';
 function loadImg(src){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src;});}
 async function itemTexture(it,no){
-  const W=768,H=1024,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const W=840,H=1200,pad=44,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');   // 판 비율 0.7:1과 같음
   x.fillStyle='#fffdf8';x.fillRect(0,0,W,H);
-  const img=await loadImg(it.img);const bx=40,by=40,bw=W-80,bh=520;
-  x.fillStyle='#e9e3dc';x.fillRect(bx,by,bw,bh);
+  const img=await loadImg(it.img),bw=W-pad*2;
+  const bh=Math.round(Math.min(700,Math.max(420,bw*img.height/img.width)));   // 사진 비율에 맞춰 사진 칸 높이를 정함
+  x.fillStyle='#ece6df';x.fillRect(pad,pad,bw,bh);
   const k=Math.min(bw/img.width,bh/img.height),dw=img.width*k,dh=img.height*k;   // 사진 전체가 보이게
-  x.drawImage(img,bx+(bw-dw)/2,by+(bh-dh)/2,dw,dh);
-  x.fillStyle='#1f7a55';x.beginPath();x.arc(80,620,30,0,7);x.fill();
-  x.fillStyle='#fff';x.font=`bold 30px ${FONT}`;x.textAlign='center';x.textBaseline='middle';x.fillText(String(no),80,622);
-  x.textAlign='left';x.textBaseline='alphabetic';x.fillStyle='#2a2220';x.font=`bold 54px ${FONT}`;
-  x.fillText(wrap(x,it.name,W-170,1)[0],128,640);
+  x.drawImage(img,pad+(bw-dw)/2,pad+(bh-dh)/2,dw,dh);
+  let y=pad+bh+40;
+  x.fillStyle='#1f7a55';x.beginPath();x.arc(pad+34,y+22,34,0,7);x.fill();
+  x.fillStyle='#fff';x.font=`bold 34px ${FONT}`;x.textAlign='center';x.textBaseline='middle';x.fillText(String(no),pad+34,y+24);
+  x.textAlign='left';x.textBaseline='alphabetic';x.fillStyle='#2a2220';x.font=`bold 62px ${FONT}`;
+  x.fillText(wrap(x,it.name,W-pad*2-90,1)[0],pad+90,y+46);y+=100;
   const meta=[it.place,it.by].filter(Boolean).join(' · ');
-  let y=700;if(meta){x.fillStyle='#8a7d78';x.font=`28px ${FONT}`;x.fillText(wrap(x,meta,W-80,1)[0],40,y);y+=56;}else y+=10;
-  x.fillStyle='#3d3431';x.font=`31px ${FONT}`;
-  for(const l of wrap(x,it.desc||'',W-80,meta?6:7)){x.fillText(l,40,y);y+=44;}
-  x.fillStyle='#b9aca4';x.font=`22px ${FONT}`;x.fillText(wrap(x,E.title||'AR 전시관',W-80,1)[0],40,H-30);
+  if(meta){x.fillStyle='#8a7d78';x.font=`32px ${FONT}`;x.fillText(wrap(x,meta,bw,1)[0],pad,y);y+=62;}else y+=8;
+  x.fillStyle='#3d3431';x.font=`36px ${FONT}`;
+  const lines=Math.max(1,Math.floor((H-86-y)/52)+1);
+  for(const l of wrap(x,it.desc||'',bw,lines)){x.fillText(l,pad,y);y+=52;}
+  x.fillStyle='#b9aca4';x.font=`26px ${FONT}`;x.fillText(wrap(x,E.title||'AR 전시관',bw,1)[0],pad,H-36);
   return c;}
 function titleTexture(n){
   const W=1024,H=640,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
@@ -354,7 +370,10 @@ function titleTexture(n){
 function tex(canvas){const t=new THREE.CanvasTexture(canvas);t.colorSpace=THREE.SRGBColorSpace;t.userData.mimeType='image/jpeg';return t;}
 const M={pole:new THREE.MeshStandardMaterial({color:0x4a4440,roughness:.6,metalness:.2}),
   frame:new THREE.MeshStandardMaterial({color:0xc9b79c,roughness:.8}),
-  base:new THREE.MeshStandardMaterial({color:0x5a524c,roughness:.7})};
+  base:new THREE.MeshStandardMaterial({color:0x5a524c,roughness:.7}),
+  shadow:(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');const g=x.createRadialGradient(64,64,6,64,64,62);
+    g.addColorStop(0,'rgba(0,0,0,.42)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,128,128);
+    const t=new THREE.CanvasTexture(c);t.userData.mimeType='image/png';return new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false});})()};
 function stand(canvas,w,h,cy){   // 앞뒤 모두 바로 읽히는 전시대
   const g=new THREE.Group(),t=tex(canvas),mat=new THREE.MeshStandardMaterial({map:t,roughness:.95,metalness:0});
   const front=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat);front.position.set(0,cy,0.012);g.add(front);
@@ -362,6 +381,7 @@ function stand(canvas,w,h,cy){   // 앞뒤 모두 바로 읽히는 전시대
   const fr=new THREE.Mesh(new THREE.BoxGeometry(w+0.04,h+0.04,0.02),M.frame);fr.position.y=cy;g.add(fr);
   const pole=new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,cy-h/2,12),M.pole);pole.position.y=(cy-h/2)/2;g.add(pole);
   const base=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.22,0.025,32),M.base);base.position.y=0.0125;g.add(base);
+  const sh=new THREE.Mesh(new THREE.PlaneGeometry(0.8,0.8),M.shadow);sh.rotation.x=-Math.PI/2;sh.position.y=0.002;g.add(sh);
   return g;}
 function layout(n,gap,kind){   // 반환: [{x,z,ry}] 전시물 n개 + 제목판. 보는 사람은 +z 쪽에서 -z를 바라봄
   const P=[];let T;
@@ -380,7 +400,7 @@ function layout(n,gap,kind){   // 반환: [{x,z,ry}] 전시물 n개 + 제목판.
   }
   return {P,T};}
 function fixHall(P){return P.map(p=>({...p,ry:p.x<0?Math.PI/2:-Math.PI/2}));}   // 복도: 왼쪽은 오른쪽(+x)을, 오른쪽은 왼쪽을 봄
-let buildT=0,building=null,curUrl=null,version=0;
+let buildT=0,building=null,curUrl=null,version=0,lastScene=null;
 function scheduleBuild(){clearTimeout(buildT);$('#arBtn').disabled=true;buildT=setTimeout(()=>{building=build();},500);}
 async function build(){
   const my=++version;
@@ -388,8 +408,9 @@ async function build(){
   if(!n){if(curUrl){URL.revokeObjectURL(curUrl);curUrl=null;}$('#mv').removeAttribute('src');$('#arBtn').disabled=true;return;}
   let {P,T}=layout(n,E.gap,E.layout);if(E.layout==='hall')P=fixHall(P);
   for(let i=0;i<n;i++){const s=stand(await itemTexture(E.items[i],i+1),PW,PH,PY);s.position.set(P[i].x,0,P[i].z);s.rotation.y=P[i].ry;s.name='item'+(i+1);scene.add(s);}
-  const t=stand(titleTexture(n),0.9,0.5625,1.15);t.position.set(T.x,0,T.z);t.rotation.y=T.ry;t.name='title';scene.add(t);
+  const t=stand(titleTexture(n),1.0,0.625,1.25);t.position.set(T.x,0,T.z);t.rotation.y=T.ry;t.name='title';scene.add(t);
   if(my!==version)return;
+  lastScene=scene;
   const glb=await new GLTFExporter().parseAsync(scene,{binary:true,maxTextureSize:1024});
   if(my!==version)return;
   const url=URL.createObjectURL(new Blob([glb],{type:'model/gltf-binary'}));
@@ -398,12 +419,70 @@ async function build(){
   await new Promise(r=>$('#mv').addEventListener('load',r,{once:true}));
   if(my!==version)return;
   $('#arBtn').disabled=false;arHint();}
-function arHint(){
+const xrOK=(async()=>{try{return !!(navigator.xr&&await navigator.xr.isSessionSupported('immersive-ar'));}catch(e){return false;}})();
+async function arHint(){
   const mv=$('#mv');
-  if(mv.canActivateAR){$('#arMsg').hidden=true;return;}
+  if(await xrOK||mv.canActivateAR){$('#arMsg').hidden=true;return;}
   showMsg($('#arMsg'),'warn','이 기기나 브라우저에서는 AR을 쓸 수 없어요. 아이폰은 사파리, 안드로이드는 크롬으로 열어 보세요. 위 미리 보기는 손가락으로 돌려 볼 수 있어요.');}
-$('#arBtn').onclick=async()=>{await building;try{await $('#mv').activateAR();}catch(e){showMsg($('#arMsg'),'warn','AR을 시작하지 못했어요. 밝은 곳에서 바닥을 천천히 비춰 보세요.');}};
+$('#arBtn').onclick=async()=>{await building;
+  if(await xrOK){try{await startXR();return;}catch(e){console.error(e);showMsg($('#arMsg'),'warn','AR을 시작하지 못했어요. 카메라 권한을 허용했는지 확인하고 다시 눌러 보세요.');return;}}
+  try{await $('#mv').activateAR();}catch(e){showMsg($('#arMsg'),'warn','AR을 시작하지 못했어요. 밝은 곳에서 바닥을 천천히 비춰 보세요.');}};
 $('#mv').addEventListener('ar-status',e=>{if(e.detail.status==='failed')showMsg($('#arMsg'),'warn','AR을 시작하지 못했어요. 밝고 무늬 있는 바닥을 천천히 비춰 보세요.');});
+
+/* ---------- 안드로이드: 바닥을 찾아 누른 자리에 놓기 (WebXR hit-test) ---------- */
+async function startXR(){
+  const ui=$('#xrUi'),msg=$('#xrMsg');
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(2,devicePixelRatio||1));renderer.setSize(innerWidth,innerHeight);
+  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.xr.enabled=true;renderer.xr.setReferenceSpaceType('local');
+  renderer.domElement.style.display='none';document.body.append(renderer.domElement);
+  const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.01,60);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x9a8f86,2.4));
+  const sun=new THREE.DirectionalLight(0xffffff,1.4);sun.position.set(1,3,2);scene.add(sun);
+  // 바닥 표시: 초록 고리 + 전시가 뻗어 갈 방향 화살표
+  const ret=new THREE.Group();ret.matrixAutoUpdate=false;ret.visible=false;scene.add(ret);
+  const ringM=new THREE.MeshBasicMaterial({color:0x2fbf7f});
+  const ring=new THREE.Mesh(new THREE.RingGeometry(0.16,0.21,40).rotateX(-Math.PI/2),ringM);ret.add(ring);
+  const arrow=new THREE.Mesh(new THREE.ConeGeometry(0.07,0.16,3).rotateX(-Math.PI/2),ringM);arrow.position.set(0,0.01,-0.32);ret.add(arrow);
+  // 전시: 가장 가까운 가장자리 가운데가 누른 자리에 오게
+  const root=new THREE.Group();root.visible=false;scene.add(root);
+  const ex=lastScene.clone();const box=new THREE.Box3().setFromObject(ex);
+  ex.position.set(-(box.min.x+box.max.x)/2,0,-box.max.z-0.3);root.add(ex);
+  let session;
+  try{session=await navigator.xr.requestSession('immersive-ar',{requiredFeatures:['hit-test'],optionalFeatures:['dom-overlay'],domOverlay:{root:ui}});}
+  catch(e){renderer.dispose();renderer.domElement.remove();throw e;}
+  await renderer.xr.setSession(session);
+  ui.hidden=false;document.body.classList.add('xr');
+  const say=t=>{msg.textContent=t;};say('휴대폰을 천천히 좌우로 움직여 바닥을 비춰 주세요.');
+  const viewer=await session.requestReferenceSpace('viewer');
+  const hts=await session.requestHitTestSource({space:viewer});
+  let placed=false,seen=false;const up=new THREE.Vector3(),pos=new THREE.Vector3(),q=new THREE.Quaternion(),sc=new THREE.Vector3(),cp=new THREE.Vector3();
+  function place(){
+    if(placed||!ret.visible)return;
+    ret.matrix.decompose(pos,q,sc);renderer.xr.getCamera().getWorldPosition(cp);
+    root.position.copy(pos);root.rotation.set(0,Math.atan2(pos.x-cp.x,pos.z-cp.z)+Math.PI,0);   // 전시가 내 앞쪽으로 뻗게
+    root.visible=true;ret.visible=false;placed=true;$('#xrAgain').hidden=false;
+    say('전시가 놓였어요. 걸어서 다가가 보세요. 자리가 마음에 안 들면 ‘다시 놓기’를 눌러요.');}
+  session.addEventListener('select',place);
+  ui.querySelectorAll('button').forEach(b=>b.addEventListener('beforexrselect',e=>e.preventDefault()));
+  $('#xrAgain').onclick=()=>{placed=false;root.visible=false;$('#xrAgain').hidden=true;say('바닥의 초록 원이 전시를 시작할 자리예요. 원을 맞추고 화면을 눌러요.');};
+  $('#xrClose').onclick=()=>session.end();
+  renderer.setAnimationLoop((t,frame)=>{
+    if(frame&&!placed){
+      const hits=frame.getHitTestResults(hts);let ok=false;
+      for(const h of hits){const p=h.getPose(renderer.xr.getReferenceSpace());if(!p)continue;
+        ret.matrix.fromArray(p.transform.matrix);up.set(0,1,0).applyQuaternion(new THREE.Quaternion().setFromRotationMatrix(ret.matrix));
+        if(up.y>0.9){ok=true;break;}}   // 벽 같은 세운 면은 건너뜀
+      // 고리가 늘 사용자 쪽을 향하게: 화살표가 사용자에게서 멀어지는 방향
+      if(ok){ret.matrix.decompose(pos,q,sc);renderer.xr.getCamera().getWorldPosition(cp);
+        ret.matrix.compose(pos,new THREE.Quaternion().setFromEuler(new THREE.Euler(0,Math.atan2(pos.x-cp.x,pos.z-cp.z)+Math.PI,0)),new THREE.Vector3(1,1,1));}
+      ret.visible=ok;
+      if(ok&&!seen){seen=true;say('바닥을 찾았어요. 초록 원을 전시를 시작할 자리에 맞추고 화면을 눌러요.');}
+    }
+    renderer.render(scene,cam);});
+  session.addEventListener('end',()=>{renderer.setAnimationLoop(null);hts.cancel&&hts.cancel();renderer.dispose();renderer.domElement.remove();
+    ui.hidden=true;document.body.classList.remove('xr');$('#xrAgain').hidden=true;});
+}
 
 /* ---------- 공유 화면: QR·링크 ---------- */
 function drawQR(){
