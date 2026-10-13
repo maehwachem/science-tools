@@ -25,7 +25,7 @@
 - [화학 평형 가상 실험실](https://maehwachem.github.io/science-tools/equilibrium/): 평형 상수(흡광도), 온도·압력과 평형 이동
 - [AR 포토](https://maehwachem.github.io/science-tools/ar-photo/): 하트나 내 사진을 AR로 놓아 보고 같이 사진 찍기 (model-viewer 4.1.0 포함, Apache 2.0)
   - [카드로 하는 AR (시험판)](https://maehwachem.github.io/science-tools/ar-photo/marker.html): 인쇄한 카드 위에 하트·사진을 세우고 셔터로 저장. 내 그림으로 카드를 만들고 카드 파일로 학생과 나눌 수 있음 (MindAR 1.2.5 MIT, three.js 0.160 MIT 포함)
-  - [AR 전시관](https://maehwachem.github.io/science-tools/ar-photo/exhibit.html): 사진·이름·설명으로 전시물을 만들어 실제 공간에 펼치고 걸어 다니며 보기. 전시 파일 내보내기·합치기 (three.js GLTFExporter MIT 포함)
+  - [AR 전시관](https://maehwachem.github.io/science-tools/ar-photo/exhibit.html): 사진·이름·설명으로 전시물을 만들어 실제 공간에 펼치고 걸어 다니며 보기. 전시 파일 내보내기·합치기. 올린 전시는 `ar-photo/exhibits/이름.json`에 두고 `exhibit.html?ex=이름` 링크(보기 전용)로 나눔 (three.js GLTFExporter MIT 포함)
 - [대기 대순환](https://maehwachem.github.io/science-tools/earth/general-circulation.html): 에너지 불균형, 전향력, 세 순환, 바람과 기압대를 장면별로 살펴보는 인터랙티브 자료
 - [엘니뇨와 라니냐](https://maehwachem.github.io/science-tools/earth/el-nino.html): 적도 태평양 단면으로 보는 엘니뇨·라니냐와 남방 진동
 - [개인정보 처리방침](https://maehwachem.github.io/science-tools/battery/privacy.html) (배터리 도구)

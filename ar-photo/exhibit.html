@@ -14,6 +14,7 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);word-break:keep-all;-webkit-text-size-adjust:100%}
+body.view #secView{order:-1}body.view header.view-only{order:-2}
 .in{max-width:720px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 16px 40px;display:flex;flex-direction:column;gap:18px}
 h1{margin:0;font-size:26px;letter-spacing:-.02em}
 h2{margin:0;font-size:18px}
@@ -40,7 +41,7 @@ textarea{min-height:76px;resize:vertical;line-height:1.5}
 .item .t{flex:1;min-width:0}
 .item b{display:block;font-size:15px}
 .item small{display:block;color:var(--mute);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.item .acts{display:flex;gap:4px;flex:none}
+.item .acts{display:flex;gap:4px;flex:none}body.view .item .acts{display:none}
 .ib{font:inherit;font-size:14px;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
 .ib:disabled{opacity:.3}
 .empty{border:1px dashed #d8ccc3;border-radius:12px;padding:18px;text-align:center;color:var(--mute);font-size:14px}
@@ -56,33 +57,41 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .err{color:#b0262f;font-size:14px;margin:0}
 ol.steps{margin:0;padding-left:20px;line-height:1.7;color:#3d3431}
 #photoIn,#fileIn{display:none}
+body.view .edit-only{display:none!important}
+body:not(.view) .view-only{display:none!important}
 </style>
 </head>
 <body>
 <main class="in">
-  <header style="display:flex;flex-direction:column;gap:8px">
+  <header class="view-only" style="display:flex;flex-direction:column;gap:8px">
+    <p class="note" style="font-weight:600;color:var(--accent)">AR 전시관</p>
+    <h1 id="vTitle">전시를 불러오는 중…</h1>
+    <p id="vIntro"></p>
+    <p class="note" id="vMeta"></p>
+  </header>
+  <header class="edit-only" style="display:flex;flex-direction:column;gap:8px">
     <h1>AR 전시관</h1>
     <p>사진과 이름, 설명으로 전시물을 만들면 실제 공간에 전시대가 세워져요. 걸어 다니며 다가가 읽고, 돌아서 볼 수 있어요. 아무것도 붙이거나 세우지 않으니 훼손하면 안 되는 곳에서도 전시할 수 있어요.</p>
     <p class="note">사진은 이 휴대폰 안에만 저장되고 어디로도 보내지 않아요. 나눌 때는 ‘전시 파일’로 직접 건네요. <a href="./">AR 포토로 돌아가기</a></p>
   </header>
 
-  <section class="panel" aria-labelledby="h-info">
+  <section class="panel edit-only" aria-labelledby="h-info">
     <h2 id="h-info">전시 정보</h2>
     <label class="f">전시 제목 <span class="count" id="titleCount"></span><input type="text" id="title" maxlength="30" placeholder="예: 우리 학교 주변의 동식물"></label>
     <label class="f">소개 <span class="count" id="introCount"></span><textarea id="intro" maxlength="120" placeholder="예: 3학년 2반이 학교 둘레를 걸으며 만난 동식물을 모았어요."></textarea></label>
   </section>
 
-  <section class="panel" aria-labelledby="h-items">
+  <section class="panel" aria-labelledby="h-items" id="secItems">
     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2 id="h-items">전시물</h2><span class="note" id="itemCount"></span></div>
     <ul class="items" id="items"></ul>
-    <div class="empty" id="empty">아직 전시물이 없어요. ‘전시물 추가’로 사진을 넣거나, 먼저 ‘예시로 해 보기’로 AR을 확인해 보세요.</div>
-    <div class="row">
+    <div class="empty edit-only" id="empty">아직 전시물이 없어요. ‘전시물 추가’로 사진을 넣거나, 먼저 ‘예시로 해 보기’로 AR을 확인해 보세요.</div>
+    <div class="row edit-only">
       <button type="button" class="btn primary" id="addBtn">전시물 추가</button>
       <button type="button" class="btn" id="sampleBtn">예시로 해 보기</button>
     </div>
   </section>
 
-  <section class="panel" aria-labelledby="h-lay">
+  <section class="panel edit-only" aria-labelledby="h-lay">
     <h2 id="h-lay">배치</h2>
     <div class="seg" role="group" aria-label="배치 방식">
       <button type="button" data-lay="ring" aria-pressed="true">둥글게</button>
@@ -93,8 +102,9 @@ ol.steps{margin:0;padding-left:20px;line-height:1.7;color:#3d3431}
     <label class="gap">간격 <input type="range" id="gap" min="0.8" max="2.5" step="0.1" value="1.3" aria-label="전시대 사이 간격"><span id="gapVal">1.3 m</span></label>
   </section>
 
-  <section class="panel" aria-labelledby="h-view">
+  <section class="panel" aria-labelledby="h-view" id="secView">
     <h2 id="h-view">미리 보기와 AR</h2>
+    <p class="msg warn view-only" id="vErr" hidden></p>
     <model-viewer id="mv" loading="eager" camera-controls shadow-intensity="0.8" exposure="1.1" camera-orbit="0deg 55deg auto" interaction-prompt="none"
       ar ar-modes="webxr quick-look" ar-placement="floor" ar-scale="auto" alt="전시관 미리 보기"></model-viewer>
     <button type="button" class="btn primary" id="arBtn" disabled>공간에 펼치기 (AR)</button>
@@ -104,10 +114,11 @@ ol.steps{margin:0;padding-left:20px;line-height:1.7;color:#3d3431}
       <li>휴대폰을 천천히 움직여 바닥을 비추면 전시관이 놓여요. 놓을 자리는 손가락으로 끌어 옮길 수 있어요.</li>
       <li>전시대는 실제 크기(높이 약 1.6 m)예요. 걸어서 다가가 읽어 보세요.</li>
     </ol>
+    <p class="note view-only">나도 전시를 만들어 보려면 <a href="exhibit.html">AR 전시관 편집기</a>를 여세요.</p>
     <p class="note">아이폰은 사파리, 안드로이드는 크롬(ARCore 지원 기기)에서 돼요. 아이폰은 AR 화면의 셔터로 사진도 찍을 수 있어요.</p>
   </section>
 
-  <section class="panel" aria-labelledby="h-file">
+  <section class="panel edit-only" aria-labelledby="h-file">
     <h2 id="h-file">전시 파일로 나누고 합치기</h2>
     <p class="note"><b>학생</b>: 자기 전시물을 만든 뒤 ‘전시 파일 내보내기’로 받은 파일을 클래스룸 등으로 내요.<br><b>선생님</b>: ‘전시 파일 불러오기’로 학생 파일을 여러 개 한꺼번에 고르면 지금 전시에 합쳐져요. 다 모은 전시를 다시 내보내 나눠 주면, 모두 같은 전시관을 볼 수 있어요.</p>
     <div class="row">
@@ -154,7 +165,8 @@ const MAX_ITEMS=30;
 let E={title:'',intro:'',layout:'ring',gap:1.3,items:[]};
 function db(){return new Promise((ok,no)=>{const r=indexedDB.open('ar-exhibit',1);r.onupgradeneeded=()=>r.result.createObjectStore('e');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});}
 async function dbDo(mode,fn){const d=await db();return new Promise((ok,no)=>{const t=d.transaction('e',mode),q=fn(t.objectStore('e'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error);});}
-let saveT=0;function save(){clearTimeout(saveT);saveT=setTimeout(()=>dbDo('readwrite',s=>s.put(E,'cur')).catch(()=>{}),300);}
+const VIEW=new URLSearchParams(location.search).get('ex');
+let saveT=0;function save(){if(VIEW!==null)return;clearTimeout(saveT);saveT=setTimeout(()=>dbDo('readwrite',s=>s.put(E,'cur')).catch(()=>{}),300);}
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 
 /* ---------- 화면 ---------- */
@@ -181,7 +193,7 @@ function render(){
     li.append(img,t,a);ul.append(li);
   });
   $('#empty').hidden=E.items.length>0;
-  $('#itemCount').textContent=`${E.items.length}/${MAX_ITEMS}점`;
+  $('#itemCount').textContent=VIEW!==null?`${E.items.length}점`:`${E.items.length}/${MAX_ITEMS}점`;
   $('#addBtn').disabled=E.items.length>=MAX_ITEMS;
   $('#exportBtn').disabled=!E.items.length;
 }
@@ -373,7 +385,24 @@ $('#arBtn').onclick=async()=>{await building;try{await $('#mv').activateAR();}ca
 $('#mv').addEventListener('ar-status',e=>{if(e.detail.status==='failed')showMsg($('#arMsg'),'warn','AR을 시작하지 못했어요. 밝고 무늬 있는 바닥을 천천히 비춰 보세요.');});
 
 /* ---------- 시작 ---------- */
-dbDo('readonly',s=>s.get('cur')).then(v=>{if(v&&Array.isArray(v.items))E={...E,...v};}).catch(()=>{}).finally(()=>{render();scheduleBuild();});
+if(VIEW!==null){
+  document.body.classList.add('view');
+  (async()=>{
+    try{
+      if(!/^[a-z0-9-]{1,40}$/.test(VIEW))throw new Error('name');
+      const r=await fetch('exhibits/'+VIEW+'.json',{cache:'no-cache'});if(!r.ok)throw new Error('http');
+      const j=await r.json();if(j.type!=='ar-exhibit'||!Array.isArray(j.items))throw new Error('type');
+      E={title:String(j.title||'AR 전시').slice(0,30),intro:String(j.intro||'').slice(0,120),layout:['ring','hall','path'].includes(j.layout)?j.layout:'ring',gap:+j.gap>=0.8&&+j.gap<=2.5?+j.gap:1.3,
+        items:j.items.filter(it=>it&&it.name&&/^data:image\/(jpeg|png|webp);base64,/.test(it.img||'')).slice(0,MAX_ITEMS)};
+      document.title=E.title+' · AR 전시관';$('#vTitle').textContent=E.title;$('#vIntro').textContent=E.intro;
+      const by=[...new Set(E.items.map(i=>i.by).filter(Boolean))];
+      $('#vMeta').textContent=`전시물 ${E.items.length}점`+(by.length?` · ${by.slice(0,4).join(', ')}${by.length>4?' 외':''}`:'');
+      render();scheduleBuild();
+    }catch(e){$('#vTitle').textContent='전시를 찾지 못했어요';$('#vErr').hidden=false;$('#vErr').textContent='링크가 바뀌었거나 전시가 내려갔을 수 있어요. 링크를 보내 준 선생님께 확인해 주세요.';$('#secItems').hidden=true;$('#mv').hidden=true;$('#arBtn').hidden=true;}
+  })();
+}else{
+  dbDo('readonly',s=>s.get('cur')).then(v=>{if(v&&Array.isArray(v.items))E={...E,...v};}).catch(()=>{}).finally(()=>{render();scheduleBuild();});
+}
 </script>
 </body>
 </html>
