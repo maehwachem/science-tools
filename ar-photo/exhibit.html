@@ -125,7 +125,7 @@ body:not(.view) .view-only{display:none!important}
       <li>전시대는 실제 크기(판 위쪽 높이 약 1.8 m)예요. 걸어서 다가가 읽어 보세요.</li>
     </ol>
     <p class="note view-only">나도 전시를 만들어 보려면 <a href="exhibit.html">AR 전시관 편집기</a>를 여세요.</p>
-    <p class="note">아이폰은 사파리, 안드로이드는 크롬(ARCore 지원 기기)에서 돼요. 아이폰은 AR 화면의 셔터로 사진도 찍을 수 있어요.</p>
+    <p class="note">아이폰은 사파리, 안드로이드는 크롬(ARCore 지원 기기)에서 돼요. <span id="ver">버전 2026-10-13 · 3판</span> 아이폰은 AR 화면의 셔터로 사진도 찍을 수 있어요.</p>
   </section>
 
   <section class="panel edit-only" aria-labelledby="h-file">
@@ -449,36 +449,41 @@ async function startXR(){
   const ex=lastScene.clone();const box=new THREE.Box3().setFromObject(ex);
   ex.position.set(-(box.min.x+box.max.x)/2,0,-box.max.z-0.3);root.add(ex);
   let session;
-  try{session=await navigator.xr.requestSession('immersive-ar',{requiredFeatures:['hit-test'],optionalFeatures:['dom-overlay'],domOverlay:{root:ui}});}
+  try{session=await navigator.xr.requestSession('immersive-ar',{requiredFeatures:['hit-test'],optionalFeatures:['dom-overlay','anchors'],domOverlay:{root:ui}});}
   catch(e){renderer.dispose();renderer.domElement.remove();throw e;}
   await renderer.xr.setSession(session);
   ui.hidden=false;document.body.classList.add('xr');
   const say=t=>{msg.textContent=t;};say('휴대폰을 천천히 좌우로 움직여 바닥을 비춰 주세요.');
   const viewer=await session.requestReferenceSpace('viewer');
   const hts=await session.requestHitTestSource({space:viewer});
-  let placed=false,seen=false;const up=new THREE.Vector3(),pos=new THREE.Vector3(),q=new THREE.Quaternion(),sc=new THREE.Vector3(),cp=new THREE.Vector3();
+  let placed=false,seen=false,lastHit=null,anchor=null,yaw=0;const t0=performance.now();const up=new THREE.Vector3(),pos=new THREE.Vector3(),q=new THREE.Quaternion(),sc=new THREE.Vector3(),cp=new THREE.Vector3();
   function place(){
     if(placed||!ret.visible)return;
     ret.matrix.decompose(pos,q,sc);renderer.xr.getCamera().getWorldPosition(cp);
-    root.position.copy(pos);root.rotation.set(0,Math.atan2(pos.x-cp.x,pos.z-cp.z)+Math.PI,0);   // 전시가 내 앞쪽으로 뻗게
+    yaw=Math.atan2(pos.x-cp.x,pos.z-cp.z)+Math.PI;   // 전시가 내 앞쪽으로 뻗게
+    root.position.copy(pos);root.rotation.set(0,yaw,0);
+    anchor=null;if(lastHit&&lastHit.createAnchor)lastHit.createAnchor().then(a=>{if(placed)anchor=a;else a.delete&&a.delete();}).catch(()=>{});   // 바닥에 고정점을 박아 흔들리지 않게
     root.visible=true;ret.visible=false;placed=true;$('#xrAgain').hidden=false;
     say('전시가 놓였어요. 걸어서 다가가 보세요. 자리가 마음에 안 들면 ‘다시 놓기’를 눌러요.');}
   session.addEventListener('select',place);
   ui.querySelectorAll('button').forEach(b=>b.addEventListener('beforexrselect',e=>e.preventDefault()));
-  $('#xrAgain').onclick=()=>{placed=false;root.visible=false;$('#xrAgain').hidden=true;say('바닥의 초록 원이 전시를 시작할 자리예요. 원을 맞추고 화면을 눌러요.');};
+  $('#xrAgain').onclick=()=>{if(anchor&&anchor.delete)anchor.delete();anchor=null;placed=false;root.visible=false;$('#xrAgain').hidden=true;say('바닥의 초록 원이 전시를 시작할 자리예요. 원을 맞추고 화면을 눌러요.');};
   $('#xrClose').onclick=()=>session.end();
   renderer.setAnimationLoop((t,frame)=>{
     if(frame&&!placed){
       const hits=frame.getHitTestResults(hts);let ok=false;
       for(const h of hits){const p=h.getPose(renderer.xr.getReferenceSpace());if(!p)continue;
         ret.matrix.fromArray(p.transform.matrix);up.set(0,1,0).applyQuaternion(new THREE.Quaternion().setFromRotationMatrix(ret.matrix));
-        if(up.y>0.9){ok=true;break;}}   // 벽 같은 세운 면은 건너뜀
+        if(up.y>0.9){ok=true;lastHit=h;break;}}   // 벽 같은 세운 면은 건너뜀
       // 고리가 늘 사용자 쪽을 향하게: 화살표가 사용자에게서 멀어지는 방향
       if(ok){ret.matrix.decompose(pos,q,sc);renderer.xr.getCamera().getWorldPosition(cp);
         ret.matrix.compose(pos,new THREE.Quaternion().setFromEuler(new THREE.Euler(0,Math.atan2(pos.x-cp.x,pos.z-cp.z)+Math.PI,0)),new THREE.Vector3(1,1,1));}
       ret.visible=ok;
       if(ok&&!seen){seen=true;say('바닥을 찾았어요. 초록 원을 전시를 시작할 자리에 맞추고 화면을 눌러요.');}
+      if(!seen&&performance.now()-t0>6000)say('아직 바닥을 못 찾았어요. 휴대폰을 허리 높이로 내리고, 무늬가 보이는 바닥을 천천히 훑어 주세요.');
     }
+    if(frame&&placed&&anchor){const p=frame.getPose(anchor.anchorSpace,renderer.xr.getReferenceSpace());
+      if(p){const m=p.transform.position;root.position.set(m.x,m.y,m.z);}}   // 고정점이 다듬어지면 전시도 따라감
     renderer.render(scene,cam);});
   session.addEventListener('end',()=>{renderer.setAnimationLoop(null);hts.cancel&&hts.cancel();renderer.dispose();renderer.domElement.remove();
     ui.hidden=true;document.body.classList.remove('xr');$('#xrAgain').hidden=true;});
