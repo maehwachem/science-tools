@@ -2,6 +2,7 @@
 
 고등학교 과학 수업용 웹 도구 모음입니다. 깃허브 페이지로 제공합니다.
 
+- [첫 실험 교실](https://maehwachem.github.io/science-tools/lab-tools/): 실험도구 31가지의 이름·쓰임·사용법(동작 모션), 조작 연습 9가지, 실험 준비 활동 6가지
 - [배터리 시험팀](https://maehwachem.github.io/science-tools/battery/): 실제 실험 기록·판정·성적서 (1차 공통, 2차 통합과학·화학)
 - [배터리 가상 시험동](https://maehwachem.github.io/science-tools/battery/virtual.html): 화면 속 실험대로 측정 절차 연습·평가
 - [산화·환원 가상 실험실](https://maehwachem.github.io/science-tools/redox/): 금속의 반응성, 산화 환원 적정, 화학 전지, 전기분해, 연료 전지를 화면 속 회로판으로 연습·평가
