@@ -616,7 +616,7 @@ function save(){
   S.updated = Date.now();
   let ok = true;
   try{ localStorage.setItem(PREFIX + S.id, JSON.stringify(S)); }catch(e){ ok = false; }
-  /* 저장이 실패하면 숨기지 않고 바로 알림 띠와 결과 파일 저장 버튼을 보여 줌 */
+  /* 저장이 실패하면 숨기지 않고 바로 알림 띠와 제출 코드 복사 버튼을 보여 줌 */
   if(ok === !!ui.saveErr){ ui.saveErr = !ok; saveBar(); refreshSync(); }
   queuePush();
 }
@@ -1329,7 +1329,7 @@ function viewTeam(){
       <label class="f"><span>번호</span><select id="team-grp" data-in="grp"><option value="">선택</option>${Array.from({length:40},(_,k)=>opt(k+1,t.grp)).join('')}</select></label>
     </div>
     <label class="f" style="max-width:380px"><span>이름</span><input type="text" id="member-0" data-in="m0" value="${esc(t.m[0])}" maxlength="12" autocomplete="off"></label>
-    <p class="who privacy-note">${cloud.db ? '적은 반·조·이름과 실험 기록은 이 기기와 선생님 화면의 수합 공간에 저장돼요.' : '적은 반·조·이름과 실험 기록은 이 기기에만 저장되고, 선생님께는 결과 파일로 내요.'} <a href="${PRIVACY_URL}" target="_blank" rel="noopener">개인정보 처리방침</a></p>
+    <p class="who privacy-note">${cloud.db ? '적은 반·조·이름과 실험 기록은 이 기기와 선생님 화면의 수합 공간에 저장돼요.' : '적은 반·조·이름과 실험 기록은 이 기기에만 저장되고, 선생님께는 제출 코드로 내요.'} <a href="${PRIVACY_URL}" target="_blank" rel="noopener">개인정보 처리방침</a></p>
     <ul class="hint" id="team-hint">${iss.map(x => `<li>${x}</li>`).join('')}${dup ? `<li>${esc(dup)}</li>` : ''}</ul>
     <div class="actions"><button type="button" class="primary" id="next" data-act="next" ${iss.length ? 'disabled' : ''}>시험 의뢰서 열기</button></div>
   </section>`;
@@ -1344,7 +1344,7 @@ function viewTeam(){
     <fieldset><legend>팀원</legend>
       <div class="members">${[0,1,2,3,4].map(i => `<label class="f"><span>${i < 4 ? `팀원 ${i+1}` : '팀원 5 (5명인 조만)'}</span><input type="text" id="member-${i}" data-in="m${i}" value="${esc(t.m[i])}" maxlength="12" autocomplete="off"></label>`).join('')}</div>
     </fieldset>
-    <p class="who privacy-note">${cloud.db ? '적은 반·조·이름과 실험 기록은 이 기기와 선생님 화면의 수합 공간에 저장돼요.' : '적은 반·조·이름과 실험 기록은 이 기기에만 저장되고, 선생님께는 결과 파일로 내요.'} <a href="${PRIVACY_URL}" target="_blank" rel="noopener">개인정보 처리방침</a></p>
+    <p class="who privacy-note">${cloud.db ? '적은 반·조·이름과 실험 기록은 이 기기와 선생님 화면의 수합 공간에 저장돼요.' : '적은 반·조·이름과 실험 기록은 이 기기에만 저장되고, 선생님께는 제출 코드로 내요.'} <a href="${PRIVACY_URL}" target="_blank" rel="noopener">개인정보 처리방침</a></p>
     <ul class="hint" id="team-hint">${iss.map(x => `<li>${x}</li>`).join('')}${dup ? `<li>${esc(dup)}</li>` : ''}</ul>
     <div class="actions"><button type="button" class="primary" id="next" data-act="next" ${iss.length ? 'disabled' : ''}>역할 정하기</button></div>
   </section>`;
@@ -1785,7 +1785,7 @@ function viewReport(){
     <p class="sync-note who">${esc(syncText())}</p>
     <div class="actions">
       <button type="button" class="ghost" data-act="home">처음 화면으로</button>
-      ${canSave() ? '<button type="button" class="secondary" data-act="exportTeam">결과 파일 저장</button>' : ''}
+      <button type="button" class="primary" data-act="subcode">제출 코드 복사</button>
       <button type="button" class="secondary" data-act="go" data-stage="pairs">기록 다시 보기</button>
       ${to2}
     </div>
@@ -2147,7 +2147,7 @@ function makeTrack(T){
       <p class="sync-note who">${esc(syncText())}</p>
       <div class="actions">
         <button type="button" class="ghost" data-act="home">처음 화면으로</button>
-        ${canSave() ? '<button type="button" class="secondary" data-act="exportTeam">결과 파일 저장</button>' : ''}
+        <button type="button" class="primary" data-act="subcode">제출 코드 복사</button>
         <button type="button" class="secondary" data-act="go" data-stage="m2">2차 기록 다시 보기</button>
       </div>
     </section>`;
@@ -3615,6 +3615,14 @@ function modalHTML(){
       <div class="mfoot"><button type="button" class="ghost" data-act="close">취소</button><button type="button" class="primary danger" data-act="tdel" data-id="${esc(m.id)}">지우기</button></div>
     </div>`;
   }
+  if(m.type === 'subcode'){
+    return `<div class="modal-in">
+      <h2 id="mt">제출 글</h2>
+      <p class="mlead">자동으로 복사하지 못했어요. 아래 글 전체를 복사해 웨일 클래스 과제 제출란에 붙여 넣으세요. 맨 아래 분석 코드가 잘리면 선생님이 불러올 수 없어요.</p>
+      <textarea class="csvbox" id="csvbox" readonly style="font-family:var(--num);font-size:13px;min-height:220px">${esc(m.text)}</textarea>
+      <div class="mfoot"><button type="button" class="ghost" data-act="close">닫기</button><button type="button" class="primary" data-act="csvcopy">복사</button></div>
+    </div>`;
+  }
   if(m.type === 'csv'){
     return `<div class="modal-in">
       <h2 id="mt">시험 기록 CSV</h2>
@@ -3746,19 +3754,19 @@ async function pushNow(){
 function syncText(){
   if(ui.saveErr && S) return cloud.state === 'on'
     ? `선생님 화면으로 보냈어요${cloud.last ? ` (${clockOf(cloud.last)})` : ''}. 이 기기에는 저장하지 못했어요.`
-    : (canSave() ? '이 기기에 기록을 저장하지 못했어요. 결과 파일을 저장해 두세요.' : '이 기기에 기록을 저장하지 못했어요. 선생님께 알려 주세요.');
+    : '이 기기에 기록을 저장하지 못했어요. 제출 코드를 복사해 두세요.';
   switch(cloud.state){
     case 'checking': return '';
     case 'on': return cloud.last ? `선생님 화면으로 보냈어요 (${clockOf(cloud.last)})` : '기록은 선생님 화면으로 자동으로 보내져요.';
     case 'retry': return '연결이 불안정해서 다시 보내는 중이에요. 기록은 이 기기에도 저장돼요.';
     case 'denied': return '이 계정으로는 선생님 화면에 보낼 수 없어요. 기록은 이 기기에 저장돼요.';
     case 'full': return '수합 공간이 가득 찼어요. 선생님께 알려 주세요. 기록은 이 기기에 저장돼요.';
-    default: return canSave() ? '기록은 이 기기에만 저장돼요. 끝나면 결과 파일을 저장해 선생님께 내요.' : '기록은 이 기기에만 저장돼요.';
+    default: return '기록은 이 기기에 저장돼요. 끝나면 제출 코드를 복사해 웨일 클래스에 내요.';
   }
 }
 function tSyncText(){
   if(cloud.state === 'checking') return '수합 연결 확인 중';
-  if(!cloud.db) return '실시간 수합 꺼짐: 이 기기 기록과 불러온 결과 파일만 보여요';
+  if(!cloud.db) return '이 기기에서 한 기록과 불러온 제출 기록이 보여요';
   if(cloud.subErr) return '수합 연결이 끊겼어요. 페이지를 새로 열어 주세요';
   return cloud.subOk ? '태블릿 기록을 실시간으로 받는 중' : '수합 연결 중';
 }
@@ -3771,10 +3779,10 @@ function saveBar(){
   if(!on){ el.hidden = true; el.innerHTML = ''; return; }
   const sent = cloud.state === 'on';
   const msg = sent
-    ? '이 기기에 기록을 저장하지 못했어요. 선생님 화면으로는 보내고 있지만, 창을 닫기 전에 결과 파일도 저장해 두세요.'
-    : '이 기기에 기록을 저장하지 못했어요. 창을 닫거나 새로 고치면 기록이 사라질 수 있어요.' + (canSave() ? ' 지금 결과 파일을 저장해 두세요.' : ' 선생님께 바로 알려 주세요.');
+    ? '이 기기에 기록을 저장하지 못했어요. 선생님 화면으로는 보내고 있지만, 창을 닫기 전에 제출 코드도 복사해 두세요.'
+    : '이 기기에 기록을 저장하지 못했어요. 창을 닫거나 새로 고치면 기록이 사라질 수 있어요. 지금 제출 코드를 복사해 두세요.';
   el.hidden = false;
-  el.innerHTML = `<p><b>저장 안 됨</b>${esc(msg)}</p>${canSave() ? '<button type="button" class="primary sm" data-act="exportTeam">결과 파일 저장</button>' : ''}`;
+  el.innerHTML = `<p><b>저장 안 됨</b>${esc(msg)}</p><button type="button" class="primary sm" data-act="subcode">제출 코드 복사</button>`;
 }
 function refreshSync(){
   saveBar();
@@ -3877,21 +3885,76 @@ function enterTeacher(){
   ui.view = 'teacher'; ui.teacherOk = true; ui.tDetail = null;
   subscribeTeams(); render(); window.scrollTo(0, 0);
 }
+/* 결과(파일이든 제출 코드든)를 교사 기록에 넣음. 'ok' | 'bad' | 'other' */
+function ingestTeam(o){
+  /* 파일 이름표(kind)가 아니라 안의 기록으로 어느 앱 것인지 가림: 저장 이름을 나누기 전 가상 시험동 파일도 kind가 'battery-lab-team'임 */
+  const raw = o && (o.kind === 'battery-lab-team' || o.kind === 'battery-vlab-team') ? o.data : o;
+  if(raw && raw.team && raw.pv && isVirtualRec(raw) !== VIRTUAL) return 'other';
+  const d = upgrade(raw);
+  if(d && d.team && d.team.cls && d.team.grp){ const p = TS.imported[d.id]; if(!p || (d.updated || 0) >= (p.updated || 0)) TS.imported[d.id] = d; return 'ok'; }
+  return 'bad';
+}
 async function importFiles(files){
   let n = 0, bad = 0, other = 0;
   for(const f of files){
-    try{
-      const o = JSON.parse(await f.text());
-      /* 파일 이름표(kind)가 아니라 안의 기록으로 어느 앱 것인지 가림: 저장 이름을 나누기 전 가상 시험동 파일도 kind가 'battery-lab-team'임 */
-      const raw = o && (o.kind === 'battery-lab-team' || o.kind === 'battery-vlab-team') ? o.data : o;
-      if(raw && raw.team && raw.pv && isVirtualRec(raw) !== VIRTUAL){ other++; continue; }
-      const d = upgrade(raw);
-      if(d && d.team && d.team.cls && d.team.grp){ TS.imported[d.id] = d; n++; } else bad++;
-    }catch(e){ bad++; }
+    let r = 'bad';
+    try{ r = ingestTeam(JSON.parse(await f.text())); }catch(e){}
+    if(r === 'ok') n++; else if(r === 'other') other++; else bad++;
   }
   tSave(); render();
   const otherTxt = other ? ` ${other}개는 ${VIRTUAL ? '실제 실험(배터리 시험팀)' : '가상 시험동'} 결과 파일이라 그 앱의 교사 화면에서 불러와야 해요.` : '';
   showToast(n ? `결과 파일 ${n}개를 불러왔어요.${bad ? ` ${bad}개는 읽지 못했어요.` : ''}${otherTxt}` : (otherTxt.trim() || '이 앱의 결과 파일이 아니에요.'));
+}
+
+/* ───────── 제출 코드: 다른 가상 실험실과 같은 방식 ─────────
+   학생은 제출 글(요약 + 분석 코드)을 복사해 웨일 클래스에 내고, 선생님은 교사 화면에 붙여 넣어 불러옴.
+   기록이 길어서 브라우저가 지원하면 deflate로 줄이고(z), 아니면 그대로(r) 담음. 가벼운 가림 처리. */
+const XK = 'vlab-battery-2026', SUBCODE = 'VBATT1:';
+const b64u = u => { let s = ''; for(let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+const unb64u = t => { let b = t.replace(/-/g, '+').replace(/_/g, '/'); while(b.length % 4) b += '='; const s = atob(b), u = new Uint8Array(s.length); for(let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; };
+const xorK = u => { for(let i = 0; i < u.length; i++) u[i] ^= XK.charCodeAt(i % XK.length); return u; };
+async function flate(u, T){ return new Uint8Array(await new Response(new Blob([u]).stream().pipeThrough(new T('deflate-raw'))).arrayBuffer()); }
+async function encodeTeam(d){
+  let u = new TextEncoder().encode(JSON.stringify({ kind:FILE_KIND, v:1, data:d })), z = 'r';
+  if(typeof CompressionStream === 'function'){ try{ u = await flate(u, CompressionStream); z = 'z'; }catch(e){} }
+  return SUBCODE + z + b64u(xorK(u));
+}
+async function decodeTeam(code){
+  const body = code.slice(SUBCODE.length), z = body[0];
+  let u = xorK(unb64u(body.slice(1)));
+  if(z === 'z') u = await flate(u, DecompressionStream); else if(z !== 'r') throw new Error('bad');
+  return JSON.parse(new TextDecoder().decode(u));
+}
+async function submitText(d){
+  const ago2 = new Date(d.updated || Date.now());
+  const when = `${ago2.getMonth() + 1}.${ago2.getDate()} ${String(ago2.getHours()).padStart(2, '0')}:${String(ago2.getMinutes()).padStart(2, '0')}`;
+  return withTeam(d, () => [
+    `[${VIRTUAL ? '배터리 가상 시험동' : '배터리 시험팀'} · 제출] ${teamLabel(d) || '반·조 미정'}`,
+    `${d.solo ? '개별' : '조별'} · ${d.exam ? '평가' : '연습'} · 지금 ${stageName(d.stage)} 단계 · ${when}`,
+    ...(d.solo ? [] : [`조원: ${memberIdx().map(nm).join(', ')}`]),
+    '측정값과 판정, 과정 기록은 선생님 화면에서 확인합니다.',
+    '분석 코드 (지우지 마세요):'
+  ]).join('\n') + '\n' + await encodeTeam(d);
+}
+async function copySubmit(){
+  if(!S) return;
+  save();
+  let text = '';
+  try{ text = await submitText(S); }catch(e){ showToast('제출 코드를 만들지 못했어요. 선생님께 알려 주세요.'); return; }
+  const fallback = () => { ui.modal = { type:'subcode', text }; renderModal(); };
+  try{ const p = navigator.clipboard && navigator.clipboard.writeText(text); if(!p){ fallback(); return; } p.then(() => showToast('복사했어요. 웨일 클래스 과제 제출란에 붙여 넣으면 제출됩니다.'), fallback); }catch(e){ fallback(); }
+}
+async function importCodes(text){
+  const found = text.match(/VBATT1:[rz][A-Za-z0-9_-]+/g) || [];
+  let n = 0, bad = 0, other = 0;
+  for(const c of found){
+    let r = 'bad';
+    try{ r = ingestTeam(await decodeTeam(c)); }catch(e){}
+    if(r === 'ok') n++; else if(r === 'other') other++; else bad++;
+  }
+  tSave(); render();
+  if(!found.length){ showToast('붙여 넣은 글에서 분석 코드를 찾지 못했어요.'); return; }
+  showToast(`제출 기록 ${n}개를 불러왔어요.${bad ? ` ${bad}개는 읽지 못했어요(코드가 잘렸는지 확인하세요).` : ''}${other ? ` ${other}개는 다른 앱의 기록이에요.` : ''}`);
 }
 async function deleteTeam(id){
   delete TS.imported[id]; tSave();
@@ -3954,13 +4017,17 @@ function viewTeacher(){
     ${tab === 'live' && classes.length > 1 ? chips : ''}
     ${body}
     <div class="ttools">
-      <label class="secondary sm filebtn">결과 파일 불러오기<input type="file" id="imp" accept=".json,application/json" multiple hidden></label>
-      <span class="who">태블릿이 수합에 연결되지 않았을 때, 학생이 저장한 결과 파일을 여기서 불러와요.</span>
+      <div style="flex:1 1 100%">
+        <p class="instr" style="margin:0 0 6px"><b>제출 기록 불러오기</b></p>
+        <p class="who" style="margin:0 0 8px">웨일 클래스에 올라온 학생 제출 글을 복사해 붙여 넣으세요. 여러 명의 글을 한꺼번에 붙여 넣어도 됩니다.</p>
+        <textarea id="tImportBox" class="csvbox" style="width:100%;min-height:96px;font-family:var(--num);font-size:13px" aria-label="학생 제출 글 붙여 넣기"></textarea>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:8px"><button type="button" class="primary sm" data-act="timport">불러오기</button><label class="ghost sm filebtn">예전 결과 파일 불러오기<input type="file" id="imp" accept=".json,application/json" multiple hidden></label></div>
+      </div>
     </div>
   </main>`;
 }
 function tLiveView(list){
-  if(!list.length) return `<div class="tempty"><p class="instr">아직 들어온 시험 기록이 없어요.</p><p class="who">${cloud.db ? '학생 태블릿에서 팀 편성을 마치면 여기에 바로 나타나요.' : '이 기기에서 한 시험과 불러온 결과 파일이 여기에 나타나요.'}</p></div>`;
+  if(!list.length) return `<div class="tempty"><p class="instr">아직 들어온 시험 기록이 없어요.</p><p class="who">${cloud.db ? '학생 태블릿에서 팀 편성을 마치면 여기에 바로 나타나요.' : '이 기기에서 한 시험과 불러온 제출 기록이 여기에 나타나요.'}</p></div>`;
   const k = teamKey, cnt = {};
   list.forEach(d => { cnt[k(d)] = (cnt[k(d)] || 0) + 1; });
   return `<div class="gtools" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:12px"><span class="progress">${list.length}개 ${VIRTUAL ? '기록' : '조'}</span><button type="button" class="secondary sm" data-act="csv">CSV로 저장</button></div>
@@ -4252,6 +4319,8 @@ document.addEventListener('click', e => {
     }
     case 'del': removeSlot(el.dataset.id); if(S && S.id === el.dataset.id) S = null; ui.modal = null; render(); break;
     case 'exportTeam': exportTeam(); break;
+    case 'subcode': copySubmit(); break;
+    case 'timport': { const b = document.getElementById('tImportBox'); importCodes(b ? b.value : ''); break; }
     case 'tgate': openGate(); break;
     case 'pinok': pinSubmit(); break;
     case 'thome': ui.view = 'title'; ui.tDetail = null; ui.teacherOk = false; render(); window.scrollTo(0, 0); break;
