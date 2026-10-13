@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="AR 카드를 비추면 카드 위에 하트나 내 사진이 서고, 셔터로 바로 사진을 저장하는 마커 방식 AR">
+<meta name="theme-color" content="#000000">
+<title>AR 포토 · 카드</title>
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js","three/addons/":"./vendor/three/"}}</script>
+<style>
+:root{--accent:#ff4f86;--font:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:#000;color:#fff;font-family:var(--font);word-break:keep-all;overflow:hidden}
+#ar{position:fixed;inset:0;overflow:hidden}
+.bar{position:fixed;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px}
+.top{top:0;padding-top:max(12px,env(safe-area-inset-top));background:linear-gradient(rgba(0,0,0,.5),transparent)}
+.bottom{bottom:0;padding-bottom:max(16px,env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.6));flex-direction:column;gap:10px}
+.ghost{font:inherit;font-weight:600;color:#fff;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:9px 14px;min-height:42px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.ghost[aria-pressed="true"]{background:#fff;color:#111}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.status{font-size:14px;background:rgba(0,0,0,.5);border-radius:999px;padding:6px 14px}
+.status.ok{background:rgba(30,140,90,.75)}
+.size{display:flex;align-items:center;gap:10px;width:100%;max-width:480px;font-size:13px}
+.size input{flex:1;accent-color:#fff}
+.shutter{width:74px;height:74px;border-radius:50%;border:5px solid #fff;background:rgba(255,255,255,.25);cursor:pointer;padding:0}
+.shutter:active{background:#fff}
+.shutter:disabled{opacity:.4}
+.flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .25s;z-index:30}
+.flash.on{opacity:.8;transition:none}
+
+/* 시작 화면 */
+.start{position:fixed;inset:0;z-index:40;background:#fbf7f2;color:#2a2220;overflow:auto}
+.start .in{max-width:640px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 18px 28px;display:flex;flex-direction:column;gap:16px}
+.start h1{margin:0;font-size:24px;letter-spacing:-.02em}
+.start p{margin:0;line-height:1.6;color:#5f5450}
+.start ol{margin:0;padding-left:20px;line-height:1.7;color:#3d3431}
+.cardview{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.cardview img{width:150px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.cardview .col{flex:1 1 200px;display:flex;flex-direction:column;gap:8px}
+.btn{font:inherit;font-weight:600;border:1px solid #e3d8cf;background:#fff;color:#2a2220;border-radius:12px;padding:11px 14px;min-height:46px;cursor:pointer;text-align:center;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.btn.primary{background:#d6265c;border-color:#d6265c;color:#fff}
+.note{font-size:13px;color:#8a7d78}
+.err{color:#b0262f;font-size:14px}
+#photoInput{display:none}
+
+dialog{border:0;border-radius:18px;padding:0;max-width:min(560px,calc(100vw - 32px));background:#fff;color:#222}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+.dlg{padding:14px;display:flex;flex-direction:column;gap:12px}
+.dlg img{width:100%;max-height:65vh;object-fit:contain;border-radius:12px;background:#000}
+.row{display:flex;gap:8px}.row .btn{flex:1}
+</style>
+</head>
+<body>
+<div id="ar"></div>
+
+<section class="start" id="start">
+  <div class="in">
+    <h1>카드로 하는 AR</h1>
+    <p>AR 카드를 책상이나 바닥에 놓고 카메라로 비추면, 카드 위에 하트나 내 사진이 서요. 다가가면 커지고, 돌아가면 옆모습이 보여요. 셔터로 바로 사진을 저장할 수 있어요.</p>
+    <div class="cardview">
+      <img src="card/ar-card.png" alt="AR 카드: 여러 색 도형 무늬 아래 'AR 포토 카드' 글자">
+      <div class="col">
+        <a class="btn" href="card/ar-card.png" download="AR-포토-카드.png">카드 그림 내려받기</a>
+        <p class="note">엽서 크기(가로 10 cm 안팎) 이상으로 인쇄하세요. 다른 기기 화면에 이 카드를 띄워 놓고 비춰도 돼요.</p>
+      </div>
+    </div>
+    <ol>
+      <li>카드를 평평한 곳에 놓고, 글자가 내 쪽으로 오게 둬요.</li>
+      <li>‘시작’을 누르고 카메라를 허용해요.</li>
+      <li>카드 전체가 화면에 들어오게 비추면 하트가 나타나요.</li>
+    </ol>
+    <button type="button" class="btn primary" id="go">시작</button>
+    <p class="err" id="startErr" hidden></p>
+    <p class="note">카메라 영상과 고른 사진은 이 휴대폰 안에서만 써요. <a href="./">AR 포토로 돌아가기</a></p>
+  </div>
+</section>
+
+<div class="bar top" id="topBar" hidden>
+  <a class="ghost" href="./">닫기</a>
+  <span class="status" id="status">카드를 비춰 주세요</span>
+</div>
+<div class="bar bottom" id="bottomBar" hidden>
+  <div class="chips">
+    <button type="button" class="ghost" id="pickHeart" aria-pressed="true">하트</button>
+    <button type="button" class="ghost" id="pickPhoto" aria-pressed="false">내 사진</button>
+    <input type="file" id="photoInput" accept="image/*">
+  </div>
+  <label class="size">크기<input type="range" id="size" min="0.4" max="2.5" step="0.05" value="1" aria-label="크기"></label>
+  <button type="button" class="shutter" id="shutter" aria-label="사진 찍기"></button>
+</div>
+<div class="flash" id="flash"></div>
+
+<dialog id="shot">
+  <div class="dlg">
+    <img id="shotImg" alt="찍은 사진">
+    <div class="row">
+      <button type="button" class="btn primary" id="shotShare">저장·공유</button>
+      <button type="button" class="btn" id="shotAgain">다시 찍기</button>
+    </div>
+  </div>
+</dialog>
+
+<script type="module">
+import * as THREE from 'three';
+import {GLTFLoader} from './vendor/three/loaders/GLTFLoader.js';
+import {MindARThree} from './vendor/mindar/mindar-image-three.prod.js';
+const $=s=>document.querySelector(s);
+
+let mindar=null,renderer,scene,camera,anchor,stage,heart=null,photo=null,mode='heart';
+const S={size:1};
+
+/* 카드 좌표: 카드 가로 = 1, 카드 면 = xy, 카드 위쪽 = +z. 글자 쪽(-y)에서 본다고 보고 세운다 */
+function makeShadow(){
+  const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+  const g=x.createRadialGradient(64,64,4,64,64,62);g.addColorStop(0,'rgba(0,0,0,.45)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,128,128);
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false}));
+  m.position.z=0.002;return m;}
+async function loadHeart(){
+  const g=await new GLTFLoader().loadAsync('models/heart.glb');const h=g.scene;
+  h.rotation.x=Math.PI/2;           // 모델의 위(+y)를 카드의 위(+z)로
+  const s=0.7/0.3;h.scale.setScalar(s);   // 하트 높이 = 카드 가로의 0.7배
+  return h;}
+function makePhoto(url,aspect,cut){
+  const tex=new THREE.TextureLoader().load(url);tex.colorSpace=THREE.SRGBColorSpace;
+  const w=1,h=w*aspect,grp=new THREE.Group();
+  const mat=new THREE.MeshStandardMaterial({map:tex,side:THREE.DoubleSide,roughness:.7,alphaTest:cut?0.5:0,transparent:false});
+  const p=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat);p.position.y=h/2;grp.add(p);
+  if(!cut){const f=new THREE.Mesh(new THREE.BoxGeometry(w+0.06,h+0.06,0.02),new THREE.MeshStandardMaterial({color:0xf4f1ea,roughness:.8}));f.position.set(0,h/2,-0.012);grp.add(f);}
+  grp.rotation.x=Math.PI/2;return grp;}
+function show(){stage.clear();stage.add(makeShadow());const o=mode==='heart'?heart:photo;if(o)stage.add(o);stage.scale.setScalar(S.size);}
+
+$('#go').onclick=async()=>{
+  $('#go').disabled=true;$('#go').textContent='준비하는 중…';$('#startErr').hidden=true;
+  try{
+    mindar=new MindARThree({container:$('#ar'),imageTargetSrc:'card/card.mind',uiLoading:'no',uiScanning:'no',uiError:'no',filterMinCF:0.0001,filterBeta:0.01,warmupTolerance:3,missTolerance:8});
+    ({renderer,scene,camera}=mindar);
+    renderer.outputColorSpace=THREE.SRGBColorSpace;
+    scene.add(new THREE.HemisphereLight(0xffffff,0x887766,1.6));
+    const sun=new THREE.DirectionalLight(0xffffff,1.6);sun.position.set(0.5,-1,1.5);scene.add(sun);
+    anchor=mindar.addAnchor(0);stage=new THREE.Group();anchor.group.add(stage);
+    anchor.onTargetFound=()=>{$('#status').textContent='카드를 찾았어요';$('#status').classList.add('ok');};
+    anchor.onTargetLost=()=>{$('#status').textContent='카드를 비춰 주세요';$('#status').classList.remove('ok');};
+    heart=await loadHeart();show();
+    await mindar.start();
+    renderer.setAnimationLoop(()=>renderer.render(scene,camera));
+    $('#start').hidden=true;$('#topBar').hidden=false;$('#bottomBar').hidden=false;
+  }catch(e){console.error(e);$('#go').disabled=false;$('#go').textContent='다시 시작';$('#startErr').hidden=false;
+    $('#startErr').textContent=/Permission|NotAllowed/i.test(String(e&&(e.name||e.message)))?'카메라 사용이 막혀 있어요. 주소창의 권한 설정에서 카메라를 허용해 주세요.':'카메라를 켜지 못했어요. 다른 앱이 카메라를 쓰고 있지 않은지 확인하고 다시 시작해 주세요.';}
+};
+
+function setMode(m){mode=m;$('#pickHeart').setAttribute('aria-pressed',String(m==='heart'));$('#pickPhoto').setAttribute('aria-pressed',String(m==='photo'));show();}
+$('#pickHeart').onclick=()=>setMode('heart');
+$('#pickPhoto').onclick=()=>$('#photoInput').click();
+$('#photoInput').onchange=async e=>{
+  const f=e.target.files&&e.target.files[0];if(!f)return;
+  try{const bmp=await createImageBitmap(f,{imageOrientation:'from-image'});
+    const k=Math.min(1,1024/Math.max(bmp.width,bmp.height)),w=Math.round(bmp.width*k),h=Math.round(bmp.height*k);
+    const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(bmp,0,0,w,h);
+    let cut=false;if(/png|webp|gif/.test(f.type)){const d=x.getImageData(0,0,w,h).data;for(let i=3;i<d.length;i+=16)if(d[i]<250){cut=true;break;}}
+    photo=makePhoto(c.toDataURL(cut?'image/png':'image/jpeg',0.9),h/w,cut);setMode('photo');
+  }catch(err){console.error(err);alert('이 사진을 열지 못했어요. JPG나 PNG로 골라 주세요.');}
+  e.target.value='';
+};
+$('#size').oninput=e=>{S.size=+e.target.value;stage.scale.setScalar(S.size);};
+
+/* 찍기: 화면에 보이는 카메라 영상과 3D 그림을 한 장으로 */
+let lastBlob=null;
+$('#shutter').onclick=async()=>{
+  const box=$('#ar').getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1),W=Math.round(box.width*dpr),H=Math.round(box.height*dpr);
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#000';x.fillRect(0,0,W,H);
+  const v=$('#ar video');
+  if(v&&v.videoWidth){const r=v.getBoundingClientRect();x.drawImage(v,(r.left-box.left)*dpr,(r.top-box.top)*dpr,r.width*dpr,r.height*dpr);}
+  renderer.render(scene,camera);   // 같은 순간에 바로 옮겨 그려야 3D 그림이 지워지지 않음
+  const gl=renderer.domElement,gr=gl.getBoundingClientRect();
+  x.drawImage(gl,(gr.left-box.left)*dpr,(gr.top-box.top)*dpr,gr.width*dpr,gr.height*dpr);
+  const f=$('#flash');f.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>f.classList.remove('on')));
+  lastBlob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.92));
+  $('#shotImg').src=URL.createObjectURL(lastBlob);$('#shot').showModal();
+};
+$('#shotAgain').onclick=()=>$('#shot').close();
+$('#shotShare').onclick=async()=>{
+  if(!lastBlob)return;const name='ar-card-'+new Date().toISOString().slice(0,19).replace(/[-:T]/g,'')+'.jpg';
+  const file=new File([lastBlob],name,{type:'image/jpeg'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});return;}catch(e){if(e.name==='AbortError')return;}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=name;document.body.append(a);a.click();a.remove();
+};
+</script>
+</body>
+</html>
