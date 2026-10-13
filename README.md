@@ -23,6 +23,7 @@
 - [열화학 가상 실험실](https://maehwachem.github.io/science-tools/thermochem/): 용해·중화 엔탈피, 헤스 법칙
 - [반응 속도 가상 실험실](https://maehwachem.github.io/science-tools/kinetics/): 기체 발생, 질량 감소, 앙금 생성으로 반응 속도 비교
 - [화학 평형 가상 실험실](https://maehwachem.github.io/science-tools/equilibrium/): 평형 상수(흡광도), 온도·압력과 평형 이동
+- [AR 포토](https://maehwachem.github.io/science-tools/ar-photo/): 하트나 내 사진을 AR로 놓아 보고 같이 사진 찍기 (model-viewer 4.1.0 포함, Apache 2.0)
 - [대기 대순환](https://maehwachem.github.io/science-tools/earth/general-circulation.html): 에너지 불균형, 전향력, 세 순환, 바람과 기압대를 장면별로 살펴보는 인터랙티브 자료
 - [엘니뇨와 라니냐](https://maehwachem.github.io/science-tools/earth/el-nino.html): 적도 태평양 단면으로 보는 엘니뇨·라니냐와 남방 진동
 - [개인정보 처리방침](https://maehwachem.github.io/science-tools/battery/privacy.html) (배터리 도구)

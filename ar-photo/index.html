@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="하트나 내가 올린 사진을 AR로 현실 공간에 놓아 보고, 카메라 화면에 띄워 같이 사진을 찍는 도구">
+<meta name="theme-color" content="#fbf7f2">
+<title>AR 포토</title>
+<script type="module" src="vendor/model-viewer.min.js"></script>
+<style>
+:root{
+  --bg:#fbf7f2; --surface:#ffffff; --ink:#2a2220; --ink-2:#6b5f5a; --ink-3:#9a8d87; --line:#e9e0d7;
+  --accent:#d6265c; --accent-ink:#ffffff; --soft:#f6ece6;
+  --font:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#171312; --surface:#221c1b; --ink:#f3ebe7; --ink-2:#c3b5af; --ink-3:#8f817b; --line:#3a302d;
+  --accent:#ff5d8a; --accent-ink:#1a1010; --soft:#2c2321; } }
+:root[data-theme="dark"]{ --bg:#171312; --surface:#221c1b; --ink:#f3ebe7; --ink-2:#c3b5af; --ink-3:#8f817b; --line:#3a302d; --accent:#ff5d8a; --accent-ink:#1a1010; --soft:#2c2321; }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.55;word-break:keep-all;overflow-wrap:break-word}
+.app{max-width:980px;margin:0 auto;padding:max(12px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:6px 0 12px}
+h1{font-size:22px;margin:0;letter-spacing:-.02em}
+.sub{margin:0;color:var(--ink-2);font-size:13.5px}
+.layout{display:grid;gap:14px}
+@media (min-width:820px){.layout{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:start}}
+.stage{position:relative;background:var(--soft);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+#viewer{width:100%;height:min(58vh,520px);background:transparent;--poster-color:transparent}
+.stage-note{position:absolute;left:12px;bottom:10px;font-size:12px;color:var(--ink-3);pointer-events:none}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.lbl{font-size:12px;letter-spacing:.06em;color:var(--ink-3);font-weight:600;margin:0 0 6px}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{font:inherit;border:0;background:transparent;color:var(--ink-2);padding:10px;min-height:44px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);font-weight:600}
+.swatches{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:40px;height:40px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
+.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:11px 14px;min-height:46px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.seg button:focus-visible,.sw:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row .btn{flex:1 1 10em}
+.thumb{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-2)}
+.thumb img{width:52px;height:52px;object-fit:contain;border-radius:8px;background:repeating-conic-gradient(#ddd 0 25%,#fff 0 50%) 0 0/12px 12px;border:1px solid var(--line)}
+.range{display:flex;align-items:center;gap:10px}
+.range input{flex:1;accent-color:var(--accent)}
+.range output{min-width:4.5em;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.hint{margin:0;font-size:12.5px;color:var(--ink-3)}
+.msg{margin:0;font-size:13px;color:var(--ink-2);background:var(--soft);border-radius:10px;padding:8px 10px}
+footer{margin-top:18px;font-size:12px;color:var(--ink-3);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+footer a{color:inherit}
+
+/* 같이 찍기 화면 */
+.booth{position:fixed;inset:0;z-index:50;background:#000;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.booth video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.booth video.mirror{transform:scaleX(-1)}
+#boothMv{position:absolute;left:0;top:0;background:transparent;pointer-events:none;--poster-color:transparent;transform-origin:50% 50%}
+.gesture{position:absolute;inset:0}
+.bar{position:absolute;left:0;right:0;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;color:#fff}
+.bar.top{top:0;padding-top:max(12px,env(safe-area-inset-top));background:linear-gradient(rgba(0,0,0,.45),transparent)}
+.bar.bottom{bottom:0;padding-bottom:max(18px,env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(0,0,0,.5));flex-direction:column;gap:12px}
+.ghost{font:inherit;font-weight:600;color:#fff;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:9px 14px;min-height:42px;cursor:pointer}
+.shutter{width:74px;height:74px;border-radius:50%;border:5px solid #fff;background:rgba(255,255,255,.25);cursor:pointer;padding:0}
+.shutter:active{background:#fff}
+.btm-row{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:520px}
+.btm-row .side{width:110px;display:flex;justify-content:center}
+.turn{width:100%;max-width:520px;display:flex;align-items:center;gap:10px;font-size:13px}
+.turn input{flex:1;accent-color:#fff}
+.bhint{font-size:12.5px;opacity:.85;text-align:center}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .25s}
+.flash.on{opacity:.8;transition:none}
+.camerr{position:absolute;left:16px;right:16px;top:40%;color:#fff;text-align:center;font-size:14px;background:rgba(0,0,0,.6);border-radius:12px;padding:14px}
+
+dialog{border:0;border-radius:18px;padding:0;max-width:min(560px,calc(100vw - 32px));background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+.dlg{padding:14px;display:flex;flex-direction:column;gap:12px}
+.dlg img{width:100%;max-height:65vh;object-fit:contain;border-radius:12px;background:#000}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div><h1>AR 포토</h1><p class="sub">하트나 내 사진을 현실 공간에 놓아 보고, 같이 사진을 찍어요.</p></div>
+  </header>
+
+  <div class="layout">
+    <div class="stage">
+      <model-viewer id="viewer" src="models/heart.glb" camera-controls auto-rotate shadow-intensity="1" exposure="1.05"
+        ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor" interaction-prompt="none" alt="AR로 볼 3D 모델">
+        <button slot="ar-button" hidden></button>
+      </model-viewer>
+      <p class="stage-note">손가락으로 돌리고, 두 손가락으로 확대해요</p>
+    </div>
+
+    <div class="panel">
+      <div>
+        <p class="lbl">띄울 것</p>
+        <div class="seg" role="group" aria-label="띄울 것">
+          <button type="button" id="modeHeart" aria-pressed="true">하트</button>
+          <button type="button" id="modePhoto" aria-pressed="false">내 사진</button>
+        </div>
+      </div>
+
+      <div id="heartOpts">
+        <p class="lbl">색</p>
+        <div class="swatches" id="swatches"></div>
+      </div>
+
+      <div id="photoOpts" hidden>
+        <p class="lbl">사진</p>
+        <div class="row">
+          <label class="btn" for="photoInput">사진 고르기</label>
+          <input type="file" id="photoInput" accept="image/*" hidden>
+        </div>
+        <div class="thumb" id="thumb" hidden><img id="thumbImg" alt="고른 사진"><span id="thumbTx"></span></div>
+        <p class="lbl" style="margin-top:12px">모양</p>
+        <div class="seg" role="group" aria-label="사진 모양">
+          <button type="button" id="shapeFrame" aria-pressed="true">액자</button>
+          <button type="button" id="shapeCut" aria-pressed="false">오려 낸 사진</button>
+        </div>
+        <p class="hint" style="margin-top:6px">오려 낸 사진: 배경을 지운 투명 PNG를 고르면 사람이나 물건만 서 있는 것처럼 보여요.</p>
+      </div>
+
+      <div>
+        <p class="lbl" id="sizeLbl">크기 (높이)</p>
+        <div class="range"><input type="range" id="size" min="10" max="100" step="5" value="30" aria-labelledby="sizeLbl"><output id="sizeOut">30 cm</output></div>
+        <p class="hint">AR에서 실제로 보일 크기예요.</p>
+      </div>
+
+      <div class="row">
+        <button type="button" class="btn primary" id="arBtn">현실 공간에서 보기 (AR)</button>
+        <button type="button" class="btn" id="boothBtn">같이 사진 찍기</button>
+      </div>
+      <p class="msg" id="msg" hidden></p>
+      <p class="hint">AR에서 찍으려면 휴대폰 화면 캡처를 쓰고, 셔터로 바로 저장하려면 ‘같이 사진 찍기’를 쓰세요. 사진은 이 휴대폰 안에서만 쓰고 어디로도 보내지 않아요.</p>
+    </div>
+  </div>
+  <footer><span>KJE</span><a href="https://maehwachem.github.io/">maehwachem</a></footer>
+</div>
+
+<!-- 같이 사진 찍기 -->
+<div class="booth" id="booth" hidden>
+  <video id="cam" playsinline muted autoplay></video>
+  <model-viewer id="boothMv" src="models/heart.glb" camera-orbit="0deg 82deg auto" field-of-view="22deg" shadow-intensity="0" exposure="1.05" interaction-prompt="none" disable-zoom disable-pan alt="사진에 함께 찍힐 모델"></model-viewer>
+  <div class="gesture" id="gesture"></div>
+  <div class="flash" id="flash"></div>
+  <p class="camerr" id="camErr" hidden></p>
+  <div class="bar top">
+    <button type="button" class="ghost" id="boothClose">닫기</button>
+    <button type="button" class="ghost" id="camFlip">카메라 전환</button>
+  </div>
+  <div class="bar bottom">
+    <div class="bhint">한 손가락으로 옮기고, 두 손가락으로 크기와 기울기를 바꿔요</div>
+    <label class="turn">돌리기<input type="range" id="turn" min="-180" max="180" value="0" aria-label="좌우로 돌리기"></label>
+    <div class="btm-row">
+      <div class="side"></div>
+      <button type="button" class="shutter" id="shutter" aria-label="사진 찍기"></button>
+      <div class="side"></div>
+    </div>
+  </div>
+</div>
+
+<dialog id="shot">
+  <div class="dlg">
+    <img id="shotImg" alt="찍은 사진">
+    <div class="row">
+      <button type="button" class="btn primary" id="shotShare">저장·공유</button>
+      <button type="button" class="btn" id="shotAgain">다시 찍기</button>
+    </div>
+  </div>
+</dialog>
+
+<script type="module">
+const $=s=>document.querySelector(s);
+const viewer=$('#viewer'),boothMv=$('#boothMv');
+const COLORS=[['#e0245e','빨강'],['#ff8fb1','분홍'],['#8e44ad','보라'],['#e2b33c','금색'],['#3a7bd5','파랑']];
+const S={mode:'heart',color:COLORS[0][0],shape:'frame',photo:null,aspect:1,heartCm:30,photoCm:60};
+const msg=t=>{const m=$('#msg');m.hidden=!t;m.textContent=t||'';};
+
+/* ---------- 모델 상태를 model-viewer에 적용 ---------- */
+const hexRGB=h=>[1,3,5].map(i=>Math.pow(parseInt(h.substr(i,2),16)/255,2.2)).concat(1);
+const srcFor=()=>S.mode==='heart'?'models/heart.glb':S.shape==='cut'?'models/photo-cut.glb':'models/photo-frame.glb';
+function scaleFor(){
+  if(S.mode==='heart'){const k=S.heartCm/30;return `${k} ${k} ${k}`;}
+  const w=S.photoCm/100,h=w*S.aspect;return `${w} ${h} ${S.shape==='cut'?1:1}`;
+}
+const nextLoad=mv=>new Promise(r=>mv.addEventListener('load',()=>r(),{once:true}));
+async function apply(mv){
+  const src=srcFor();
+  if(!mv.src.endsWith(src)){const w=nextLoad(mv);mv.src=src;await w;}   // 새 모델이 다 불러와진 뒤에 색·사진을 입힌다
+  else if(!mv.loaded)await nextLoad(mv);
+  mv.scale=scaleFor();
+  const mats=mv.model?mv.model.materials:[];
+  if(S.mode==='heart'){const m=mats.find(x=>x.name==='heart');if(m)m.pbrMetallicRoughness.setBaseColorFactor(hexRGB(S.color));}
+  else{const m=mats.find(x=>x.name==='photo');
+    if(m){if(S.photo){const tex=await mv.createTexture(S.photo);m.pbrMetallicRoughness.baseColorTexture.setTexture(tex);}
+      else m.pbrMetallicRoughness.baseColorTexture.setTexture(null);}}
+  mv.updateFraming&&mv.updateFraming();
+}
+let busy=Promise.resolve();
+function refresh(){
+  viewer.arModes=S.mode==='heart'&&S.color===COLORS[0][0]?'webxr scene-viewer quick-look':'webxr quick-look';
+  viewer.arPlacement='floor';
+  busy=busy.then(()=>apply(viewer)).then(syncAR).catch(e=>{console.error(e);msg('모델을 불러오지 못했어요. 새로고침해 주세요.');});
+  return busy;
+}
+function syncAR(){
+  const can=viewer.canActivateAR,needPhoto=S.mode==='photo'&&!S.photo;
+  $('#arBtn').disabled=!can||needPhoto;
+  $('#boothBtn').disabled=needPhoto;
+  if(needPhoto)msg('먼저 사진을 고르세요.');
+  else if(!can)msg('이 기기나 브라우저에서는 AR을 쓸 수 없어요. 안드로이드는 크롬, 아이폰은 사파리로 열어 보세요. ‘같이 사진 찍기’는 쓸 수 있어요.');
+  else msg('');
+}
+
+/* ---------- 고르기 ---------- */
+COLORS.forEach(([c,n],i)=>{const b=document.createElement('button');b.type='button';b.className='sw';b.style.background=c;b.setAttribute('aria-label',n);b.setAttribute('aria-pressed',String(i===0));
+  b.onclick=()=>{S.color=c;[...$('#swatches').children].forEach(x=>x.setAttribute('aria-pressed',String(x===b)));refresh();};$('#swatches').append(b);});
+function setMode(m){S.mode=m;$('#modeHeart').setAttribute('aria-pressed',String(m==='heart'));$('#modePhoto').setAttribute('aria-pressed',String(m==='photo'));
+  $('#heartOpts').hidden=m!=='heart';$('#photoOpts').hidden=m!=='photo';syncSize();refresh();}
+$('#modeHeart').onclick=()=>setMode('heart');$('#modePhoto').onclick=()=>setMode('photo');
+function setShape(s){S.shape=s;$('#shapeFrame').setAttribute('aria-pressed',String(s==='frame'));$('#shapeCut').setAttribute('aria-pressed',String(s==='cut'));refresh();}
+$('#shapeFrame').onclick=()=>setShape('frame');$('#shapeCut').onclick=()=>setShape('cut');
+function syncSize(){const r=$('#size');
+  if(S.mode==='heart'){$('#sizeLbl').textContent='크기 (높이)';r.min=10;r.max=100;r.step=5;r.value=S.heartCm;}
+  else{$('#sizeLbl').textContent='크기 (가로)';r.min=20;r.max=200;r.step=10;r.value=S.photoCm;}
+  $('#sizeOut').textContent=r.value+' cm';}
+$('#size').oninput=e=>{const v=+e.target.value;if(S.mode==='heart')S.heartCm=v;else S.photoCm=v;$('#sizeOut').textContent=v+' cm';viewer.scale=scaleFor();};
+
+/* 사진: 긴 변 1024 px로 줄이고 투명도는 그대로 */
+$('#photoInput').onchange=async e=>{
+  const f=e.target.files&&e.target.files[0];if(!f)return;
+  try{
+    const bmp=await createImageBitmap(f,{imageOrientation:'from-image'});
+    const k=Math.min(1,1024/Math.max(bmp.width,bmp.height)),w=Math.round(bmp.width*k),h=Math.round(bmp.height*k);
+    const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(bmp,0,0,w,h);
+    const png=/png|webp|gif/.test(f.type);
+    S.photo=c.toDataURL(png?'image/png':'image/jpeg',0.9);S.aspect=h/w;
+    $('#thumbImg').src=S.photo;$('#thumbTx').textContent=`${f.name} · ${w}×${h}`;$('#thumb').hidden=false;
+    if(png&&S.shape==='frame'&&hasAlpha(c))setShape('cut');else refresh();
+  }catch(err){console.error(err);msg('이 사진을 열지 못했어요. JPG나 PNG 사진으로 다시 골라 주세요.');}
+  e.target.value='';
+};
+function hasAlpha(c){const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;for(let i=3;i<d.length;i+=16)if(d[i]<250)return true;return false;}
+
+/* ---------- AR ---------- */
+$('#arBtn').onclick=async()=>{await busy;try{await viewer.activateAR();}catch(e){msg('AR을 시작하지 못했어요. ‘같이 사진 찍기’를 써 보세요.');}};
+viewer.addEventListener('ar-status',e=>{if(e.detail.status==='failed')msg('AR을 시작하지 못했어요. 바닥이 잘 보이게 천천히 비춰 보거나 ‘같이 사진 찍기’를 써 보세요.');});
+
+/* ---------- 같이 사진 찍기 ---------- */
+const P={x:0,y:0,size:0,rot:0};let stream=null,facing='environment';
+function placeMv(){const s=P.size;boothMv.style.width=s+'px';boothMv.style.height=s+'px';
+  boothMv.style.transform=`translate(${P.x-s/2}px,${P.y-s/2}px) rotate(${P.rot}deg)`;}
+async function startCam(){
+  stopCam();$('#camErr').hidden=true;
+  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1920},height:{ideal:1080}},audio:false});
+    const v=$('#cam');v.srcObject=stream;v.classList.toggle('mirror',facing==='user');await v.play().catch(()=>{});}
+  catch(e){$('#camErr').hidden=false;$('#camErr').textContent=e&&e.name==='NotAllowedError'?'카메라 사용이 막혀 있어요. 주소창의 권한 설정에서 카메라를 허용한 뒤 다시 열어 주세요.':'카메라를 켜지 못했어요. 다른 앱이 카메라를 쓰고 있지 않은지 확인해 주세요.';}
+}
+function stopCam(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}}
+$('#boothBtn').onclick=async()=>{
+  $('#booth').hidden=false;document.body.style.overflow='hidden';
+  P.size=Math.min(innerWidth,innerHeight)*0.7;P.x=innerWidth/2;P.y=innerHeight*0.55;P.rot=0;$('#turn').value=0;boothMv.cameraOrbit='0deg 82deg auto';
+  placeMv();await apply(boothMv);await startCam();
+};
+$('#boothClose').onclick=()=>{stopCam();$('#booth').hidden=true;document.body.style.overflow='';};
+$('#camFlip').onclick=()=>{facing=facing==='user'?'environment':'user';startCam();};
+$('#turn').oninput=e=>{boothMv.cameraOrbit=`${e.target.value}deg 82deg auto`;};
+addEventListener('resize',()=>{if(!$('#booth').hidden){P.x=Math.min(P.x,innerWidth);P.y=Math.min(P.y,innerHeight);placeMv();}});
+
+/* 손가락: 하나는 옮기기, 둘은 크기·기울기 */
+const pts=new Map();let g0=null;
+const gest=$('#gesture');
+gest.addEventListener('pointerdown',e=>{gest.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});startG();});
+gest.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});moveG();});
+['pointerup','pointercancel'].forEach(t=>gest.addEventListener(t,e=>{pts.delete(e.pointerId);startG();}));
+gest.addEventListener('wheel',e=>{e.preventDefault();P.size=Math.max(80,Math.min(innerWidth*2.5,P.size*(e.deltaY<0?1.08:0.93)));placeMv();},{passive:false});
+function startG(){const a=[...pts.values()];
+  if(a.length===1)g0={n:1,x:a[0].x,y:a[0].y,px:P.x,py:P.y};
+  else if(a.length>=2){const [p,q]=a;g0={n:2,d:Math.hypot(q.x-p.x,q.y-p.y),ang:Math.atan2(q.y-p.y,q.x-p.x),mx:(p.x+q.x)/2,my:(p.y+q.y)/2,px:P.x,py:P.y,size:P.size,rot:P.rot};}
+  else g0=null;}
+function moveG(){if(!g0)return;const a=[...pts.values()];
+  if(g0.n===1&&a.length===1){P.x=g0.px+a[0].x-g0.x;P.y=g0.py+a[0].y-g0.y;}
+  else if(g0.n===2&&a.length>=2){const [p,q]=a,d=Math.hypot(q.x-p.x,q.y-p.y),ang=Math.atan2(q.y-p.y,q.x-p.x);
+    P.size=Math.max(80,Math.min(innerWidth*2.5,g0.size*d/g0.d));P.rot=g0.rot+(ang-g0.ang)*180/Math.PI;
+    P.x=g0.px+(p.x+q.x)/2-g0.mx;P.y=g0.py+(p.y+q.y)/2-g0.my;}
+  placeMv();}
+
+/* 찍기: 보이는 화면 그대로 합성 */
+let lastBlob=null;
+$('#shutter').onclick=async()=>{
+  const v=$('#cam'),dpr=Math.min(2,devicePixelRatio||1),W=Math.round(innerWidth*dpr),H=Math.round(innerHeight*dpr);
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  x.fillStyle='#000';x.fillRect(0,0,W,H);
+  if(v.videoWidth){const k=Math.max(W/v.videoWidth,H/v.videoHeight),dw=v.videoWidth*k,dh=v.videoHeight*k;
+    x.save();if(facing==='user'){x.translate(W,0);x.scale(-1,1);}x.drawImage(v,(W-dw)/2,(H-dh)/2,dw,dh);x.restore();}
+  try{const b=await boothMv.toBlob({mimeType:'image/png',idealAspect:false});const img=await createImageBitmap(b);
+    x.save();x.translate(P.x*dpr,P.y*dpr);x.rotate(P.rot*Math.PI/180);x.drawImage(img,-P.size*dpr/2,-P.size*dpr/2,P.size*dpr,P.size*dpr);x.restore();}
+  catch(e){console.error(e);}
+  const f=$('#flash');f.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>f.classList.remove('on')));
+  lastBlob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.92));
+  $('#shotImg').src=URL.createObjectURL(lastBlob);$('#shot').showModal();
+};
+$('#shotAgain').onclick=()=>$('#shot').close();
+$('#shotShare').onclick=async()=>{
+  if(!lastBlob)return;const name='ar-photo-'+new Date().toISOString().slice(0,19).replace(/[-:T]/g,'')+'.jpg';
+  const file=new File([lastBlob],name,{type:'image/jpeg'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});return;}catch(e){if(e.name==='AbortError')return;}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(lastBlob);a.download=name;document.body.append(a);a.click();a.remove();
+};
+
+customElements.whenDefined('model-viewer').then(()=>{syncSize();refresh();});
+</script>
+</body>
+</html>
