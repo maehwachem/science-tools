@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>새 마이크로비트 첫 연결 점검 안내</title>
+<meta name="description" content="새 마이크로비트를 체험 프로그램으로 한 번에 점검하는 방법과 체크리스트">
+<style>
+:root{--bg:#EEF1F2;--paper:#FBFCFC;--ink:#1A1F23;--ink2:#4A555D;--line:#D3D9DD;--accent:#A9531F;--tag:#F3E3D7;--head:#E6ECEE;color-scheme:light}
+@media (prefers-color-scheme: dark){:root{--bg:#14181B;--paper:#1C2227;--ink:#E5EAED;--ink2:#A3AFB7;--line:#2F383F;--accent:#E08A55;--tag:#3A2A20;--head:#252D33;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:16px;line-height:1.75;word-break:keep-all}
+.bar{max-width:860px;margin:0 auto;padding:18px 20px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px}
+.bar a{color:var(--ink2);text-underline-offset:3px}
+.bar button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer;min-height:40px}
+main{max-width:860px;margin:12px auto 48px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:36px clamp(18px,5vw,48px) 44px}
+h1{font-size:clamp(28px,5vw,36px);line-height:1.25;margin:0 0 6px}
+h2{font-size:22px;margin:38px 0 12px;padding-top:18px;border-top:1px solid var(--line)}
+h3{font-size:18px;margin:26px 0 8px}
+.meta{color:var(--ink2);font-size:14px;margin:0 0 22px}
+p{margin:10px 0}
+ul,ol{padding-left:1.4em} li{margin:4px 0}
+a{color:var(--accent);text-underline-offset:3px}
+.tbl{overflow-x:auto;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--head);font-weight:700;white-space:nowrap}
+td:empty::after{content:'\00a0'}
+pre{background:var(--head);border-radius:10px;padding:14px 16px;overflow-x:auto;font-size:15px;line-height:1.6}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.93em}
+.formula{background:var(--tag);border-radius:10px;padding:12px 16px;font-weight:700;text-align:center}
+.name-box{max-width:460px} .name-box td{height:40px}
+.answer-line{border-bottom:1px solid var(--ink2);padding-bottom:28px}
+.checklist{list-style:none;padding-left:0} .checklist input{width:18px;height:18px;margin-right:8px;vertical-align:-3px}
+@media (max-width:600px){table{font-size:14px} th{white-space:normal} th,td{padding:6px 7px} main{border-radius:0;border-left:0;border-right:0}}
+footer{max-width:860px;margin:0 auto 40px;padding:0 20px;color:var(--ink2);font-size:13px}
+@media print{
+  :root{--bg:#fff;--paper:#fff;--ink:#000;--ink2:#333;--line:#999;--head:#eee;--tag:#f2f2f2}
+  .bar,footer{display:none} main{border:0;margin:0;padding:0;max-width:none}
+  h2{break-after:avoid} table,pre,.formula{break-inside:avoid} a{color:#000;text-decoration:none}
+}
+</style>
+</head>
+<body>
+<nav class="bar"><a href="../">← 과학 수업 도구</a><button type="button" onclick="window.print()">인쇄하기</button></nav>
+<main>
+<h1>새 마이크로비트 첫 연결 점검 안내</h1>
+<p class="meta">2026. 10. 3. · KJE</p>
+
+<h2>1. 개요</h2>
+<p>새 마이크로비트에는 체험 프로그램 'meet the micro:bit'이 미리 들어 있어요. 전원을 넣고 화면 안내대로 따라 하면 LED, 버튼, 센서, 마이크, 스피커가 정상인지 한 번에 확인할 수 있어요.</p>
+<p>수업 전에 교사가 한 대씩 점검하거나, 첫 시간에 학생들이 직접 해 보는 활동으로 쓰기 좋아요. 컴퓨터나 코딩 없이 전원만 있으면 돼요.</p>
+<h2>2. 시작 전 확인</h2>
+<p>점검 순서는 기기 버전과 제조 시기에 따라 달라요. 먼저 내 마이크로비트가 어느 쪽인지 확인하세요.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>구분</th>
+<th>확인 방법</th>
+<th>점검할 때 차이</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V2</td>
+<td>아래쪽 금속 띠 가장자리가 울퉁불퉁해요. 뒷면에 스피커와 마이크가 있어요.</td>
+<td>소리와 마이크까지 점검해요.</td>
+</tr>
+<tr>
+<td>V1</td>
+<td>아래쪽 가장자리가 평평해요.</td>
+<td>스피커와 마이크가 없어서 소리가 안 나는 게 정상이에요.</td>
+</tr>
+<tr>
+<td>2023년 6월 이후 제조</td>
+<td>새 'meet the micro:bit' 프로그램이 들어 있어요.</td>
+<td>3장의 <strong>새 프로그램</strong> 표를 보세요.</td>
+</tr>
+<tr>
+<td>2023년 6월 이전 제조</td>
+<td>예전 체험 프로그램(Out of box experience)이 들어 있어요.</td>
+<td>3장의 <strong>예전 프로그램</strong> 표를 보세요.</td>
+</tr>
+</tbody>
+</table></div>
+<p>제조 시기를 모르면 일단 켜 보세요. 화면 안내가 3장의 어느 표와 맞는지 보면 알 수 있어요.</p>
+<p>준비물은 마이크로비트와 전원 하나면 돼요. USB 케이블로 컴퓨터에 연결하거나, AAA 건전지 2개를 넣은 배터리 팩을 꽂으면 자동으로 켜져요. 소리와 마이크를 확인하려면 조용한 곳에서 하세요.</p>
+<h2>3. 단계별 진행</h2>
+<p>전원을 넣으면 LED 화면이 켜지고 대부분 하트로 인사해요. 몇 초 뒤 A 버튼을 가리키는 화살표나 글자 A가 나오면 체험이 시작된 거예요.</p>
+<h3>새 프로그램(2023년 6월 이후 제조)</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>순서</th>
+<th>할 일</th>
+<th>정상이면</th>
+<th>확인되는 부품</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>전원을 넣고 기다려요.</td>
+<td>하트가 나오고 A 쪽 안내가 떠요.</td>
+<td>전원, LED 화면</td>
+</tr>
+<tr>
+<td>2</td>
+<td>A, B, A+B를 차례로 눌러요. 손으로 가리거나 어두운 곳에서도 눌러 봐요.</td>
+<td>누를 때마다 화면 표정이 바뀌어요.</td>
+<td>버튼 A·B, 빛 감지</td>
+</tr>
+<tr>
+<td>3</td>
+<td>마이크로비트를 흔들어요.</td>
+<td>흔들 때 화면이 반응해요.</td>
+<td>가속도 센서</td>
+</tr>
+<tr>
+<td>4</td>
+<td>로고를 누른 채 몇 마디 말하고 손을 떼요.</td>
+<td>말한 소리를 스피커로 다시 들려줘요.</td>
+<td>터치 로고, 마이크, 스피커</td>
+</tr>
+</tbody>
+</table></div>
+<h3>예전 프로그램(2023년 6월 이전 제조)</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>순서</th>
+<th>할 일</th>
+<th>정상이면</th>
+<th>확인되는 부품</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>전원을 넣고 기다려요.</td>
+<td>하트가 나오고 A 쪽 안내가 떠요.</td>
+<td>전원, LED 화면</td>
+</tr>
+<tr>
+<td>2</td>
+<td>A를 누른 다음 B를 눌러요.</td>
+<td>각 버튼에 화면이 반응해요.</td>
+<td>버튼 A·B</td>
+</tr>
+<tr>
+<td>3</td>
+<td>마이크로비트를 흔들어요.</td>
+<td>흔들 때 화면이 반응해요.</td>
+<td>가속도 센서</td>
+</tr>
+<tr>
+<td>4</td>
+<td>기울여서 화면의 두 점을 만나게 해요.</td>
+<td>기울이는 방향으로 점이 움직여요.</td>
+<td>가속도 센서(기울기)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>손뼉을 5번 쳐요(V2만).</td>
+<td>박수 횟수를 세요.</td>
+<td>마이크</td>
+</tr>
+<tr>
+<td>화면에 나오면</td>
+<td><strong>나침반 보정</strong>: TILT TO FILL SCREEN이 흐르면 천천히 사방으로 기울여 LED 25칸을 모두 채워요. 모서리 칸은 가장자리를 따라 크게 원을 그리듯 기울이고, 자석이나 철제 책상 근처는 피해요.</td>
+<td>25칸이 다 차면 보정이 끝나고 다음으로 넘어가요. 끝내기 전에는 버튼을 포함한 다른 동작이 전부 멈춰요.</td>
+<td>자기 센서(나침반)</td>
+</tr>
+</tbody>
+</table></div>
+<p>예전 프로그램에는 숨은 뱀 게임도 있어요. 하트 애니메이션이 나올 때 A와 B를 함께 누르면 시작돼요.</p>
+<p>점검이 끝나면 뒷면 리셋 버튼을 불이 꺼질 때까지 약 4초 눌러 전원을 끄세요. 배터리 팩을 쓸 때는 건전지 절약에도 도움이 돼요.</p>
+<h2>4. 점검 체크리스트</h2>
+<p>한 대를 점검할 때는 아래 항목을 차례로 표시하세요. 하나라도 안 되면 5장의 조치를 먼저 해 보세요.</p>
+<ul class="checklist">
+<li><label><input type="checkbox"> 전원을 넣으면 LED 화면이 켜지고 하트가 보여요</label></li>
+<li><label><input type="checkbox"> 화면에 깨지거나 계속 꺼져 있는 칸이 없어요</label></li>
+<li><label><input type="checkbox"> 버튼 A와 B가 각각 반응해요</label></li>
+<li><label><input type="checkbox"> 흔들거나 기울이면 반응해요</label></li>
+<li><label><input type="checkbox"> 효과음이나 녹음 재생 소리가 들려요(V2)</label></li>
+<li><label><input type="checkbox"> 말소리 녹음이나 박수 세기가 돼요(V2)</label></li>
+<li><label><input type="checkbox"> 로고를 만지면 반응해요(새 프로그램)</label></li>
+<li><label><input type="checkbox"> 컴퓨터에 연결하면 MICROBIT 드라이브가 보여요</label></li>
+<li><label><input type="checkbox"> 리셋 버튼을 약 4초 누르면 전원이 꺼져요</label></li>
+</ul>
+
+<p>여러 대를 한꺼번에 점검할 때는 아래 표에 기기 번호별로 기록하세요. 정상이면 ○, 이상이면 ×로 적고 행은 필요한 만큼 늘리면 돼요.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>기기 번호</th>
+<th>화면</th>
+<th>버튼</th>
+<th>흔들기·기울기</th>
+<th>로고</th>
+<th>소리</th>
+<th>마이크</th>
+<th>USB 인식</th>
+<th>비고</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<h2>5. 이상이 있을 때</h2>
+<p>대부분은 전원이나 이미 들어 있는 다른 프로그램 때문이에요. 아래 조치를 해도 같은 증상이면 고장 의심 기기로 따로 표시해 두세요.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>증상</th>
+<th>먼저 해 볼 것</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>전원을 넣어도 아무것도 안 켜져요</td>
+<td>리셋 버튼을 한 번 눌러 보세요. 전원이 꺼진 상태일 수 있어요. 그래도 안 되면 다른 케이블이나 새 건전지로 바꿔 보세요.</td>
+</tr>
+<tr>
+<td>하트 대신 다른 화면이 나와요</td>
+<td>누군가 다른 프로그램을 넣은 기기예요. 6장대로 체험 프로그램을 다시 넣고 처음부터 점검하세요.</td>
+</tr>
+<tr>
+<td>소리가 전혀 안 나요</td>
+<td>V1이면 정상이에요. V2라면 조용한 곳에서 다시 해 보고, 그래도 안 나면 스피커 이상을 의심하세요.</td>
+</tr>
+<tr>
+<td>버튼이나 흔들기에 반응이 없어요</td>
+<td>리셋 버튼을 눌러 처음부터 다시 해 보세요.</td>
+</tr>
+<tr>
+<td>LED 일부 칸만 계속 안 켜져요</td>
+<td>부품 이상일 가능성이 커요. 구입처에 문의하세요.</td>
+</tr>
+<tr>
+<td>컴퓨터에서 MICROBIT 드라이브가 안 보여요</td>
+<td>충전 전용 케이블일 수 있어요. 데이터용 케이블이나 다른 USB 포트로 바꿔 보세요.</td>
+</tr>
+</tbody>
+</table></div>
+<h2>6. 체험 프로그램 다시 넣기</h2>
+<p>한 번이라도 다른 코드를 넣으면 체험 프로그램은 지워져요. 새 학기나 학생에게 나눠 주기 전에 다시 넣으면 처음 상태로 점검할 수 있어요.</p>
+<ol>
+<li>공식 사이트의 <a href="https://microbit.org/get-started/user-guide/meet-the-microbit-program/" target="_blank" rel="noopener noreferrer">'meet the micro:bit' 안내 페이지</a>에서 .hex 파일을 내려받아요. 예전 버전 파일도 같은 페이지에 있어요.</li>
+<li>마이크로비트를 USB로 연결하고, 내려받은 파일을 MICROBIT 드라이브로 끌어다 놓아요.</li>
+<li>뒷면 LED가 깜빡이다 멈추면 체험 프로그램이 처음부터 실행돼요.</li>
+</ol>
+<p>새 버전 파일은 V1과 V2 모두에서 작동하지만, V1에서는 기능이 줄어들어요.</p>
+<h3>참고</h3>
+<ul>
+<li><a href="https://microbit.org/ko/get-started/getting-started/power-up-and-play/" target="_blank" rel="noopener noreferrer">Power up and play (한국어)</a>: 체험 프로그램 단계별 공식 안내</li>
+<li><a href="https://microbit.org/get-started/user-guide/meet-the-microbit-program/" target="_blank" rel="noopener noreferrer">'meet the micro:bit' program</a>: 제조 시기별 차이, V1·V2 구분, 파일 다운로드</li>
+<li><a href="https://support.microbit.org/support/solutions/articles/19000106820-reset-the-micro-bit" target="_blank" rel="noopener noreferrer">Reset the micro:bit</a>: 리셋, 전원 끄기, 공장 초기 상태 되돌리기</li>
+</ul>
+</main>
+<footer>KJE · 수업 자료</footer>
+</body>
+</html>

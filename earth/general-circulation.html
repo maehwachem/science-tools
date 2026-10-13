@@ -1,0 +1,1844 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>대기 대순환 인터랙티브 학습 자료</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e6ecf1; --ink:#0f2236; --muted:#566779; --line:#c8d3dc; --panel:#f5f8fa;
+  --warm:#d9412f; --cold:#2f7fc1; --ok:#1f8a5b; --hi:#f6c46a;
+  --sky1:#86c8ee; --sky2:#d6eefa; --skyInk:#0d2945; --halo:#eef7fc; --walk:#123f70;
+  --btn:#0f2236; --btnInk:#f2f6f9;
+  --cH:#d4502c; --cF:#2f8f5b; --cP:#2a6fb5;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#07121d; --ink:#e3ecf4; --muted:#8ea3b6; --line:#1d3349; --panel:#0d1c2c;
+    --warm:#ef5a44; --cold:#4d9be0; --ok:#3cc488;
+    --sky1:#0c2848; --sky2:#265687; --skyInk:#e8f2fb; --halo:#0b2440; --walk:#e8f2fb;
+    --btn:#e3ecf4; --btnInk:#07121d; color-scheme:dark;
+    --cH:#ff8a62; --cF:#5fd394; --cP:#6fb2f2;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#07121d; --ink:#e3ecf4; --muted:#8ea3b6; --line:#1d3349; --panel:#0d1c2c;
+  --warm:#ef5a44; --cold:#4d9be0; --ok:#3cc488;
+  --sky1:#0c2848; --sky2:#265687; --skyInk:#e8f2fb; --halo:#0b2440; --walk:#e8f2fb;
+  --btn:#e3ecf4; --btnInk:#07121d; color-scheme:dark;
+  --cH:#ff8a62; --cF:#5fd394; --cP:#6fb2f2;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:16px/1.65 "IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  overflow:hidden; -webkit-tap-highlight-color:transparent; word-break:keep-all;
+}
+button{font:inherit}
+:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+#app{
+  height:100%; max-width:1680px; margin:0 auto; display:flex; flex-direction:column;
+  padding:0 max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px));
+}
+header{flex:none;display:flex;align-items:center;gap:10px;min-height:54px}
+.brand{font-family:"Black Han Sans","IBM Plex Sans KR",sans-serif;font-size:23px;line-height:1;white-space:nowrap}
+.brand small{font-family:"IBM Plex Sans KR",sans-serif;font-weight:500;font-size:14px;color:var(--muted);margin-left:6px}
+#kicker{flex:1;min-width:0;color:var(--muted);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:1px solid var(--line);padding-left:14px}
+.ibtn{flex:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.ibtn svg{width:20px;height:20px}
+main{flex:1;min-height:0;display:flex;flex-direction:column;gap:14px}
+#stageWrap{flex:none;width:100%}
+#stage{
+  position:relative;width:100%;margin:0 auto;aspect-ratio:1000/560;
+  max-width:calc(52vh * 1.7857); max-width:calc(52dvh * 1.7857);
+  border-radius:18px;overflow:hidden;background:#0b2440;cursor:pointer;
+  touch-action:pan-y;user-select:none;-webkit-user-select:none;
+}
+#stage.inter{cursor:default}
+#scene{position:absolute;inset:0;width:100%;height:100%;display:block;font-family:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+#cap{flex:1;min-height:0;overflow:auto;padding:2px 4px 18px;cursor:pointer;touch-action:pan-y;overscroll-behavior:contain;display:flex;flex-direction:column}
+#cap.inter{cursor:auto}
+#cap>.inner{margin:0}
+nav{flex:none;display:flex;align-items:center;gap:14px;height:70px}
+.nbtn{flex:none;width:48px;height:48px;border-radius:50%;border:0;background:var(--btn);color:var(--btnInk);display:grid;place-items:center;cursor:pointer}
+.nbtn svg{width:22px;height:22px}
+.nbtn:disabled{opacity:.28;cursor:default}
+.prog{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--warm);transition:width .4s ease}
+.meta{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted)}
+#pips{display:flex;gap:6px}
+#pips i{width:8px;height:8px;border-radius:50%;background:var(--line);transition:background .3s}
+#pips i.on{background:var(--warm)}
+@media (min-aspect-ratio:5/4) and (min-width:640px){
+  main{flex-direction:row;align-items:center;gap:30px}
+  #stageWrap{flex:1.75 1 0;min-width:0}
+  #stage{max-width:calc((100vh - 140px) * 1.7857);max-width:calc((100dvh - 140px) * 1.7857)}
+  #cap{flex:1 1 0;min-width:320px;max-width:560px;max-height:100%;align-self:stretch}
+  #cap>.inner{margin:auto 0}
+}
+@media (max-height:560px){
+  header{min-height:44px}
+  nav{height:58px}
+  .nbtn{width:44px;height:44px}
+}
+/* stage overlays */
+#badge{position:absolute;right:12px;top:12px;padding:5px 14px;border-radius:999px;font-weight:700;font-size:clamp(12px,1.5vw,16px);color:#fff;opacity:0;transition:opacity .3s,background-color .5s;pointer-events:none}
+#badge.on{opacity:1}
+#badge.r0{background:#5b6470}#badge.r1{background:#1f6a96}
+#hint{display:flex;align-items:center;gap:7px;opacity:0;transition:opacity .3s;white-space:nowrap}
+#hint.on{opacity:1}
+#hint b{width:7px;height:7px;border-radius:50%;background:var(--warm);animation:tap 1.6s ease-in-out infinite}
+@keyframes tap{0%,100%{transform:scale(.7);opacity:.6}50%{transform:scale(1.25);opacity:1}}
+/* svg scenes */
+.scene{opacity:0;transition:opacity .45s ease;pointer-events:none}
+.scene.on{opacity:1}
+.lyr{opacity:0;transition:opacity .55s ease}
+.lyr.vis{opacity:1}
+.tw{fill:#fff;font-weight:600;paint-order:stroke;stroke:rgba(4,18,34,.8);stroke-width:5px;stroke-linejoin:round}
+.ts{fill:var(--skyInk);font-weight:700;paint-order:stroke;stroke:var(--halo);stroke-width:5px;stroke-linejoin:round}
+.tn{fill:#2a3526;font-weight:700;paint-order:stroke;stroke:#efe9d5;stroke-width:4px;stroke-linejoin:round}
+.tp{fill:#fff;font-weight:700}
+.tq{font-weight:600;paint-order:stroke;stroke:#fbfaf6;stroke-width:5px;stroke-linejoin:round}
+.rain line{stroke:#bfe2f7;stroke-width:2.2;stroke-linecap:round;stroke-dasharray:9 13;animation:rain .55s linear infinite}
+.rain2 line{stroke:#5f8fbd;stroke-width:2.2;stroke-linecap:round;stroke-dasharray:9 13;animation:rain .55s linear infinite;opacity:.8}
+@keyframes rain{to{stroke-dashoffset:-22}}
+.flow{stroke-dasharray:7 7;animation:flow 1s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-14}}
+.ray{stroke-dasharray:14 22;animation:ray 1.4s linear infinite}
+@keyframes ray{to{stroke-dashoffset:-36}}
+.ping{transform-box:fill-box;transform-origin:center;animation:ping 1.8s ease-out infinite}
+@keyframes ping{0%{transform:scale(.4);opacity:.95}100%{transform:scale(2.6);opacity:0}}
+/* caption */
+#cap h2{font-family:"Black Han Sans","IBM Plex Sans KR",sans-serif;font-weight:400;font-size:clamp(24px,2.3vw,34px);line-height:1.25;margin:0 0 12px}
+#cap p{margin:0 0 10px}
+.intro{font-size:clamp(16px,1.2vw,19px)}
+.st{display:none;padding:2px 0 2px 14px;border-left:3px solid transparent;color:var(--muted);font-size:clamp(16px,1.2vw,19px)}
+.st.on{display:block;animation:stIn .4s ease both}
+.st.now{color:var(--ink);border-left-color:var(--warm)}
+@keyframes stIn{from{opacity:0}to{opacity:1}}
+#cap b{font-weight:700}
+.cover h1{font-family:"Black Han Sans","IBM Plex Sans KR",sans-serif;font-weight:400;font-size:clamp(58px,7vw,104px);line-height:.95;margin:0}
+.cover .en{font-size:clamp(17px,1.5vw,22px);color:var(--muted);margin:10px 0 18px;letter-spacing:.02em}
+.cover .lead{font-size:clamp(18px,1.5vw,22px);font-weight:600;line-height:1.5;margin-bottom:14px}
+.cover .org{color:var(--muted)}
+.go{margin:8px 0 14px;padding:14px 28px;border-radius:999px;border:0;background:var(--warm);color:#fff;font-weight:700;font-size:17px;cursor:pointer;min-height:48px}
+.small{font-size:14px;color:var(--muted)}
+/* lab */
+.seg{display:flex;gap:8px;margin:14px 0 16px;flex-wrap:wrap}
+.seg button{flex:1 1 0;min-width:84px;min-height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font-weight:700;cursor:pointer}
+.seg button[data-r="0"].sel{border-color:#5b6470;background:#5b6470;color:#fff}
+.seg button[data-r="1"].sel{border-color:#1f6a96;background:#1f6a96;color:#fff}
+.kor{margin-top:8px;min-height:40px;padding:0 14px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font-weight:600;font-size:14px;cursor:pointer}
+.ro{display:grid;grid-template-columns:auto 1fr;gap:0;margin:16px 0 10px;font-size:15px;border-top:1px solid var(--line)}
+.ro span{padding:8px 0;border-bottom:1px solid var(--line)}
+.ro span:nth-child(odd){color:var(--muted);padding-right:16px;white-space:nowrap}
+.ro b{font-weight:700}
+.ro .lo{color:var(--warm)} .ro .hi{color:var(--cold)}
+.note{font-size:15px;padding:10px 12px;border-radius:12px;background:var(--panel);border-left:4px solid var(--hi);min-height:3.2em}
+.sl{display:block;font-weight:700;margin-bottom:2px}
+input[type=range]{width:100%;height:36px;accent-color:var(--warm);cursor:pointer}
+.scale{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:-4px}
+.scale4{position:relative;height:18px;font-size:13px;color:var(--muted);margin:-4px 9px 0}
+.scale4 span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap}
+.scale4 span:first-child{transform:none;margin-left:-9px}.scale4 span:last-child{transform:translateX(-100%);margin-left:9px}
+/* compare table */
+.cmp{width:100%;border-collapse:collapse;font-size:14px;line-height:1.45;margin-top:4px}
+.cmp th,.cmp td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.cmp thead th{font-size:15px;border-bottom:2px solid var(--ink)}
+.cmp tbody th{font-weight:600;color:var(--muted);width:30%}
+.cmp [data-c]{opacity:0;transition:opacity .45s}
+.cmp [data-c].on{opacity:1}
+.cmp .ch{color:var(--cH)} .cmp .cf{color:var(--cF)} .cmp .cp{color:var(--cP)}
+.cmp td.k{font-weight:600}
+/* quiz */
+.qh{font-size:14px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.q{font-size:clamp(16px,1.2vw,19px);font-weight:600}
+.bogi{border:1.5px solid var(--ink);border-radius:3px;padding:8px 14px 4px;margin:8px 0 12px;font-size:15px}
+.bogi .bt{text-align:center;font-weight:700;margin-bottom:4px}
+.bogi p{margin:0 0 6px!important}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.opts.row{flex-direction:row;flex-wrap:wrap}
+.opt{text-align:left;padding:11px 14px;min-height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.opts.row .opt{flex:1 1 92px;text-align:center;padding:10px 6px;white-space:nowrap}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--panel))}
+.opt.wrong{border-color:var(--warm);background:color-mix(in srgb,var(--warm) 12%,var(--panel))}
+.fb{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--panel);border-left:4px solid var(--ok)}
+.fb.x{border-left-color:var(--warm)}
+.qnav{display:flex;gap:8px;margin-top:14px}
+.qnav button,.btn2{flex:1;min-height:46px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font-weight:700;cursor:pointer;padding:0 12px}
+.qnav button.pri,.btn2.pri{background:var(--btn);color:var(--btnInk);border-color:var(--btn)}
+.qnav button:disabled{opacity:.35;cursor:default}
+.score{font-family:"Black Han Sans","IBM Plex Sans KR",sans-serif;font-size:clamp(40px,5vw,64px);line-height:1;margin:6px 0 14px}
+.rlist{list-style:none;padding:0;margin:0 0 14px}
+.rlist li{padding:6px 0;border-bottom:1px solid var(--line);display:flex;gap:10px}
+.rlist .mk{font-weight:700;width:1.4em}
+.rlist .o{color:var(--ok)} .rlist .x{color:var(--warm)}
+@media (prefers-reduced-motion:reduce){
+  .scene,.lyr{transition-duration:.2s}
+  .st.on{animation:none}
+  #hint b,.ping,.ray,.flow,.rain line,.rain2 line{animation:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">대기 대순환<small>General Circulation</small></div>
+    <div id="kicker" aria-live="polite"></div>
+    <button class="ibtn" id="snd" type="button" aria-label="소리 끄기" aria-pressed="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke-width="1.6"/><path class="w" d="M15.5 9a4.5 4.5 0 0 1 0 6M18.2 6.5a8 8 0 0 1 0 11"/><path class="x" d="M16 9.5l5 5M21 9.5l-5 5" style="display:none"/></svg>
+    </button>
+    <button class="ibtn" id="fs" type="button" aria-label="전체 화면">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+    </button>
+  </header>
+  <main>
+    <div id="stageWrap">
+      <div id="stage">
+        <svg id="scene" viewBox="0 0 1000 560" role="img" aria-label="대기 대순환 설명 그림"></svg>
+        <div id="badge"></div>
+      </div>
+    </div>
+    <section id="cap" aria-live="polite"><div class="inner"></div></section>
+  </main>
+  <nav>
+    <button class="nbtn" id="prev" type="button" aria-label="이전">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <div class="prog">
+      <div class="bar"><i id="barI"></i></div>
+      <div class="meta"><span id="cnt"></span><span id="hint"><b></b><span></span></span><span id="pips"></span></div>
+    </div>
+    <button class="nbtn" id="next" type="button" aria-label="다음">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </nav>
+</div>
+<script>
+'use strict';
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  if (attrs) for (const k in attrs) {
+    if (k === 'text') e.textContent = attrs[k]; else e.setAttribute(k, attrs[k]);
+  }
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function tx(parent, x, y, str, cls, size, anchor) {
+  return el('text', { x, y, class: cls || 'tw', 'font-size': size || 22, 'text-anchor': anchor || 'middle', text: str }, parent);
+}
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const mix = (a, b, t) => a + (b - a) * t;
+function l3(e, la, no, en) { return e < 0 ? mix(no, la, -e) : mix(no, en, e); }
+function hex(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function c3(e, la, no, en) {
+  const B = hex(no), X = hex(e < 0 ? la : en), t = Math.min(1, Math.abs(e));
+  const r = B.map((v, i) => Math.round(mix(v, X[i], t)));
+  return 'rgb(' + r.join(',') + ')';
+}
+const f1 = v => v.toFixed(1);
+function rrPath(pts, r) {
+  let d = ''; const n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n];
+    const v1 = [p0[0] - p1[0], p0[1] - p1[1]], v2 = [p2[0] - p1[0], p2[1] - p1[1]];
+    const l1 = Math.hypot(v1[0], v1[1]) || 1, l2 = Math.hypot(v2[0], v2[1]) || 1;
+    const rr = Math.min(r, l1 / 2, l2 / 2);
+    const a = [p1[0] + v1[0] / l1 * rr, p1[1] + v1[1] / l1 * rr];
+    const b = [p1[0] + v2[0] / l2 * rr, p1[1] + v2[1] / l2 * rr];
+    d += (i ? 'L' : 'M') + f1(a[0]) + ',' + f1(a[1]) + 'Q' + f1(p1[0]) + ',' + f1(p1[1]) + ' ' + f1(b[0]) + ',' + f1(b[1]);
+  }
+  return d + 'Z';
+}
+function loopInfo(pts) {
+  const seg = []; let L = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length];
+    const l = Math.hypot(b[0] - a[0], b[1] - a[1]); seg.push(l); L += l;
+  }
+  return { pts, seg, L };
+}
+function loopPt(info, u) {
+  let d = (((u % 1) + 1) % 1) * info.L;
+  const { pts, seg } = info;
+  for (let i = 0; i < pts.length; i++) {
+    if (d <= seg[i] || i === pts.length - 1) {
+      const a = pts[i], b = pts[(i + 1) % pts.length], t = seg[i] ? Math.min(1, d / seg[i]) : 0;
+      return { x: mix(a[0], b[0], t), y: mix(a[1], b[1], t), ang: Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI };
+    }
+    d -= seg[i];
+  }
+}
+function bez(p, t) {
+  const u = 1 - t;
+  const x = u * u * u * p[0][0] + 3 * u * u * t * p[1][0] + 3 * u * t * t * p[2][0] + t * t * t * p[3][0];
+  const y = u * u * u * p[0][1] + 3 * u * u * t * p[1][1] + 3 * u * t * t * p[2][1] + t * t * t * p[3][1];
+  const dx = 3 * u * u * (p[1][0] - p[0][0]) + 6 * u * t * (p[2][0] - p[1][0]) + 3 * t * t * (p[3][0] - p[2][0]);
+  const dy = 3 * u * u * (p[1][1] - p[0][1]) + 6 * u * t * (p[2][1] - p[1][1]) + 3 * t * t * (p[3][1] - p[2][1]);
+  return { x, y, ang: Math.atan2(dy, dx) * 180 / Math.PI };
+}
+function lyr(name, parent) { return el('g', { class: 'lyr', 'data-ly': name }, parent); }
+function pill(parent, label, fill, w, h, size) {
+  const g = el('g', null, parent);
+  w = w || 78; h = h || 32;
+  el('rect', { x: -w / 2, y: -h / 2, width: w, height: h, rx: h / 2, fill }, g);
+  const t = el('text', { x: 0, y: (size || 19) * 0.36, 'text-anchor': 'middle', class: 'tp', 'font-size': size || 19, text: label }, g);
+  g.t = t;
+  return g;
+}
+
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MOT = RM ? 0.35 : 1;
+const svg = $('#scene');
+const defs = el('defs', null, svg);
+function lin(id, x1, y1, x2, y2, stops, user) {
+  const g = el('linearGradient', { id, x1, y1, x2, y2 }, defs);
+  if (user) g.setAttribute('gradientUnits', 'userSpaceOnUse');
+  return stops.map(s => el('stop', { offset: s[0], style: 'stop-color:' + s[1] + ';stop-opacity:' + (s[2] == null ? 1 : s[2]) }, g));
+}
+function rad(id, stops, cx, cy, r, user) {
+  const g = el('radialGradient', { id, cx: cx == null ? .5 : cx, cy: cy == null ? .5 : cy, r: r == null ? .5 : r }, defs);
+  if (user) g.setAttribute('gradientUnits', 'userSpaceOnUse');
+  return stops.map(s => el('stop', { offset: s[0], style: 'stop-color:' + s[1] + ';stop-opacity:' + (s[2] == null ? 1 : s[2]) }, g));
+}
+const mkAh = (id, fill) => {
+  const mk = el('marker', { id, viewBox: '0 0 10 10', refX: 6, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' }, defs);
+  el('path', { d: 'M0,0L10,5L0,10Z', fill }, mk);
+};
+mkAh('ahY', '#ffd166'); mkAh('ahW', '#ffffff'); mkAh('ahK', '#111111'); mkAh('ahG', '#7fe0a8');
+
+const gGlobe = el('g', { id: 'globe', class: 'scene' }, svg);
+const gDisk = el('g', { id: 'disk', class: 'scene' }, svg);
+const gSec = el('g', { id: 'sec', class: 'scene' }, svg);
+const gGraph = el('g', { id: 'graph', class: 'scene' }, svg);
+const gMini = el('g', { id: 'mini', class: 'scene' }, svg);
+const SCN = { globe: gGlobe, disk: gDisk, sec: gSec, graph: gGraph, mini: gMini };
+let T = 0;
+const SC = { r: { cur: 1, tgt: 1 }, foc: null, lon0: 18 };
+const ARROW = 'M19,0L6,-10L6,-4.5L-19,-4.5L-19,4.5L6,4.5L6,10Z';
+const TRI = 'M7,0L-5,-6L-5,6Z';
+
+/* ================= globe scene ================= */
+const GCX = 500, GCY = 280, GR = 200;
+const D2R = Math.PI / 180;
+const LANDS = [
+  // North America
+  [[-168,66],[-162,70],[-156,71.3],[-145,70],[-135,69.5],[-128,70.2],[-120,69],[-110,68],[-100,68],[-95,71],[-90,69],[-85,66],[-82,64],[-87,64],[-93,61],[-94,58.7],[-90,57],[-85,55.2],[-82,52.5],[-79,51.5],[-78,55],[-77,60],[-78,62.4],[-73,62],[-70,61],[-65,60],[-61.5,56],[-58,54],[-56,51.5],[-60,50],[-65,49],[-64,48],[-66,45],[-70,43.5],[-70,41.7],[-74,40.5],[-76,38],[-76,35],[-78,34],[-81,31.5],[-80.5,28],[-80,25.5],[-81,25.2],[-82.7,27.5],[-83,29.5],[-85,30],[-88,30.3],[-90,29],[-94,29.6],[-97,27.8],[-97.5,25],[-97.7,22],[-96,19],[-94,18.2],[-91,18.7],[-90.5,21],[-87,21.5],[-87.5,18],[-88.5,16],[-84,15.8],[-83.3,12],[-83.8,11],[-82,9],[-79.5,9.5],[-77.5,8.5],[-78,7.2],[-80,7.4],[-81.5,8],[-85.5,10],[-86,11.5],[-88,13.2],[-91.5,14],[-94.5,16],[-97,15.8],[-100,17],[-103,18.5],[-105.5,20],[-105.5,23],[-109,26],[-112.5,29.5],[-114.5,31.5],[-114,30],[-112,28],[-110,24],[-109.5,23],[-112,25],[-114.5,28],[-115.5,30],[-117,32.5],[-118.5,34],[-120.6,34.6],[-122.5,37.5],[-124,40.5],[-124.3,43],[-124,46.5],[-124.7,48.4],[-123,49],[-127,50.5],[-130,54],[-133,57.5],[-137,59],[-141,60],[-146,61],[-150,59.5],[-152,58.5],[-156,57],[-162,55],[-158,57.5],[-157.5,59],[-162,60],[-165,62.5],[-164.5,63.5],[-161,64.5],[-165,64.5]],
+  // South America
+  [[-77,8.6],[-76,9.3],[-75,10.8],[-72,11.8],[-71.5,10.5],[-68,10.6],[-64,10.6],[-62,10.2],[-60,8.5],[-57,6],[-54,5.8],[-51.5,4.2],[-50,1.8],[-50,0],[-48,-1],[-44.5,-2.5],[-40,-2.8],[-37.5,-4.5],[-35.2,-5.5],[-35,-8],[-37,-11],[-39,-13.5],[-39,-17.5],[-40,-20],[-41,-22],[-44,-23],[-47,-24.5],[-48.5,-26],[-48.7,-28.5],[-50.5,-31],[-52.5,-33],[-54,-34.8],[-57,-35],[-57.5,-38],[-62,-38.8],[-62.3,-40.8],[-65,-41],[-64,-42.5],[-65.5,-45],[-67.5,-46.5],[-66,-48],[-68.5,-50.5],[-69,-52],[-68.5,-53],[-67,-54.8],[-70,-55],[-73,-53.5],[-75,-51],[-75.5,-47],[-74,-44],[-73.5,-41],[-73.5,-38],[-72.8,-35],[-71.5,-31],[-71.4,-27],[-70.5,-23],[-70.2,-18.5],[-72,-17],[-75,-15.5],[-77,-12],[-79,-8],[-81.2,-6],[-81,-4.3],[-80,-3],[-80.5,-1],[-80,0.8],[-79,1.5],[-78.5,2.6],[-77.4,4],[-77.4,6.5],[-77.5,7.5]],
+  // Greenland
+  [[-73,78],[-66,80.5],[-55,82.5],[-35,83.5],[-20,82],[-18,78],[-20,75],[-22,71],[-25,69],[-32,68],[-38,65.5],[-42,61],[-44,60],[-48,61],[-50,64],[-52,67],[-54,70],[-56,73],[-62,76],[-70,77]],
+  // Baffin
+  [[-80,73.5],[-72,71],[-68,70],[-62,66.5],[-64,63],[-68,62.5],[-72,64],[-78,64.5],[-75,67],[-81,69.5],[-88,70.5]],
+  // Iceland, Cuba, Hispaniola
+  [[-24,65.5],[-22,66.4],[-16,66.5],[-13.6,65.2],[-15,64.3],[-18.5,63.4],[-22.5,63.8]],
+  [[-85,21.9],[-82,23.2],[-79,22.6],[-75.5,21],[-74.2,20.2],[-77.5,19.9],[-80.5,21.7],[-83,22]],
+  [[-74.5,18.4],[-72,19.9],[-69,19.6],[-68.4,18.6],[-71,18]],
+  // Africa
+  [[-17,21],[-16,24],[-15,26],[-13.2,27.6],[-10,29.8],[-9.6,31.5],[-8.5,33.3],[-6.5,34.2],[-5.9,35.8],[-2,35.1],[1,36.5],[3,36.8],[8.5,36.9],[10.3,37.2],[11,35.5],[10.2,34],[11.5,33],[15,32.3],[19,30.3],[20,32],[22.5,32.8],[25,31.7],[29,30.9],[32.3,31.3],[32.6,29.9],[33.5,27],[35.5,23.9],[37.2,21],[38.5,18],[39.7,15.5],[41.5,13.6],[43.3,11.5],[45,10.5],[48,11.2],[51.2,11.8],[51,10.4],[50,7.5],[48.5,5],[46,2],[43,-0.5],[41.5,-1.8],[40,-3.3],[39.2,-5.5],[39.4,-8],[40.5,-10.5],[40.6,-15],[37,-17.5],[35,-19.8],[35.5,-22],[35.5,-24],[33,-25.8],[32.8,-27.5],[31,-29.8],[29,-32],[27,-33.6],[25,-34],[22.5,-34],[20,-34.8],[18.5,-34.2],[18.3,-32.5],[17.3,-30],[16.5,-28.6],[15.2,-27],[14.5,-23],[13.2,-20.5],[11.8,-17.5],[12.2,-14],[13.6,-12],[13.2,-9],[12.2,-6],[11.8,-4.5],[9.6,-2],[9.3,0.5],[9.6,3],[8.5,4.5],[6,4.3],[4.5,6.3],[2,6.3],[-1,5.2],[-3.5,5.1],[-7.5,4.4],[-9,5],[-11.5,6.9],[-13.2,8.5],[-15,10.9],[-16.7,12.5],[-17.4,14.7],[-16.5,16.5],[-16.2,19]],
+  // Madagascar
+  [[49.3,-12],[50.5,-15.5],[49.6,-17.2],[48.7,-20.5],[47.1,-24.9],[45.2,-25.5],[43.6,-23.6],[43.3,-21.5],[44.4,-19],[44,-17],[46.3,-15.8],[47.8,-14.2]],
+  // Eurasia (west part)
+  [[-5.6,36],[-4.5,36.7],[-2,36.7],[-0.5,37.6],[0.2,38.8],[-0.3,39.5],[0.9,41],[3.2,41.9],[3.1,43.1],[4.5,43.4],[6.5,43.1],[7.6,43.8],[8.8,44.4],[10.2,43.9],[10.5,42.9],[12,42],[13.7,41.2],[15.6,40],[15.7,38.2],[16.5,38.4],[17.1,39.4],[17.2,40.4],[18.5,40.2],[18,40.6],[16.9,41.1],[16,41.9],[14.1,42.6],[13.6,43.5],[12.4,44.5],[12.3,45.4],[13.7,45.6],[14.5,45.2],[15.5,44],[17.5,43],[19.4,41.9],[19.4,40.4],[20.2,39.5],[21.1,37.9],[21.7,36.8],[22.5,36.4],[23,36.4],[23.2,38],[24,38.2],[22.9,40.5],[24,40.8],[26,40.8],[26.6,40.4],[26.2,39.5],[26.9,38.4],[27.3,37],[28.3,36.7],[30.6,36.6],[32.5,36.1],[34.6,36.8],[36.2,36.6],[35.9,35.4],[35,32.8],[34.3,31.3],[32.6,31.2],[32.6,29.9],[34.3,27.8],[35,29.5],[35.2,28.1],[37.2,25.1],[38.5,23.6],[39.1,21.7],[40.8,19.8],[42.6,16.7],[42.7,15],[43.5,12.7],[45,12.8],[49,14.4],[52.2,16],[55.5,17.5],[57.7,19],[58.5,20.4],[59.6,22.6],[57.5,23.7],[56.4,24.8],[56,26.1],[54,24.2],[51.6,24.2],[51.5,25.5],[50.1,26],[48.6,29.9],[50.2,29.6],[51.5,27.9],[54.5,26.7],[56.4,27.1],[57.3,25.8],[61.6,25.2],[64.5,25.2],[66.6,25.4],[68.2,23.6],[69,22.5],[70.5,20.8],[72.6,21.3],[72.8,18.9],[73.5,15.8],[74.6,14],[75.5,11.8],[76.4,9.6],[77.5,8.1],[78.2,8.9],[79.8,10.3],[80,13],[80.3,15.8],[82.3,16.6],[85,19.3],[86.9,20.7],[88.5,21.7],[90.6,22.6],[91.8,22.3],[92.4,20.6],[94.2,19],[94.5,16],[97.5,17],[101,17],[101,40],[101,60],[101,76.5],[95,76],[86,74],[83,70.5],[80,72.5],[75,72.5],[73,72],[69,73],[66,69.5],[60.5,69.8],[58,68.8],[53.5,68.5],[46,68],[44,68.5],[40.5,66.8],[36,69],[33,69.4],[31,70],[29,70.8],[26,71.1],[23,70.8],[19,70],[16,68.8],[14,67.5],[12.5,66],[10.5,64.5],[8.5,63.5],[5.5,62.5],[5,61],[5.5,59],[7,58],[9,58.8],[10.5,59.8],[11,58.8],[12,56.5],[12.8,55.6],[14.2,55.5],[16,56.2],[16.5,57],[19,59.5],[17.5,60.6],[17.5,62],[19,63.5],[21.5,65],[24,65.8],[25.3,65],[21.5,63.5],[21.5,61],[23,60],[28.5,59.8],[24.5,59.3],[24,57.5],[21.5,57.3],[21,55.2],[18.5,54.8],[14.5,53.9],[12.5,54.4],[10.8,54.3],[10.5,56],[10.5,57.7],[8.2,57],[8.5,55.5],[7,53.6],[4.8,53],[3.5,51.4],[1.5,50.2],[-1.5,48.7],[-4.5,48.5],[-2.5,47.3],[-1.5,46],[-2,43.4],[-7.5,43.7],[-9.3,43],[-8.8,40],[-9,37]],
+  // Eurasia (east part)
+  [[99,17],[98.5,13],[98.5,10.5],[98.5,8],[100.3,5],[101.3,2.8],[103.5,1.3],[104.2,1.4],[103.5,4.5],[102.1,6.2],[100.5,7],[100,9.5],[99.8,13.2],[101,12.7],[103,10.5],[104.8,10.3],[105,8.7],[107,10.4],[109,11.4],[109.3,13],[108.5,15.4],[106.6,17.4],[105.7,19],[106.5,20.2],[108,21.6],[109.7,21.5],[110.3,20.3],[111,21.4],[114.2,22.3],[117.5,23.6],[119.5,25.5],[121,28],[122,29.8],[121.9,31],[120.8,32.5],[119.2,34.9],[120.3,36],[122.5,37.2],[121,37.8],[118.8,37.4],[117.7,38.4],[118,39],[119.5,39.8],[121.8,40.9],[121.2,39],[122.5,39.6],[124.3,39.9],[125.3,39.5],[125,38.5],[125.5,37.8],[126.5,37.6],[126.6,36.8],[126.3,35.5],[126.5,34.3],[128.5,34.9],[129.4,35.3],[129.4,36.5],[128.5,38],[127.4,39.1],[128,39.9],[129.8,41.8],[130.7,42.3],[132,43],[135,43.5],[138,46],[140.5,48.5],[141.4,52],[140.5,53.5],[137,54],[140.5,58],[143,59.3],[150,59.6],[155,59.3],[156,57.7],[156.7,51],[158.5,52.8],[160,54.5],[162,56.2],[163,58],[164,59.8],[170,60],[174,61.7],[179,62.3],[182,65],[186,64.5],[190,66],[180,68.8],[170,70],[160,69.5],[150,71.5],[140,72.5],[131,71],[127,73.5],[120,73],[113,73.8],[113,76.3],[105,77.8],[100,77],[99,76],[99,50],[99,30]],
+  // GB, Ireland
+  [[-5.7,50],[-3,50.6],[1.4,51.2],[1.7,52.7],[0.2,53.5],[-1.5,55],[-2,56],[-3,58.6],[-5,58.6],[-6.2,57],[-5.5,55.5],[-4.8,54.8],[-3,54],[-3,53.4],[-4.6,53.2],[-4.2,52.3],[-5.2,51.7],[-3.3,51.4]],
+  [[-6,52],[-6.2,53.9],[-5.7,54.6],[-7.2,55.3],[-8.5,54.7],[-10,54],[-9.8,52],[-8,51.5]],
+  // Japan, Hokkaido, Taiwan, Hainan, Sri Lanka, Sakhalin
+  [[130.9,34],[132.5,35.4],[135.5,35.6],[136.7,37.3],[138.5,37.8],[140,39.5],[140,41.3],[141.5,41.3],[142,39.5],[141,38.2],[140.8,36.5],[140,35],[138.8,34.6],[137,34.6],[135.5,33.5],[134,33.3],[132,33],[131.5,31.4],[130.2,31.2],[129.7,33.2]],
+  [[139.8,42.3],[141.2,41.8],[143.3,42],[145.6,43.3],[144.3,44.1],[141.7,45.4],[141.4,43.4]],
+  [[120.1,23],[121,25.3],[122,25],[121.5,22.6],[120.7,22]],
+  [[108.6,19.2],[110.5,20.1],[111,19.6],[110,18.2]],
+  [[79.8,8],[80.2,9.8],[81.9,7.4],[81.2,6.2],[80,6.1]],
+  [[142,46],[143.5,46.5],[143,49],[144.5,49],[143,54.3],[142.3,54],[141.8,50.5]],
+  // SE Asia islands
+  [[95.3,5.6],[97.5,5.2],[100.3,2.5],[103.8,-1],[106,-3.2],[105.8,-5.8],[104.5,-5.9],[102.3,-4],[100.4,-1],[98.6,1.7]],
+  [[105.2,-6.8],[106.5,-6],[108.6,-6.7],[110.5,-6.9],[112.6,-6.9],[114.6,-7.7],[114.5,-8.7],[111,-8.3],[108,-7.8]],
+  [[109,1.5],[109.6,-1],[110.2,-3],[114.5,-4],[116.5,-3],[117.5,0],[118.5,0.8],[119,5],[117,7],[116,6.5],[114,4.5],[111,2]],
+  [[119.5,-5.5],[120.5,-1.5],[120,0.7],[124.8,1.5],[123.2,0.4],[121.5,-0.9],[123.4,-4.7],[121.5,-4.6],[120.4,-2.8],[120.5,-5.5]],
+  [[131,-1],[134,-0.9],[135.5,-3.3],[138,-1.6],[141,-2.6],[144.5,-3.8],[146,-5.5],[147.5,-6],[147.2,-7.5],[150.5,-10.6],[148,-10],[146,-8.1],[144,-7.8],[142.5,-9.3],[141,-9],[138.5,-8.3],[137.8,-5.3],[135.5,-4.5],[132.5,-4],[133.5,-2.5]],
+  [[120,18.4],[122.3,18.4],[121.9,15.9],[124,13],[121.8,13.8],[120.6,14.3],[120,16.3]],
+  [[122,7],[125.4,9.7],[126.6,7.2],[125.5,5.6],[124,6.6]],
+  // Australia, Tasmania, New Zealand
+  [[113.5,-22],[114,-26],[115,-30],[115.6,-33.5],[117.9,-35.1],[121,-33.8],[124,-33],[126,-32.3],[129,-31.6],[131,-31.5],[134,-32.8],[135.6,-34.8],[137.8,-32.8],[138,-35.6],[139.7,-37.2],[140.6,-38],[143.5,-38.8],[145,-38.4],[146.4,-39.1],[148,-37.8],[150,-37.3],[150.5,-35.6],[151.3,-33.8],[152.9,-31.4],[153.6,-28.2],[153.1,-25.5],[150.8,-22.6],[149.4,-21.6],[146.3,-19],[145.4,-16],[145.3,-15],[143.8,-14],[143.5,-12.5],[142.5,-10.7],[141.5,-13],[141.6,-15.5],[140.5,-17.5],[139.3,-17.3],[137.4,-15.8],[135.6,-14.8],[136.8,-12.2],[136,-12],[133,-11.4],[132,-11.6],[130.2,-12.5],[129.6,-14.9],[128,-15],[126.6,-14.2],[125,-15.6],[123.6,-16.8],[122.2,-18.2],[121.3,-19.6],[119,-20],[116.8,-20.6],[114.5,-21.8]],
+  [[144.7,-40.7],[148.3,-40.9],[148,-43.2],[146.5,-43.6],[145.2,-42.2]],
+  [[172.7,-34.4],[174.7,-37],[176,-37.6],[178.5,-37.7],[177,-39.3],[176.8,-40.2],[175.2,-41.6],[174.6,-41.3],[175,-39.8],[173.8,-39.2],[174.6,-38],[173,-35]],
+  [[172.7,-40.5],[174.3,-41.8],[173,-43.8],[171.2,-44.4],[170.6,-45.9],[169,-46.6],[166.5,-46],[168,-44],[170.5,-43],[172,-41.8]]
+];
+const SEAS = [
+  [[27.6,42],[28.6,44],[30.6,46.5],[33.5,46],[35,45],[37.5,45.3],[38.5,44.3],[41.5,42],[39,41],[35,42],[31,41.2],[29,41.1]],
+  [[47,45],[49,46.5],[52,46.8],[53,45],[51,44.2],[51.5,42],[53,41],[53,38],[54,37],[51,36.8],[49,38],[49.5,40.5],[47.8,42.5]]
+];
+const DESERTS = [
+  { n: '사하라 사막', c: [4, 24], p: [[-15,20],[-12.5,26],[-8,29],[-2,30.5],[5,30.5],[10,30],[16,29.5],[22,29.5],[29,29.5],[32,27],[33.5,22],[35,18.5],[33,16],[26,15.5],[16,15],[6,16],[-4,16.5],[-11,17]] },
+  { n: '아라비아 사막', c: [50, 19], p: [[37,28],[39,24],[42,19],[45,16],[50,17],[55,18.5],[57,21],[55.5,23.5],[51.5,24],[49,26.5],[47,29.5],[43,31],[38,30.5]] },
+  { n: '', c: [72, 27], p: [[69.5,24.5],[70,28.5],[73,30],[75,28],[73,25.5],[71,24]] },
+  { n: '칼라하리 사막', c: [24, -20.5], p: [[13,-17.5],[17,-17.5],[22,-19],[26,-22],[25,-27],[21,-29],[17.5,-29],[15.5,-26],[15,-22]] },
+  { n: '오스트레일리아 사막', c: [128, -25], p: [[116,-21.5],[121,-20.5],[128,-19],[135,-20],[139,-23],[140,-28],[136,-30.5],[130,-29.5],[123,-30],[118,-28.5],[116,-25]] },
+  { n: '아타카마 사막', c: [-69.5, -23], p: [[-70,-18.5],[-68.8,-18.5],[-68.6,-24],[-69.5,-28],[-70.6,-27.5],[-70.2,-23]] },
+  { n: '소노라 사막', c: [-110, 31], p: [[-117,34.2],[-113,35.5],[-108.5,33],[-104,31.5],[-102.5,28.5],[-105,27],[-109,28],[-112,30],[-114.5,32]] }
+];
+const RAINF = [
+  { n: '아마존', c: [-63, -4], p: [[-77,0],[-74,3],[-67,3],[-60,2.5],[-55,2],[-51,0],[-49,-2.5],[-47,-4],[-50,-7],[-56,-9],[-62,-11],[-68,-11],[-73,-9],[-75.5,-5],[-77,-2]] },
+  { n: '콩고', c: [20, -1], p: [[10,3.5],[14,4.5],[20,4.5],[26,4],[29.5,1.5],[29,-3],[25,-5],[20,-6],[15,-4.5],[11.5,-2.5],[10,0.5]] },
+  { n: '동남아시아', c: [113, 1], p: LANDS[21] },
+  { n: '', c: [101, 0], p: LANDS[19] },
+  { n: '', c: [141, -5], p: LANDS[23] }
+];
+const GYRES = [
+  { p: [[-78,25],[-74,34],[-62,40],[-45,44],[-25,44],[-15,38],[-18,28],[-25,18],[-45,15],[-62,16],[-72,20]] },
+  { p: [[125,22],[135,32],[150,38],[175,42],[205,43],[225,38],[235,30],[225,20],[200,14],[170,13],[145,14],[128,16]],
+    lb: [['쿠로시오 해류', 134, 27, 'end'], ['북태평양 해류', 190, 47.5, 'middle'], ['캘리포니아 해류', 230, 22, 'start'], ['북적도 해류', 178, 8.5, 'middle']] },
+  { p: [[-35,-10],[-42,-25],[-50,-38],[-30,-42],[0,-40],[12,-32],[12,-20],[0,-12],[-20,-8]] },
+  { p: [[155,-15],[155,-28],[170,-40],[200,-44],[250,-42],[282,-35],[280,-20],[265,-10],[230,-8],[190,-10],[165,-11]] },
+  { p: [[42,-15],[35,-30],[40,-38],[70,-40],[100,-38],[113,-30],[110,-20],[90,-13],[65,-12]] }
+];
+function dens(pts, step) {
+  const lo = [], la = [], n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const a = pts[i], b = pts[(i + 1) % n];
+    const k = Math.max(1, Math.ceil(Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])) / step));
+    for (let j = 0; j < k; j++) { lo.push(mix(a[0], b[0], j / k)); la.push(mix(a[1], b[1], j / k)); }
+  }
+  const N = lo.length;
+  const P = { n: N, lo: new Float64Array(N), cl: new Float64Array(N), y: new Float64Array(N), x: new Float64Array(N), z: new Float64Array(N), s: new Float64Array(N) };
+  for (let i = 0; i < N; i++) { P.lo[i] = lo[i] * D2R; P.cl[i] = Math.cos(la[i] * D2R); P.y[i] = GCY - GR * Math.sin(la[i] * D2R); }
+  return P;
+}
+function projPoly(P) {
+  const n = P.n, l0 = SC.lon0 * D2R;
+  let st = -1;
+  for (let i = 0; i < n; i++) {
+    const dl = P.lo[i] - l0, s = Math.sin(dl);
+    P.x[i] = GR * P.cl[i] * s; P.z[i] = P.cl[i] * Math.cos(dl); P.s[i] = s;
+    if (st < 0 && P.z[i] >= 0) st = i;
+  }
+  if (st < 0) return '';
+  let d = '', side = P.s[st] >= 0 ? 1 : -1;
+  for (let k = 0; k < n; k++) {
+    const i = (st + k) % n;
+    let x;
+    if (P.z[i] >= 0) { x = P.x[i]; side = P.s[i] >= 0 ? 1 : -1; } else x = side * GR * P.cl[i];
+    d += (k ? 'L' : 'M') + f1(GCX + x) + ',' + f1(P.y[i]);
+  }
+  return d + 'Z';
+}
+function gpt(lon, lat) {
+  const dl = (lon - SC.lon0) * D2R, cl = Math.cos(lat * D2R);
+  return { x: GCX + GR * cl * Math.sin(dl), y: GCY - GR * Math.sin(lat * D2R), z: cl * Math.cos(dl) };
+}
+const hw = lat => GR * Math.cos(lat * D2R);
+const yl = lat => GCY - GR * Math.sin(lat * D2R);
+const GL = {};
+function buildGlobe() {
+  const g = gGlobe;
+  lin('spaceG', 0, 0, 0, 1, [[0, '#0d2a4a'], [1, '#06162a']]);
+  rad('oceanF', [[0, '#3f8ccc'], [.6, '#22609c'], [1, '#143f6e']], 430, 200, 300, true);
+  rad('shadeF', [[0, '#ffffff', .1], [.5, '#000000', 0], [.85, '#000a1e', .22], [1, '#000a1e', .5]], 455, 235, 245, true);
+  rad('glowF', [[.8, '#7cc3ff', 0], [.86, '#7cc3ff', .35], [1, '#7cc3ff', 0]], GCX, GCY, GR + 34, true);
+  lin('nightF', GCX - 30, 0, GCX + 60, 0, [[0, '#020818', 0], [1, '#020818', .62]], true);
+  lin('tbandF', 0, GCY - GR, 0, GCY + GR, [[0, '#3c8cff', .55], [.18, '#6fb0ff', .3], [.36, '#ffb44d', .25], [.5, '#ff5a32', .5], [.64, '#ffb44d', .25], [.82, '#6fb0ff', .3], [1, '#3c8cff', .55]], true);
+  rad('sunF', [[0, '#fff3c4'], [.35, '#ffd166', .95], [1, '#ffb347', 0]]);
+  el('rect', { x: 0, y: 0, width: 1000, height: 560, fill: 'url(#spaceG)' }, g);
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const st = el('g', { opacity: .7 }, g);
+  for (let i = 0; i < 70; i++) {
+    const x = rnd() * 1000, y = rnd() * 560;
+    if (Math.hypot(x - GCX, y - GCY) < GR + 40) continue;
+    el('circle', { cx: f1(x), cy: f1(y), r: f1(.5 + rnd() * 1.1), fill: '#cfe6ff', opacity: f1(.3 + rnd() * .6) }, st);
+  }
+  el('circle', { cx: GCX, cy: GCY, r: GR + 34, fill: 'url(#glowF)' }, g);
+  const cp = el('clipPath', { id: 'discC' }, defs);
+  el('circle', { cx: GCX, cy: GCY, r: GR }, cp);
+  const D = el('g', { 'clip-path': 'url(#discC)' }, g);
+  el('circle', { cx: GCX, cy: GCY, r: GR, fill: 'url(#oceanF)' }, D);
+  GL.mer = [];
+  for (let k = 0; k < 12; k++) GL.mer.push(el('path', { fill: 'none', stroke: '#bfe0ff', 'stroke-width': 1, opacity: .22 }, D));
+  GL.land = LANDS.map(p => ({ P: dens(p, 2), el: el('path', { fill: '#8aab62', stroke: '#6d8c4c', 'stroke-width': .8, 'stroke-linejoin': 'round' }, D) }));
+  GL.seas = SEAS.map(p => ({ P: dens(p, 2), el: el('path', { fill: 'url(#oceanF)' }, D) }));
+  const lrf = lyr('rf', D);
+  GL.rf = RAINF.map(r => ({ P: dens(r.p, 2), el: el('path', { fill: '#2b7a3b' }, lrf), r }));
+  const lds = lyr('ds', D);
+  GL.ds = DESERTS.map(r => ({ P: dens(r.p, 2), el: el('path', { fill: '#e8c67c' }, lds), r }));
+  el('path', { d: `M${GCX - hw(78)},${yl(78)}A${GR},${GR} 0 0 1 ${GCX + hw(78)},${yl(78)}Z`, fill: '#eef4f8' }, D);
+  el('path', { d: `M${GCX - hw(-67)},${yl(-67)}A${GR},${GR} 0 0 0 ${GCX + hw(-67)},${yl(-67)}Z`, fill: '#eef4f8' }, D);
+  // clouds
+  const mkClouds = (name, list) => {
+    const L = lyr(name, D);
+    return list.map(c => {
+      const o = el('g', null, L), i = el('g', null, o);
+      [[-14, 2, 9], [0, -3, 12], [14, 1, 9], [6, 5, 8], [-6, 5, 8]].forEach(q => el('circle', { cx: q[0] * c[2], cy: q[1] * c[2], r: q[2] * c[2], fill: '#f6f9fc', opacity: .92 }, i));
+      return { o, lon: c[0], lat: c[1] };
+    });
+  };
+  const eq = []; for (let k = 0; k < 16; k++) eq.push([k * 22.5 + 7, [2, -2, 4, 0, -3, 3][k % 6], [.9, 1.1, .8, 1][k % 4]]);
+  GL.clEq = mkClouds('clEq', eq);
+  const c6 = []; for (let k = 0; k < 12; k++) { c6.push([k * 30 + 12, 57 + (k % 3) * 2, .62]); c6.push([k * 30 + 27, -58 - (k % 2) * 2, .62]); }
+  GL.cl60 = mkClouds('cl60', c6);
+  // gyres
+  const lgy = lyr('gy', D);
+  GL.gy = GYRES.map(G => {
+    const info = loopInfo(G.p);
+    const path = el('path', { fill: 'none', stroke: '#9fe7ff', 'stroke-width': 3, class: 'flow', opacity: .85 }, lgy);
+    const pts = []; for (let i = 0; i < 18; i++) pts.push({ el: el('path', { d: TRI, fill: '#bff0ff', transform: 'scale(0)' }, lgy), u: i / 18 });
+    const dp = []; for (let i = 0; i <= 120; i++) dp.push(loopPt(info, i / 120));
+    return { info, path, pts, dp, G };
+  });
+  const tb = lyr('tband', D);
+  el('circle', { cx: GCX, cy: GCY, r: GR, fill: 'url(#tbandF)' }, tb);
+  tx(tb, GCX, GCY + 8, '따뜻함', 'tw', 22);
+  tx(tb, GCX + 40, yl(66), '차가움', 'tw', 18);
+  tx(tb, GCX + 40, yl(-62) + 4, '차가움', 'tw', 18);
+  el('circle', { cx: GCX, cy: GCY, r: GR, fill: 'url(#shadeF)' }, D);
+  const nt = lyr('night', D);
+  el('rect', { x: GCX - 40, y: GCY - GR, width: GR + 50, height: 2 * GR, fill: 'url(#nightF)' }, nt);
+  el('circle', { cx: GCX, cy: GCY, r: GR, fill: 'none', stroke: '#9cd2ff', 'stroke-width': 1.5, opacity: .5 }, g);
+
+  // latitude lines
+  const ll = lyr('lat', g);
+  [[0, ''], [30, 'N'], [60, 'N'], [-30, 'S'], [-60, 'S']].forEach(q => {
+    const y = yl(q[0]), w = hw(q[0]);
+    el('line', { x1: GCX - w, y1: y, x2: GCX + w, y2: y, stroke: '#ffffff', 'stroke-width': q[0] ? 1.4 : 2, 'stroke-dasharray': q[0] ? '6 6' : 'none', opacity: q[0] ? .5 : .65 }, ll);
+    tx(ll, GCX - w + 10, y - 6, q[0] ? Math.abs(q[0]) + '°' + q[1] : '0° 적도', 'tw', 14, 'start');
+  });
+
+  // surface winds (three-cell)
+  const bandDef = (lat, n, frac, vx, vy, sc) => {
+    const out = [];
+    for (let i = 0; i < n; i++) out.push({ bx: GCX + hw(lat) * frac[i], by: yl(lat), vx, vy, sc, u: ((i * .37 + lat * .013) % 1 + 1) % 1 });
+    return out;
+  };
+  const c35 = Math.cos(35 * D2R), s35 = Math.sin(35 * D2R), c15 = Math.cos(15 * D2R), s15 = Math.sin(15 * D2R);
+  const F5 = [-.72, -.36, 0, .36, .72], F4 = [-.62, -.2, .2, .62], F3 = [-.5, 0, .5];
+  const W3 = [].concat(
+    bandDef(9, 5, F5, -c35, s35, .95), bandDef(21, 4, F4, -c35, s35, .95),
+    bandDef(39, 4, F4, c35, -s35, .85), bandDef(51, 3, F3, c35, -s35, .8),
+    bandDef(71, 3, [-.5, 0, .5], -c15, s15, .78),
+    bandDef(-9, 5, F5, -c35, -s35, .95), bandDef(-21, 4, F4, -c35, -s35, .95),
+    bandDef(-39, 4, F4, c35, s35, .85), bandDef(-51, 3, F3, c35, s35, .8),
+    bandDef(-71, 3, [-.5, 0, .5], -c15, -s15, .78)
+  );
+  const W1 = [].concat(
+    bandDef(12, 5, F5, 0, 1, .95), bandDef(34, 4, F4, 0, 1, .9), bandDef(55, 3, F3, 0, 1, .8),
+    bandDef(-12, 5, F5, 0, -1, .95), bandDef(-34, 4, F4, 0, -1, .9), bandDef(-55, 3, F3, 0, -1, .8)
+  );
+  const mkW = (name, list) => {
+    const L = lyr(name, g);
+    L.setAttribute('clip-path', 'url(#discC)');
+    list.forEach(a => { a.el = el('path', { d: ARROW, fill: '#ffffff', stroke: '#0d2945', 'stroke-width': 2, 'stroke-linejoin': 'round' }, L); a.ang = Math.atan2(a.vy, a.vx) * 180 / Math.PI; });
+    return list;
+  };
+  GL.w3 = mkW('w3', W3);
+  GL.w1 = mkW('w1', W1);
+
+  // wind labels (right column)
+  const wl = lyr('wlbl', g);
+  [[75, '극동풍'], [45, '편서풍'], [15, '북동 무역풍'], [-15, '남동 무역풍'], [-45, '편서풍'], [-75, '극동풍']].forEach(q => {
+    const y = yl(q[0]) + (q[0] === 75 ? -4 : q[0] === -75 ? 4 : 0);
+    el('line', { x1: 786, y1: y, x2: GCX + hw(q[0]) * .9, y2: yl(q[0]), stroke: '#ffffff', 'stroke-width': 1.2, opacity: .55 }, wl);
+    tx(wl, 794, y + 7, q[1], 'tw', 20, 'start');
+  });
+
+  // pressure belts (left column)
+  const pr = lyr('pres', g);
+  [[90, '극 고압대', 0, 58], [60, '한대 전선대', 1, 0], [30, '아열대 고압대', 0, 0], [0, '적도 저압대', 1, 0], [-30, '아열대 고압대', 0, 0], [-60, '한대 전선대', 1, 0], [-90, '극 고압대', 0, 502]].forEach(q => {
+    const ty = q[3] || yl(q[0]), w = q[1].length * 17 + 26, cx = 248 - w / 2;
+    const px = GCX - hw(q[0]), py = yl(q[0]);
+    el('line', { x1: 248, y1: ty, x2: px - (Math.abs(q[0]) === 90 ? 0 : 3), y2: py, stroke: '#ffffff', 'stroke-width': 1.2, opacity: .55 }, pr);
+    el('circle', { cx: px, cy: py, r: 3.5, fill: '#ffffff' }, pr);
+    const p = pill(pr, q[1], q[2] ? '#d63a27' : '#2466ad', w, 30, 17);
+    p.setAttribute('transform', `translate(${cx},${ty})`);
+  });
+
+  // cells on right limb
+  const lc = lyr('cells', g);
+  const lc1 = lyr('cells1', g);
+  const r1 = GR + 9, r2 = GR + 50;
+  const cellLoop = (a, b, sense, parent, col, nP) => {
+    const pts = [], N = 72;
+    for (let i = 0; i < N; i++) {
+      const t = sense * i / N * 2 * Math.PI;
+      const cu = Math.cos(t), su = Math.sin(t);
+      const u = Math.sign(cu) * Math.pow(Math.abs(cu), .42), v = Math.sign(su) * Math.pow(Math.abs(su), .42);
+      const th = ((a + b) / 2 + u * (b - a) / 2 * .9) * D2R, r = (r1 + r2) / 2 + v * (r2 - r1) / 2 * .82;
+      pts.push([GCX + r * Math.cos(th), GCY - r * Math.sin(th)]);
+    }
+    const info = loopInfo(pts);
+    el('path', { d: 'M' + pts.map(p => f1(p[0]) + ',' + f1(p[1])).join('L') + 'Z', fill: 'none', stroke: col, 'stroke-width': 1.6, 'stroke-dasharray': '3 6', opacity: .6 }, parent);
+    const ps = []; for (let i = 0; i < nP; i++) ps.push({ el: el('path', { d: TRI, fill: col }, parent), u: i / nP });
+    return { info, ps };
+  };
+  // sense: +1 ccw in (theta up, r out) plane
+  GL.cells = [
+    cellLoop(0, 30, -1, lc, '#ff9a6b', 9), cellLoop(30, 60, 1, lc, '#7fe0a8', 9), cellLoop(60, 90, -1, lc, '#8cc8ff', 9),
+    cellLoop(-30, 0, 1, lc, '#ff9a6b', 9), cellLoop(-60, -30, -1, lc, '#7fe0a8', 9), cellLoop(-90, -60, 1, lc, '#8cc8ff', 9)
+  ];
+  [[15, '해들리'], [45, '페렐'], [75, '극'], [-15, '해들리'], [-45, '페렐'], [-75, '극']].forEach(q => {
+    const th = q[0] * D2R, r = GR + 64;
+    tx(lc, GCX + r * Math.cos(th) + 4, GCY - r * Math.sin(th) + 6, q[1], 'tw', 16, 'start');
+  });
+  GL.cells1 = [cellLoop(0, 90, -1, lc1, '#ffd166', 16), cellLoop(-90, 0, 1, lc1, '#ffd166', 16)];
+
+  // sunlight
+  const ls = lyr('sun', g);
+  el('circle', { cx: -40, cy: GCY, r: 120, fill: 'url(#sunF)' }, ls);
+  for (let y = 92; y <= 468; y += 22) {
+    const x2 = GCX - Math.sqrt(Math.max(0, GR * GR - (y - GCY) * (y - GCY)));
+    el('line', { x1: 60, y1: y, x2: f1(x2 - 2), y2: y, stroke: '#ffe9a8', 'stroke-width': 2.6, opacity: .85, class: 'ray', style: 'animation-delay:' + (-(y % 5) * .27) + 's' }, ls);
+  }
+  tx(ls, 30, 64, '태양 빛', 'tw', 20, 'start');
+  const lb = lyr('beam', g);
+  const beam = (yc, lbl, lx, ly) => {
+    const ya = yc - 18, yb = yc + 18;
+    const xa = GCX - Math.sqrt(GR * GR - (ya - GCY) ** 2), xb = GCX - Math.sqrt(GR * GR - (yb - GCY) ** 2);
+    let d = `M0,${ya}L${f1(xa)},${ya}`;
+    const a1 = Math.atan2(ya - GCY, xa - GCX), a2 = Math.atan2(yb - GCY, xb - GCX);
+    for (let i = 1; i <= 16; i++) { const a = mix(a1, a2, i / 16); d += `L${f1(GCX + GR * Math.cos(a))},${f1(GCY + GR * Math.sin(a))}`; }
+    d += `L0,${yb}Z`;
+    el('path', { d, fill: '#ffd166', opacity: .38 }, lb);
+    let arc = ''; for (let i = 0; i <= 16; i++) { const a = mix(a1, a2, i / 16); arc += (i ? 'L' : 'M') + f1(GCX + GR * Math.cos(a)) + ',' + f1(GCY + GR * Math.sin(a)); }
+    el('path', { d: arc, fill: 'none', stroke: '#ffd166', 'stroke-width': 8, 'stroke-linecap': 'round' }, lb);
+    tx(lb, lx, ly, lbl, 'tw', 18, 'start');
+  };
+  beam(GCY, '좁은 면적에 모임', 318, GCY + 6);
+  beam(116, '넓은 면적에 퍼짐', 432, 150);
+
+  // rotation direction
+  const lsp = lyr('spin', g);
+  el('path', { d: `M${GCX - 120},${GCY + GR + 22}Q${GCX},${GCY + GR + 46} ${GCX + 120},${GCY + GR + 22}`, fill: 'none', stroke: '#ffd166', 'stroke-width': 4, 'marker-end': 'url(#ahY)', class: 'flow' }, lsp);
+  tx(lsp, GCX, GCY + GR + 66, '자전 방향: 서 → 동', 'tw', 18);
+  tx(lsp, GCX - GR - 18, GCY + 6, '서', 'tw', 20, 'end');
+  tx(lsp, GCX + GR + 18, GCY + 6, '동', 'tw', 20, 'start');
+  // coriolis demo
+  const lcr = lyr('cor', g);
+  GL.cor = [
+    [[400, 270], [400, 215], [425, 165], [500, 140]], [[585, 115], [585, 165], [565, 215], [505, 240]],
+    [[400, 290], [400, 345], [425, 395], [500, 420]], [[585, 445], [585, 395], [565, 345], [505, 320]]
+  ].map((b, i) => {
+    const s = b[0], e0 = [s[0] + (b[1][0] - s[0]) * 2.4, s[1] + (b[1][1] - s[1]) * 2.4];
+    el('line', { x1: s[0], y1: s[1], x2: e0[0], y2: e0[1], stroke: '#ffffff', 'stroke-width': 2, 'stroke-dasharray': '5 6', opacity: .55 }, lcr);
+    el('path', { d: `M${b[0]}C${b[1]} ${b[2]} ${b[3]}`, fill: 'none', stroke: '#ffd166', 'stroke-width': 3.2, 'marker-end': 'url(#ahY)' }, lcr);
+    const ball = el('circle', { r: 7.5, fill: '#ffd166', stroke: '#3a2a00', 'stroke-width': 1.5 }, lcr);
+    return { b, ball, u: i * .27 };
+  });
+  tx(lcr, 742, 168, '북반구', 'tw', 21, 'start');
+  tx(lcr, 742, 194, '진행 방향의 오른쪽으로', 'tw', 17, 'start');
+  tx(lcr, 742, 384, '남반구', 'tw', 21, 'start');
+  tx(lcr, 742, 410, '진행 방향의 왼쪽으로', 'tw', 17, 'start');
+  el('line', { x1: 742, y1: 478, x2: 778, y2: 478, stroke: '#ffffff', 'stroke-width': 2, 'stroke-dasharray': '5 6', opacity: .7 }, lcr);
+  tx(lcr, 788, 484, '자전하지 않을 때', 'tw', 15, 'start');
+  el('line', { x1: 742, y1: 506, x2: 778, y2: 506, stroke: '#ffd166', 'stroke-width': 3.2 }, lcr);
+  tx(lcr, 788, 512, '자전하는 지구에서', 'tw', 15, 'start');
+  const lm = lyr('cmag', g);
+  tx(lm, 40, 84, '전향력의 크기', 'tw', 18, 'start');
+  tx(lm, 272, 84, '지표의 회전', 'tw', 16);
+  GL.spin = [60, 30, 0, -30, -60].map(lat => {
+    const sg = el('g', { transform: `translate(272,${f1(yl(lat))})` }, lm);
+    const rg = el('g', null, sg);
+    el('circle', { r: 13, fill: 'rgba(255,255,255,.1)', stroke: '#ffd166', 'stroke-width': 2 }, rg);
+    el('line', { x1: 0, y1: 0, x2: 0, y2: -12, stroke: '#ffd166', 'stroke-width': 2.5, 'stroke-linecap': 'round' }, rg);
+    el('circle', { cx: 0, cy: -12, r: 3, fill: '#ffd166' }, rg);
+    return { rg, lat };
+  });
+  [[60], [30], [0], [-30], [-60]].forEach(q => {
+    const y = yl(q[0]), L = Math.abs(Math.sin(q[0] * D2R)) * 150;
+    tx(lm, 40, y + 6, q[0] ? Math.abs(q[0]) + '°' + (q[0] > 0 ? 'N' : 'S') : '적도', 'tw', 16, 'start');
+    if (L > 0) el('rect', { x: 92, y: y - 7, width: f1(L), height: 14, rx: 7, fill: '#ffd166' }, lm);
+    else tx(lm, 92, y + 6, '0', 'tw', 16, 'start');
+  });
+
+  // labels that ride on the globe
+  const lbl = (name, list) => {
+    const L = lyr(name, g);
+    return list.filter(r => r.n).map(r => ({ t: tx(L, 0, 0, r.n, 'tw', 15), lon: r.c[0], lat: r.c[1] }));
+  };
+  GL.dsL = lbl('ds', DESERTS);
+  GL.rfL = lbl('rf', RAINF);
+  const lgl = lyr('gyl', g);
+  GL.gyL = [];
+  GYRES.forEach(G => (G.lb || []).forEach(q => { const t = tx(lgl, 0, 0, q[0], 'tw', 16, q[3]); GL.gyL.push({ t, lon: q[1], lat: q[2] }); }));
+  const lk = lyr('korea', g);
+  GL.kor = el('g', null, lk);
+  el('circle', { r: 16, fill: 'none', stroke: '#ff5a3c', 'stroke-width': 3, class: 'ping' }, GL.kor);
+  el('circle', { r: 6, fill: '#ff5a3c', stroke: '#fff', 'stroke-width': 2 }, GL.kor);
+  tx(GL.kor, 12, -12, '우리나라', 'tw', 18, 'start');
+}
+let lastLon = null;
+function drawGlobe(dt) {
+  const r = SC.r.cur;
+  if (SC.foc != null) {
+    let d = ((SC.foc - SC.lon0 + 540) % 360) - 180;
+    SC.lon0 += d * (1 - Math.exp(-dt * 2.4));
+  } else SC.lon0 -= 7 * r * dt * MOT;
+  SC.lon0 = ((SC.lon0 + 540) % 360) - 180;
+  const vis = n => LAYERS.has(n);
+  if (lastLon === null || Math.abs(SC.lon0 - lastLon) > .01) {
+    lastLon = SC.lon0;
+    GL.land.forEach(o => o.el.setAttribute('d', projPoly(o.P)));
+    GL.seas.forEach(o => o.el.setAttribute('d', projPoly(o.P)));
+    if (vis('rf')) GL.rf.forEach(o => o.el.setAttribute('d', projPoly(o.P)));
+    if (vis('ds')) GL.ds.forEach(o => o.el.setAttribute('d', projPoly(o.P)));
+    GL.mer.forEach((m, k) => {
+      const dl = (k * 30 - SC.lon0) * D2R, c = Math.cos(dl), s = Math.sin(dl);
+      if (c < 0) { m.setAttribute('d', ''); return; }
+      m.setAttribute('d', `M${GCX},${GCY - GR}A${f1(Math.abs(s) * GR)},${GR} 0 0 ${s > 0 ? 1 : 0} ${GCX},${GCY + GR}`);
+    });
+  }
+  const place = (arr, zmin) => arr.forEach(o => {
+    const p = gpt(o.lon, o.lat);
+    const op = clamp((p.z - zmin) / .25);
+    o.t.setAttribute('x', f1(p.x)); o.t.setAttribute('y', f1(p.y + 5)); o.t.setAttribute('opacity', f1(op * 10) / 10);
+  });
+  if (vis('ds')) place(GL.dsL, .25);
+  if (vis('rf')) place(GL.rfL, .25);
+  if (vis('gyl')) place(GL.gyL, .2);
+  if (vis('korea')) {
+    const p = gpt(127.5, 36.5);
+    GL.kor.setAttribute('transform', `translate(${f1(p.x)},${f1(p.y)})`);
+    GL.kor.setAttribute('opacity', f1(clamp((p.z - .1) / .2) * 10) / 10);
+  }
+  const clouds = arr => arr.forEach(c => {
+    const p = gpt(c.lon + T * 1.2, c.lat), dl = (c.lon + T * 1.2 - SC.lon0) * D2R;
+    const sx = Math.max(.15, Math.cos(dl));
+    c.o.setAttribute('transform', `translate(${f1(p.x)},${f1(p.y)}) scale(${f1(sx * 100) / 100},1)`);
+    c.o.setAttribute('opacity', f1(clamp(p.z / .25) * 10) / 10);
+  });
+  if (vis('clEq')) clouds(GL.clEq);
+  if (vis('cl60')) clouds(GL.cl60);
+  if (vis('gy')) GL.gy.forEach(o => {
+    let d = '', on = false;
+    o.dp.forEach(q => {
+      const p = gpt(q.x, q.y);
+      if (p.z > .02) { d += (on ? 'L' : 'M') + f1(p.x) + ',' + f1(p.y); on = true; } else on = false;
+    });
+    o.path.setAttribute('d', d);
+    o.pts.forEach(a => {
+      a.u = (a.u + dt * MOT * .022) % 1;
+      const q = loopPt(o.info, a.u), q2 = loopPt(o.info, a.u + .004);
+      const p = gpt(q.x, q.y), p2 = gpt(q2.x, q2.y);
+      const op = clamp((p.z - .05) / .2);
+      a.el.setAttribute('transform', `translate(${f1(p.x)},${f1(p.y)}) rotate(${f1(Math.atan2(p2.y - p.y, p2.x - p.x) * 180 / Math.PI)}) scale(1.6)`);
+      a.el.setAttribute('opacity', f1(op * 10) / 10);
+    });
+  });
+  const dim = vis('gy') ? .4 : 1;
+  const winds = arr => arr.forEach(a => {
+    a.u = (a.u + dt * MOT * .42) % 1;
+    const s = (a.u - .5) * 46 * a.sc;
+    const x = a.bx + a.vx * s, y = a.by + a.vy * s;
+    const edge = clamp((GR + 4 - Math.hypot(x - GCX, y - GCY)) / 16);
+    a.el.setAttribute('transform', `translate(${f1(x)},${f1(y)}) rotate(${f1(a.ang)}) scale(${f1(a.sc * .82 * 100) / 100})`);
+    a.el.setAttribute('opacity', f1(Math.sin(Math.PI * a.u) * edge * dim * 10) / 10);
+  });
+  if (vis('w3')) winds(GL.w3);
+  if (vis('w1')) winds(GL.w1);
+  const cells = arr => arr.forEach(c => c.ps.forEach(p => {
+    p.u = (p.u + dt * MOT * 70 / c.info.L) % 1;
+    const q = loopPt(c.info, p.u);
+    p.el.setAttribute('transform', `translate(${f1(q.x)},${f1(q.y)}) rotate(${f1(q.ang)}) scale(1.3)`);
+  }));
+  if (vis('cells')) cells(GL.cells);
+  if (vis('cells1')) cells(GL.cells1);
+  if (vis('cmag')) GL.spin.forEach(q => q.rg.setAttribute('transform', `rotate(${f1(-T * 110 * Math.sin(q.lat * D2R))})`));
+  if (vis('cor')) GL.cor.forEach(c => {
+    c.u += dt * MOT * .38;
+    if (c.u > 1.35) c.u -= 1.35;
+    const u = Math.min(1, c.u), p = bez(c.b, u);
+    c.ball.setAttribute('cx', f1(p.x)); c.ball.setAttribute('cy', f1(p.y));
+    c.ball.setAttribute('opacity', f1(clamp(u * 8) * clamp((1.35 - c.u) * 8) * 10) / 10);
+  });
+}
+
+/* ================= rotating disk (Coriolis) ================= */
+// math coords inside each panel: x right, y up. Screen = (x, -y).
+const DK = { R: 160, c1: [262, 278], c2: [738, 278], w: 22, F: 2.6, vin: 134, mode: 'out', t0: 0 };
+const DS = {};
+const u2 = a => [Math.cos(a * D2R), Math.sin(a * D2R)];
+const rot2 = (p, a) => { const c = Math.cos(a * D2R), s = Math.sin(a * D2R); return [p[0] * c - p[1] * s, p[0] * s + p[1] * c]; };
+function dkThrow() {
+  const rf = DK.R - 18, P = DK.mode === 'in' ? 3.8 : 4.4;
+  const tau = (((T - DK.t0) % P) + P) % P, ph0 = DK.w * (T - tau);
+  let p0, V, F;
+  if (DK.mode === 'in') {
+    const a = u2(270 + ph0), ti = u2(90 + ph0), tg = u2(ph0), vt = DK.w * D2R * rf;
+    p0 = [rf * a[0], rf * a[1]];
+    V = [DK.vin * ti[0] + vt * tg[0], DK.vin * ti[1] + vt * tg[1]];
+    F = -2 * (p0[0] * V[0] + p0[1] * V[1]) / (V[0] * V[0] + V[1] * V[1]);
+  } else {
+    const d = u2(90 + ph0), v = rf / DK.F;
+    p0 = [0, 0]; V = [v * d[0], v * d[1]]; F = DK.F;
+  }
+  const pos = t => { t = Math.min(Math.max(t, 0), F); return [p0[0] + V[0] * t, p0[1] + V[1] * t]; };
+  const dpos = t => { t = Math.min(Math.max(t, 0), F); return rot2(pos(t), -(ph0 + DK.w * t)); };
+  return { tau, ph0, p0, F, P, pos, dpos };
+}
+function buildDisk() {
+  const g = gDisk;
+  el('rect', { x: 0, y: 0, width: 1000, height: 560, fill: 'url(#spaceG)' }, g);
+  rad('diskF', [[0, '#eef3f8'], [1, '#b7c9da']]);
+  const R = DK.R, rf = R - 18;
+  const wedge = (a, parent) => {
+    const a0 = (a - 10) * D2R, a1 = (a + 10) * D2R;
+    el('path', { d: `M0,0L${f1(R * Math.cos(a0))},${f1(-R * Math.sin(a0))}A${R},${R} 0 0 0 ${f1(R * Math.cos(a1))},${f1(-R * Math.sin(a1))}Z`, fill: '#e2412b', opacity: .14 }, parent);
+  };
+  const mkDisk = parent => {
+    const gg = el('g', null, parent);
+    el('circle', { r: R, fill: 'url(#diskF)', stroke: '#8fa6bd', 'stroke-width': 3 }, gg);
+    const mo = el('g', null, gg), mi = el('g', null, gg);
+    wedge(90, mo); wedge(270, mi);
+    [.36, .7].forEach(f => el('circle', { r: R * f, fill: 'none', stroke: '#9fb3c6', 'stroke-width': 1.5 }, gg));
+    for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; el('line', { x1: 0, y1: 0, x2: f1(Math.cos(a) * R), y2: f1(Math.sin(a) * R), stroke: '#a9bccd', 'stroke-width': 1.2 }, gg); }
+    // out: thrower at centre, friend at top rim / in: thrower at bottom rim, friend at centre
+    el('circle', { r: 10, fill: '#123f70', stroke: '#fff', 'stroke-width': 2 }, mo);
+    el('circle', { cy: -rf, r: 11, fill: '#e2412b', stroke: '#fff', 'stroke-width': 2.5 }, mo);
+    el('circle', { cy: rf, r: 10, fill: '#123f70', stroke: '#fff', 'stroke-width': 2 }, mi);
+    el('circle', { r: 11, fill: '#e2412b', stroke: '#fff', 'stroke-width': 2.5 }, mi);
+    return { gg, mo, mi };
+  };
+  const ink = (p, x, y, s, sz, an) => tx(p, x, y, s, 'tw', sz, an);
+
+  // panel (가): seen from outside
+  const L1 = lyr('dk1', g);
+  ink(L1, DK.c1[0], 44, '(가) 원판 밖에서 본 모습', 21);
+  ink(L1, DK.c1[0], 72, '원판은 시계 반대 방향으로 돈다', 15).setAttribute('opacity', .85);
+  const P1 = el('g', { transform: `translate(${DK.c1[0]},${DK.c1[1]})` }, L1);
+  DS.k1 = mkDisk(P1);
+  [[15, 60], [195, 240]].forEach(q => {
+    let d = '';
+    for (let a = q[0]; a <= q[1]; a += 3) d += (d ? 'L' : 'M') + f1((R + 16) * Math.cos(a * D2R)) + ',' + f1(-(R + 16) * Math.sin(a * D2R));
+    el('path', { d, fill: 'none', stroke: '#ffd166', 'stroke-width': 3.5, 'marker-end': 'url(#ahY)' }, P1);
+  });
+  DS.l1a = ink(P1, 0, 0, '던진 곳', 15);
+  DS.l1b = ink(P1, 0, 0, '친구', 16);
+  const D1 = lyr('d1', P1);
+  DS.aim1 = el('line', { stroke: '#ffffff', 'stroke-width': 2.2, 'stroke-dasharray': '5 6', opacity: .85 }, D1);
+  DS.tr1 = el('line', { stroke: '#ffb000', 'stroke-width': 4, 'stroke-dasharray': '8 6', 'stroke-linecap': 'round' }, D1);
+  DS.b1 = el('circle', { r: 10, fill: '#ffd166', stroke: '#3a2a00', 'stroke-width': 2 }, D1);
+  DS.m1 = ink(D1, 0, 0, '', 16);
+
+  // panel (나): seen by someone riding the disk
+  const L2 = lyr('dk2', g);
+  ink(L2, DK.c2[0], 44, '(나) 원판 위의 친구가 본 모습', 21);
+  ink(L2, DK.c2[0], 72, '원판과 함께 돌면 원판은 멈춰 보인다', 15).setAttribute('opacity', .85);
+  const P2 = el('g', { transform: `translate(${DK.c2[0]},${DK.c2[1]})` }, L2);
+  DS.k2 = mkDisk(P2);
+  DS.l2a = ink(P2, 0, 0, '던진 곳', 15);
+  DS.l2b = ink(P2, 0, 0, '친구', 16);
+  const D2 = lyr('d2', P2);
+  DS.aim2 = el('line', { stroke: '#ffffff', 'stroke-width': 2.2, 'stroke-dasharray': '5 6', opacity: .9 }, D2);
+  DS.aim2T = ink(D2, 0, 0, '던진 방향', 15, 'end');
+  DS.tr2 = el('path', { fill: 'none', stroke: '#ffb000', 'stroke-width': 4, 'stroke-linecap': 'round' }, D2);
+  DS.b2 = el('circle', { r: 10, fill: '#ffd166', stroke: '#3a2a00', 'stroke-width': 2 }, D2);
+  DS.m2 = ink(D2, 0, 0, '오른쪽으로 휜다', 16, 'end');
+  const V = lyr('dvec', P2);
+  DS.vv = el('line', { stroke: '#ffffff', 'stroke-width': 3.5, 'marker-end': 'url(#ahW)' }, V);
+  DS.vc = el('line', { stroke: '#ffd166', 'stroke-width': 3.5, 'marker-end': 'url(#ahY)' }, V);
+  DS.vvT = ink(V, 0, 0, '운동 방향', 15);
+  DS.vcT = ink(V, 0, 0, '전향력', 15);
+  DS.vcT.setAttribute('fill', '#ffe08a');
+
+  // the disk as the northern hemisphere seen from above the pole
+  const H = lyr('dhem', P2);
+  const hl = (r, s) => { const t = ink(H, f1(-r * Math.cos(20 * D2R)), f1(r * Math.sin(20 * D2R) + 5), s, 13); t.setAttribute('fill', '#0d2945'); t.setAttribute('stroke', 'rgba(255,255,255,.75)'); return t; };
+  hl(R * .36, '60°N'); hl(R * .7, '30°N'); hl(R - 13, '적도');
+  const np = ink(H, -14, -10, '북극', 14, 'end'); np.setAttribute('fill', '#0d2945'); np.setAttribute('stroke', 'rgba(255,255,255,.75)');
+  const E = lyr('deast', P2);
+  el('line', { x1: 16, y1: rf, x2: 58, y2: rf, stroke: '#7fe0a8', 'stroke-width': 3, 'marker-end': 'url(#ahG)' }, E);
+  el('line', { x1: -16, y1: rf, x2: -58, y2: rf, stroke: '#7fe0a8', 'stroke-width': 3, 'marker-end': 'url(#ahG)' }, E);
+  ink(E, 76, rf + 5, '동', 15).setAttribute('fill', '#bff3d4');
+  ink(E, -76, rf + 5, '서', 15).setAttribute('fill', '#bff3d4');
+
+  const M = lyr('dmap', g);
+  el('rect', { x: 120, y: 482, width: 760, height: 64, rx: 12, fill: 'rgba(4,16,30,.82)', stroke: 'rgba(255,209,102,.6)', 'stroke-width': 1.5 }, M);
+  ink(M, 500, 508, '북극 위에서 본 지구: 시계 반대 방향으로 돈다 → 북반구에서는 오른쪽으로 휜다', 16);
+  ink(M, 500, 535, '남극 위에서 본 지구: 시계 방향으로 돈다 → 남반구에서는 왼쪽으로 휜다', 16);
+  DS.mode = null;
+}
+const S2 = p => [p[0], -p[1]];
+const setXY = (n, p, dx, dy) => { n.setAttribute('x', f1(p[0] + (dx || 0))); n.setAttribute('y', f1(p[1] + (dy || 0))); };
+function drawDisk() {
+  const R = DK.R, rf = R - 18, IN = DK.mode === 'in';
+  if (DS.mode !== DK.mode) {
+    DS.mode = DK.mode;
+    [DS.k1, DS.k2].forEach(k => { k.mo.style.display = IN ? 'none' : ''; k.mi.style.display = IN ? '' : 'none'; });
+    DS.m1.textContent = IN ? '옆으로 비껴간다' : '똑바로 간다';
+    DS.l1b.textContent = IN ? '받을 친구' : '친구';
+    DS.l2b.textContent = IN ? '받을 친구' : '친구';
+    setXY(DS.l2a, IN ? [0, R + 24] : [0, 34]);
+    setXY(DS.l2b, IN ? [16, -14] : [0, -R - 10]);
+    DS.l2b.setAttribute('text-anchor', IN ? 'start' : 'middle');
+    DS.aim2.setAttribute('x1', 0); DS.aim2.setAttribute('x2', 0);
+    DS.aim2.setAttribute('y1', IN ? rf - 14 : 0); DS.aim2.setAttribute('y2', IN ? 12 : -rf + 14);
+    setXY(DS.aim2T, IN ? [-10, rf / 2] : [-10, -rf / 2]);
+  }
+  const Phi = DK.w * T, th = dkThrow(), fl = Math.min(th.tau, th.F);
+  DS.k1.gg.setAttribute('transform', `rotate(${f1(-Phi)})`);
+  // panel (가) labels ride along with the disk
+  const lab = (n, ang, r, dy) => { const u = u2(ang); setXY(n, [r * u[0], -r * u[1]], 0, dy); };
+  if (IN) { lab(DS.l1a, 270 + Phi, R + 26, 6); setXY(DS.l1b, [0, 34]); }
+  else { setXY(DS.l1a, [0, 34]); lab(DS.l1b, 90 + Phi, R + 24, 6); }
+  const bop = th.tau < th.F ? 1 : clamp(1 - (th.tau - th.F) / .5);
+  const top = clamp((th.P - th.tau) / .35);
+  const p = S2(th.pos(fl)), q0 = S2(th.p0);
+  DS.b1.setAttribute('cx', f1(p[0])); DS.b1.setAttribute('cy', f1(p[1])); DS.b1.setAttribute('opacity', f1(bop * 10) / 10);
+  DS.tr1.setAttribute('x1', f1(q0[0])); DS.tr1.setAttribute('y1', f1(q0[1]));
+  DS.tr1.setAttribute('x2', f1(p[0])); DS.tr1.setAttribute('y2', f1(p[1])); DS.tr1.setAttribute('opacity', f1(top * 10) / 10);
+  DS.aim1.setAttribute('x1', f1(q0[0])); DS.aim1.setAttribute('y1', f1(q0[1])); DS.aim1.setAttribute('x2', 0); DS.aim1.setAttribute('y2', 0);
+  DS.aim1.setAttribute('opacity', IN ? f1(top * 8) / 10 : 0);
+  const pe = S2(th.pos(th.F)), fr = IN ? .68 : .5, mid = [mix(q0[0], pe[0], fr), mix(q0[1], pe[1], fr)];
+  const dl = Math.hypot(pe[0] - q0[0], pe[1] - q0[1]) || 1, nx = (pe[1] - q0[1]) / dl, ny = -(pe[0] - q0[0]) / dl;
+  let off = 20 + Math.abs(nx) * 56;
+  if (Math.hypot(mid[0] + nx * off, mid[1] + ny * off) < Math.hypot(mid[0] - nx * off, mid[1] - ny * off)) off = -off;
+  setXY(DS.m1, [mid[0] + nx * off, mid[1] + ny * off], 0, 5);
+  DS.m1.setAttribute('opacity', f1(clamp((th.tau - th.F + .2) / .3) * top * 10) / 10);
+  // panel (나): same motion in the disk's frame
+  let d = '';
+  for (let k = 0; k <= 40; k++) { const s = S2(th.dpos(fl * k / 40)); d += (k ? 'L' : 'M') + f1(s[0]) + ',' + f1(s[1]); }
+  DS.tr2.setAttribute('d', d); DS.tr2.setAttribute('opacity', f1(top * 10) / 10);
+  const p2 = S2(th.dpos(fl));
+  DS.b2.setAttribute('cx', f1(p2[0])); DS.b2.setAttribute('cy', f1(p2[1])); DS.b2.setAttribute('opacity', f1(bop * 10) / 10);
+  const e2 = S2(th.dpos(th.F));
+  setXY(DS.m2, e2, IN ? 8 : 12, IN ? 34 : 32);
+  DS.m2.setAttribute('opacity', f1(clamp((th.tau - th.F + .2) / .3) * top * 10) / 10);
+  if (LAYERS.has('dvec')) {
+    const on = th.tau > .2 && th.tau < th.F - .05;
+    const q = S2(th.dpos(fl + .03)), dx = q[0] - p2[0], dy = q[1] - p2[1], L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
+    const set = (ln, t_, ex, ey, len, lx, ly) => {
+      ln.setAttribute('x1', f1(p2[0])); ln.setAttribute('y1', f1(p2[1]));
+      ln.setAttribute('x2', f1(p2[0] + ex * len)); ln.setAttribute('y2', f1(p2[1] + ey * len));
+      setXY(t_, [p2[0] + ex * (len + lx), p2[1] + ey * (len + ly)], 0, 5);
+    };
+    set(DS.vv, DS.vvT, ux, uy, 50, 30, 22);
+    set(DS.vc, DS.vcT, -uy, ux, 46, 26, 20);
+    [DS.vv, DS.vc, DS.vvT, DS.vcT].forEach(n => n.setAttribute('opacity', on ? 1 : 0));
+  }
+}
+
+/* ================= meridional cross-section (NH) ================= */
+const X0 = 105, X1 = 895, GND = 440;
+const LX = lat => X0 + lat * (X1 - X0) / 90;
+const TPC = [[0, 74], [25, 80], [40, 120], [60, 158], [90, 180]];
+function TP(lat) {
+  let i = 0; while (i < TPC.length - 2 && lat > TPC[i + 1][0]) i++;
+  const a = TPC[i], b = TPC[i + 1], t = clamp((lat - a[0]) / (b[0] - a[0])), s = t * t * (3 - 2 * t);
+  return mix(a[1], b[1], s);
+}
+const CELLS = {
+  h: { pts: [[118, 400], [118, 104], [338, 116], [338, 400]], col: '#d4502c', name: '해들리 순환', kind: '직접 순환', c: [228, 250] },
+  f: { pts: [[399, 130], [399, 400], [614, 400], [614, 178]], col: '#2f8f5b', name: '페렐 순환', kind: '간접 순환', c: [506, 278] },
+  p: { pts: [[649, 400], [649, 190], [882, 206], [882, 400]], col: '#2a6fb5', name: '극순환', kind: '직접 순환', c: [765, 304] },
+  c1: { pts: [[118, 400], [118, 104], [882, 200], [882, 400]], col: '#123f70', name: '단일 세포 순환', c: [500, 262] }
+};
+const S = {};
+function grow(pts, d) {
+  const cx = pts.reduce((a, p) => a + p[0], 0) / pts.length, cy = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+  return pts.map(p => [p[0] + Math.sign(p[0] - cx) * d, p[1] + Math.sign(p[1] - cy) * d]);
+}
+function buildSec() {
+  const g = gSec;
+  lin('skyS', 0, 0, 0, 1, [[0, 'var(--sky1)'], [1, 'var(--sky2)']]);
+  lin('gndS', X0, 0, X1, 0, [[0, '#5d8f45'], [.5, '#86996a'], [.72, '#aab7a2'], [.84, '#dfe8ee'], [1, '#f1f5f8']], true);
+  rad('hotS', [[0, '#ff5a32', .75], [1, '#ff5a32', 0]]);
+  rad('coldS', [[0, '#5fb0ff', .8], [1, '#5fb0ff', 0]]);
+  rad('sunS', [[0, '#fff3c4'], [.5, '#ffd166'], [1, '#ffb347']]);
+  el('rect', { x: 0, y: 0, width: 1000, height: 560, fill: 'url(#skyS)' }, g);
+  let d = 'M0,0L1000,0L1000,' + f1(TP(90)) + 'L' + X1 + ',' + f1(TP(90));
+  for (let lat = 90; lat >= 0; lat -= 2) d += 'L' + f1(LX(lat)) + ',' + f1(TP(lat));
+  d += 'L0,' + f1(TP(0)) + 'Z';
+  el('path', { d, fill: '#0a2a50', opacity: .16 }, g);
+  const ltp = lyr('tp', g);
+  let tpd = 'M0,' + f1(TP(0));
+  for (let lat = 0; lat <= 90; lat += 2) tpd += 'L' + f1(LX(lat)) + ',' + f1(TP(lat));
+  tpd += 'L1000,' + f1(TP(90));
+  el('path', { d: tpd, fill: 'none', stroke: '#ffffff', 'stroke-width': 2, 'stroke-dasharray': '8 6', opacity: .8 }, ltp);
+  tx(ltp, LX(74), TP(74) - 10, '대류권 계면', 'ts', 17);
+
+  // heating / cooling
+  const lh = lyr('heat', g);
+  el('ellipse', { cx: LX(3), cy: GND, rx: 120, ry: 46, fill: 'url(#hotS)' }, lh);
+  el('ellipse', { cx: LX(88), cy: GND, rx: 110, ry: 44, fill: 'url(#coldS)' }, lh);
+  tx(lh, LX(8), 428, '가열', 'ts', 19);
+  tx(lh, LX(83), 428, '냉각', 'ts', 19);
+
+  // equator cloud
+  const lce = lyr('cEq', g);
+  const rn = el('g', { class: 'rain2' }, lce);
+  for (let i = 0; i < 11; i++) { const x = 100 + i * 11; el('line', { x1: x, y1: 332 + (i % 3) * 5, x2: x - 6, y2: 436, style: 'animation-delay:' + (-i * .13) + 's' }, rn); }
+  el('path', { d: 'M52,98Q160,66 280,92Q250,114 205,118L118,118Q78,114 52,98Z', fill: '#e9eff4' }, lce);
+  [[150, 140, 28], [170, 170, 32], [138, 202, 34], [178, 236, 36], [142, 268, 38], [188, 292, 32], [116, 300, 30], [160, 316, 38]].forEach(c => el('circle', { cx: c[0], cy: c[1], r: c[2], fill: '#f3f6f9' }, lce));
+  el('ellipse', { cx: 156, cy: 334, rx: 70, ry: 12, fill: '#b8c4cf' }, lce);
+  // 60N cloud
+  const lc6 = lyr('c60', g);
+  const rn6 = el('g', { class: 'rain2' }, lc6);
+  for (let i = 0; i < 9; i++) { const x = 598 + i * 11; el('line', { x1: x, y1: 318 + (i % 3) * 4, x2: x - 6, y2: 436, style: 'animation-delay:' + (-i * .15) + 's' }, rn6); }
+  [[600, 296, 22], [628, 282, 28], [660, 290, 24], [686, 300, 18], [612, 306, 18], [648, 306, 20]].forEach(c => el('circle', { cx: c[0], cy: c[1], r: c[2], fill: '#eef2f6' }, lc6));
+  el('ellipse', { cx: 642, cy: 318, rx: 56, ry: 9, fill: '#b3c0cc' }, lc6);
+  // dry 30N
+  const ldr = lyr('dry', g);
+  const sg = el('g', { transform: `translate(${LX(30)},292)` }, ldr);
+  for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; el('line', { x1: f1(Math.cos(a) * 13), y1: f1(Math.sin(a) * 13), x2: f1(Math.cos(a) * 19), y2: f1(Math.sin(a) * 19), stroke: '#f2a33a', 'stroke-width': 3, 'stroke-linecap': 'round' }, sg); }
+  el('circle', { r: 10, fill: 'url(#sunS)' }, sg);
+
+  // front
+  const lfr = lyr('front', g);
+  rad('warmF', [[0, '#ff8a2c', .5], [1, '#ff8a2c', 0]]);
+  lin('coldF', 0, 250, 0, GND, [[0, '#2f7fe0', .05], [1, '#2f7fe0', .5]], true);
+  lin('frontL', 624, 0, 860, 0, [[0, '#1d4f8f'], [1, '#1d4f8f', 0]], true);
+  el('ellipse', { cx: 500, cy: 420, rx: 170, ry: 90, fill: 'url(#warmF)' }, lfr);
+  el('path', { d: `M624,${GND}L1000,236L1000,${GND}Z`, fill: 'url(#coldF)' }, lfr);
+  el('line', { x1: 624, y1: GND, x2: 860, y2: 312, stroke: 'url(#frontL)', 'stroke-width': 4 }, lfr);
+  tx(lfr, 470, 346, '따뜻한 공기', 'ts', 17);
+  tx(lfr, 800, 352, '찬 공기', 'ts', 17);
+
+  // ground
+  let gd = `M0,560L0,${GND}`;
+  for (let x = 0; x <= 1000; x += 20) gd += `L${x},${f1(GND + 1.5 * Math.sin(x * .05))}`;
+  gd += 'L1000,560Z';
+  el('path', { d: gd, fill: 'url(#gndS)' }, g);
+
+  // biomes
+  const lb = lyr('bio', g);
+  lin('bioG', X0, 0, X1, 0, [[0, '#3f7d3a'], [.14, '#5c8c40'], [.2, '#d9b56b'], [.37, '#d9b56b'], [.44, '#6b9a4b'], [.62, '#4c7744'], [.72, '#93a283'], [.8, '#e6edf1'], [1, '#f6f9fb']], true);
+  el('path', { d: gd, fill: 'url(#bioG)' }, lb);
+  el('path', { d: `M${LX(19)},${GND + 2}Q${LX(21.5)},${GND - 9} ${LX(24)},${GND + 1}Q${LX(26.5)},${GND - 12} ${LX(29.5)},${GND + 1}Q${LX(32)},${GND - 8} ${LX(35)},${GND + 2}Z`, fill: '#e6c47e' }, lb);
+  el('path', { d: `M${LX(20)},${GND + 14}Q${LX(23)},${GND + 7} ${LX(26)},${GND + 14}M${LX(28)},${GND + 20}Q${LX(31)},${GND + 13} ${LX(34)},${GND + 20}`, fill: 'none', stroke: '#c79c4c', 'stroke-width': 2 }, lb);
+  const tree = (x, h, col, kind) => {
+    const t = el('g', { transform: `translate(${f1(x)},${GND + 2})` }, lb);
+    if (kind === 'c') {
+      el('rect', { x: -2, y: -8, width: 4, height: 8, fill: '#5a4027' }, t);
+      el('path', { d: `M0,${-h}L${h * .34},-6L${-h * .34},-6Z`, fill: col }, t);
+    } else if (kind === 'a') {
+      el('path', { d: `M0,0L0,${-h * .7}M0,${-h * .5}L${-h * .3},${-h * .75}`, stroke: '#6b4f2e', 'stroke-width': 3, fill: 'none' }, t);
+      el('ellipse', { cx: 0, cy: -h * .78, rx: h * .55, ry: h * .14, fill: col }, t);
+    } else if (kind === 's') {
+      el('ellipse', { cx: 0, cy: -4, rx: h * .5, ry: 5, fill: col }, t);
+    } else {
+      el('rect', { x: -2.5, y: -h * .5, width: 5, height: h * .5, fill: '#5a4027' }, t);
+      el('circle', { cx: -h * .2, cy: -h * .58, r: h * .26, fill: col }, t);
+      el('circle', { cx: h * .2, cy: -h * .6, r: h * .26, fill: col }, t);
+      el('circle', { cx: 0, cy: -h * .78, r: h * .28, fill: col }, t);
+    }
+  };
+  [[1.5, 36], [4, 30], [6.5, 38], [9, 31], [11.5, 35], [14, 27]].forEach(q => tree(LX(q[0]), q[1], '#2c6e33'));
+  [[16.5, 28]].forEach(q => tree(LX(q[0]), q[1], '#6f8a3a', 'a'));
+  [[41, 26], [44, 30], [47, 25], [50, 28]].forEach(q => tree(LX(q[0]), q[1], '#5f9a46'));
+  [[53, 30], [55.5, 34], [58, 28], [61, 32], [63.5, 27]].forEach(q => tree(LX(q[0]), q[1], '#2f5f3a', 'c'));
+  [[67, 22], [70, 18], [72.5, 20]].forEach(q => tree(LX(q[0]), q[1], '#8a9a6a', 's'));
+  el('path', { d: `M${LX(75)},${GND + 4}C${LX(78)},${GND - 10} ${LX(84)},${GND - 16} 1000,${GND - 18}L1000,${GND + 30}L${LX(75)},${GND + 30}Z`, fill: '#f7fafc', stroke: '#c8d8e4', 'stroke-width': 2 }, lb);
+
+  el('rect', { x: 0, y: GND + 10, width: 1000, height: 560 - GND, fill: '#000', opacity: .14 }, g);
+
+  tx(lyr('dry', g), LX(30), 514, '맑고 건조', 'tw', 15);
+
+  // latitude ticks
+  const ax = el('g', null, g);
+  [[0, '0° 적도'], [30, '30°N'], [60, '60°N'], [90, '90°N 북극']].forEach(q => {
+    el('line', { x1: LX(q[0]), y1: GND + 6, x2: LX(q[0]), y2: GND + 18, stroke: '#ffffff', 'stroke-width': 2.5, opacity: .9 }, ax);
+    tx(ax, LX(q[0]), 544, q[1], 'tw', 18, q[0] === 90 ? 'end' : q[0] === 0 ? 'start' : 'middle').setAttribute('x', q[0] === 90 ? X1 + 30 : q[0] === 0 ? X0 - 30 : LX(q[0]));
+  });
+
+  // big vertical arrows (single-cell intro)
+  const v0 = lyr('v0', g);
+  el('path', { d: 'M118,420L118,190L96,190L140,130L184,190L162,190L162,420Z', fill: '#d63a27', opacity: .5 }, v0);
+  tx(v0, 140, 262, '상승', 'tw', 20);
+  const v9 = lyr('v90', g);
+  el('path', { d: 'M842,230L842,360L820,360L864,420L908,360L886,360L886,230Z', fill: '#2466ad', opacity: .55 }, v9);
+  tx(v9, 864, 300, '하강', 'tw', 20);
+
+  // highlights
+  S.hl = {};
+  [['hH', 'h'], ['hF', 'f'], ['hP', 'p'], ['h1', 'c1']].forEach(q => {
+    const L = lyr(q[0], g);
+    el('path', { d: rrPath(grow(CELLS[q[1]].pts, 16), 44), fill: '#ffffff', opacity: .38, stroke: CELLS[q[1]].col, 'stroke-width': 3.5 }, L);
+  });
+
+  // cells
+  S.cells = {};
+  for (const k of ['c1', 'h', 'f', 'p']) {
+    const C = CELLS[k], L = lyr(k, g);
+    el('path', { d: rrPath(C.pts, 36), fill: 'none', stroke: C.col, 'stroke-width': 2.4, 'stroke-dasharray': '3 8', opacity: .7 }, L);
+    const info = loopInfo(C.pts), n = Math.round(info.L / 44), ps = [];
+    for (let i = 0; i < n; i++) ps.push({ el: el('path', { d: TRI, fill: C.col }, L), u: i / n });
+    tx(L, C.c[0], C.c[1], C.name, 'ts', 22);
+    S.cells[k] = { info, ps };
+  }
+  const lk = lyr('kind', g);
+  ['h', 'f', 'p'].forEach(k => {
+    const C = CELLS[k], t = tx(lk, C.c[0], C.c[1] + 26, '(' + C.kind + ')', 'ts', 17);
+    t.setAttribute('fill', C.col);
+  });
+
+  // pile ring
+  const lp = lyr('pile', g);
+  S.pile = el('circle', { cx: 348, cy: 122, r: 34, fill: 'none', stroke: '#e0a019', 'stroke-width': 4, 'stroke-dasharray': '12 8' }, lp);
+  tx(lp, 360, 182, '동쪽으로 휘어 쌓임', 'ts', 17);
+
+  // surface wind labels
+  [['w1s', 500, '← 북풍 (북 → 남)'], ['wh', 234, '← 북동 무역풍'], ['wf', 500, '편서풍 →'], ['wp', 765, '← 극동풍']].forEach(q => {
+    const L = lyr(q[0], g);
+    tx(L, q[1], 384, q[2], 'ts', 19);
+  });
+
+  // pressure pills
+  const pp = (name, lat, label, low) => {
+    const L = lyr(name, g), w = label.length * 16 + 26;
+    const p = pill(L, label, low ? '#d63a27' : '#2466ad', w, 30, 16);
+    p.setAttribute('transform', `translate(${f1(clamp(LX(lat), w / 2 + 4, 1000 - w / 2 - 4))},478)`);
+  };
+  pp('pEq', 0, '적도 저압대', 1); pp('p30', 30, '아열대 고압대', 0); pp('p60', 60, '한대 전선대', 1); pp('p90', 90, '극 고압대', 0);
+  pp('p1L', 0, '저압대', 1); pp('p1H', 90, '고압대', 0);
+
+  // Korea
+  const lko = lyr('kor', g);
+  el('path', { d: `M${LX(37.5)},${GND - 2}l-7,-16a8,8 0 1 1 14,0z`, fill: '#e2412b', stroke: '#fff', 'stroke-width': 1.5 }, lko);
+  tx(lko, LX(37.5) + 12, 512, '우리나라', 'tw', 15, 'start');
+
+  // lab marker
+  const ll = lyr('lab', g);
+  S.mk = el('g', null, ll);
+  el('line', { x1: 0, y1: 52, x2: 0, y2: GND, stroke: '#0d2945', 'stroke-width': 2.5, 'stroke-dasharray': '6 5' }, S.mk);
+  el('rect', { x: -38, y: 24, width: 76, height: 30, rx: 15, fill: '#0d2945' }, S.mk);
+  S.mkT = tx(S.mk, 0, 45, '', 'tp', 17);
+  el('circle', { cx: 0, cy: GND, r: 11, fill: '#ffd166', stroke: '#0d2945', 'stroke-width': 3 }, S.mk);
+}
+function drawSec(dt) {
+  for (const k in S.cells) {
+    if (!LAYERS.has(k)) continue;
+    const c = S.cells[k];
+    c.ps.forEach(p => {
+      p.u = (p.u + dt * MOT * 62 / c.info.L) % 1;
+      const q = loopPt(c.info, p.u);
+      p.el.setAttribute('transform', `translate(${f1(q.x)},${f1(q.y)}) rotate(${f1(q.ang)}) scale(1.35)`);
+    });
+  }
+  if (LAYERS.has('pile')) S.pile.setAttribute('transform', `rotate(${f1(T * 30)} 348 122)`);
+  if (LAYERS.has('lab')) {
+    S.mk.setAttribute('transform', `translate(${f1(LX(LAB.lat))},0)`);
+    const s = Math.round(LAB.lat) + (LAB.lat >= .5 ? '°N' : '°');
+    if (S.mkT.textContent !== s) S.mkT.textContent = s;
+  }
+}
+
+/* ================= energy-budget graph ================= */
+const GXL = p => 130 + p * 8.4, GYV = v => 470 - (v - 40) * 1.3;
+const EA = p => 65 + 235 * Math.pow(Math.cos(p * D2R), 1.4);
+const EE = p => 180 + 70 * Math.pow(Math.cos(p * D2R), 1.2);
+let PC = 0;
+(function () { let a = 0, b = 90; for (let i = 0; i < 50; i++) { const m = (a + b) / 2; if (EA(m) > EE(m)) a = m; else b = m; } PC = (a + b) / 2; })();
+const GG = {};
+function buildGraph() {
+  const g = gGraph;
+  el('rect', { x: 0, y: 0, width: 1000, height: 560, fill: '#0b1f35' }, g);
+  tx(g, 60, 50, '위도별 복사 에너지의 흡수량과 방출량', 'tp', 26, 'start');
+  tx(g, 60, 80, '연평균, 북반구 (남반구도 비슷하다) · 모식적으로 나타낸 그래프', 'tp', 16, 'start').setAttribute('opacity', .65);
+  const ax = el('g', null, g);
+  el('line', { x1: GXL(0), y1: 470, x2: GXL(90), y2: 470, stroke: '#fff', opacity: .55, 'stroke-width': 1.6 }, ax);
+  el('line', { x1: GXL(0), y1: 470, x2: GXL(0), y2: 104, stroke: '#fff', opacity: .55, 'stroke-width': 1.6 }, ax);
+  for (let p = 0; p <= 90; p += 10) el('line', { x1: GXL(p), y1: 470, x2: GXL(p), y2: p % 30 ? 476 : 480, stroke: '#fff', opacity: .55 }, ax);
+  [[0, '0° 적도'], [30, '30°N'], [60, '60°N'], [90, '90°N']].forEach(q => tx(ax, GXL(q[0]), 504, q[1], 'tp', 17).setAttribute('opacity', .8));
+  tx(ax, GXL(90), 534, '위도', 'tp', 15, 'end').setAttribute('opacity', .7);
+  tx(ax, GXL(0) - 12, 116, '에너지양', 'tp', 15, 'end').setAttribute('opacity', .7);
+  const curve = f => { let d = ''; for (let p = 0; p <= 90; p += 1) d += (p ? 'L' : 'M') + f1(GXL(p)) + ',' + f1(GYV(f(p))); return d; };
+  // balance shading
+  const lb = lyr('gb', g);
+  const band = (a, b, col) => {
+    let d = '';
+    for (let p = a; p <= b + 1e-6; p += .5) d += (d ? 'L' : 'M') + f1(GXL(p)) + ',' + f1(GYV(EA(p)));
+    for (let p = b; p >= a - 1e-6; p -= .5) d += 'L' + f1(GXL(p)) + ',' + f1(GYV(EE(p)));
+    el('path', { d: d + 'Z', fill: col }, lb);
+  };
+  band(0, PC, 'rgba(239,90,60,.55)');
+  band(PC, 90, 'rgba(70,150,235,.55)');
+  el('line', { x1: GXL(PC), y1: GYV(EE(PC)), x2: GXL(PC), y2: 470, stroke: '#fff', 'stroke-width': 1.6, 'stroke-dasharray': '6 5', opacity: .8 }, lb);
+  tx(lb, GXL(PC), 456, '약 38°', 'tw', 17);
+  tx(lb, GXL(10), GYV((EA(10) + EE(10)) / 2) + 7, '에너지 과잉', 'tw', 19).setAttribute('fill', '#ffd2c4');
+  tx(lb, GXL(79), GYV((EA(79) + EE(79)) / 2) + 7, '에너지 부족', 'tw', 19).setAttribute('fill', '#cfe6ff');
+  const la = lyr('ga', g);
+  GG.ca = el('path', { d: curve(EA), fill: 'none', stroke: '#ffb347', 'stroke-width': 4, 'stroke-linejoin': 'round', pathLength: 1000, 'stroke-dasharray': 1000, 'stroke-dashoffset': 1000 }, la);
+  tx(la, GXL(64), GYV(EA(64)) + 34, '흡수하는 태양 복사 에너지', 'tw', 18, 'end').setAttribute('fill', '#ffcf8a');
+  const le = lyr('ge', g);
+  GG.ce = el('path', { d: curve(EE), fill: 'none', stroke: '#8fd0ff', 'stroke-width': 4, 'stroke-linejoin': 'round', pathLength: 1000, 'stroke-dasharray': 1000, 'stroke-dashoffset': 1000 }, le);
+  tx(le, GXL(54), GYV(EE(54)) - 16, '방출하는 지구 복사 에너지', 'tw', 18, 'start').setAttribute('fill', '#bfe4ff');
+  const lt = lyr('gt', g);
+  el('path', { d: `M${GXL(22)},${f1(GYV((EA(22) + EE(22)) / 2))}C${GXL(34)},${f1(GYV((EA(22) + EE(22)) / 2) + 6)} ${GXL(48)},${f1(GYV((EA(56) + EE(56)) / 2) - 26)} ${GXL(64)},${f1(GYV((EA(64) + EE(64)) / 2))}`, fill: 'none', stroke: '#ffd166', 'stroke-width': 4.5, class: 'flow', 'marker-end': 'url(#ahY)' }, lt);
+  tx(lt, GXL(8), 300, '대기와 해수가 남는 에너지를', 'tw', 18, 'start').setAttribute('fill', '#ffe3a1');
+  tx(lt, GXL(8), 326, '고위도로 운반한다', 'tw', 18, 'start').setAttribute('fill', '#ffe3a1');
+}
+
+/* ================= exam figure ================= */
+function buildMini() {
+  const g = gMini;
+  el('rect', { x: 0, y: 0, width: 1000, height: 560, fill: '#fbfaf6' }, g);
+  const hp = el('pattern', { id: 'hatch', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+  el('rect', { width: 8, height: 8, fill: '#e3e5e7' }, hp);
+  el('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: '#9aa2aa', 'stroke-width': 2 }, hp);
+  const MX = lat => 130 + lat * 8.4, top = 70, gnd = 420;
+  el('rect', { x: MX(0), y: gnd, width: MX(90) - MX(0), height: 28, fill: 'url(#hatch)' }, g);
+  el('line', { x1: MX(0), y1: gnd, x2: MX(90), y2: gnd, stroke: '#111', 'stroke-width': 2.5 }, g);
+  el('rect', { x: MX(0), y: top, width: MX(90) - MX(0), height: 448 - top, fill: 'none', stroke: '#111', 'stroke-width': 2 }, g);
+  const ink = (t, x, y, s, sz, an, fam) => { const n = tx(g, x, y, s, 'tq', sz, an); n.setAttribute('fill', '#111'); if (fam) n.setAttribute('font-family', fam); return n; };
+  const cells = [
+    { pts: [[MX(1.5), 400], [MX(1.5), 96], [MX(28.5), 104], [MX(28.5), 400]], L: 'A' },
+    { pts: [[MX(31.5), 112], [MX(31.5), 400], [MX(58.5), 400], [MX(58.5), 150]], L: 'B' },
+    { pts: [[MX(61.5), 400], [MX(61.5), 162], [MX(88.5), 176], [MX(88.5), 400]], L: 'C' }
+  ];
+  cells.forEach(c => {
+    el('path', { d: rrPath(c.pts, 30), fill: 'none', stroke: '#111', 'stroke-width': 2.4 }, g);
+    for (let i = 0; i < 4; i++) {
+      const a = c.pts[i], b = c.pts[(i + 1) % 4], ang = Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI;
+      el('path', { d: 'M9,0L-7,-8L-7,8Z', fill: '#111', transform: `translate(${f1((a[0] + b[0]) / 2)},${f1((a[1] + b[1]) / 2)}) rotate(${f1(ang)})` }, g);
+    }
+    const cx = (c.pts[0][0] + c.pts[2][0]) / 2, cy = (Math.min(c.pts[1][1], c.pts[0][1], c.pts[2][1], c.pts[3][1]) + 400) / 2 + 12;
+    ink(g, cx, cy, c.L, 34, 'middle', '"Times New Roman",Batang,serif').setAttribute('font-weight', 700);
+  });
+  [[0, '0°'], [30, '30°N'], [60, '60°N'], [90, '90°N']].forEach(q => {
+    el('line', { x1: MX(q[0]), y1: 448, x2: MX(q[0]), y2: 456, stroke: '#111', 'stroke-width': 2 }, g);
+    ink(g, MX(q[0]), 480, q[1], 19);
+  });
+  el('rect', { x: MX(30) - 16, y: 423, width: 32, height: 22, fill: '#fbfaf6' }, g);
+  ink(g, MX(30), 441, '㉠', 20);
+  ink(g, 500, 524, '※ 화살표는 공기의 이동 방향이다.', 17).setAttribute('fill', '#444');
+}
+
+/* ================= slide data ================= */
+const SEC3 = ['tp', 'bio', 'cEq', 'pEq', 'p30', 'dry', 'h', 'wh'];
+const SLIDES = [
+  { ch: '들어가며', scene: 'globe', base: { ly: ['cells', 'w3', 'clEq', 'lat'] }, cover: true, steps: [] },
+  {
+    ch: '에너지 불균형', title: '적도는 왜 더 따뜻할까', scene: 'globe', base: { ly: ['lat'] },
+    intro: '지구는 둥글기 때문에 위도에 따라 태양 빛이 지표에 들어오는 각도가 다르다.',
+    steps: [
+      { ly: ['sun', 'night'], t: '태양 빛은 거의 평행하게 지구에 들어온다. 저위도에서는 지표에 거의 수직으로, 고위도로 갈수록 비스듬하게 들어온다.' },
+      { ly: ['beam'], t: '같은 양의 태양 빛이라도 고위도에서는 더 넓은 면적에 퍼진다. 그래서 단위 면적이 받는 태양 복사 에너지는 저위도가 고위도보다 많다.' },
+      { ly: ['tband'], rm: ['beam'], t: '그 결과 저위도는 따뜻하고, 고위도로 갈수록 기온이 낮아진다.' }
+    ]
+  },
+  {
+    ch: '에너지 불균형', title: '남는 곳과 모자라는 곳', scene: 'graph', base: { ly: [] },
+    intro: '위도별로 지구가 흡수하는 태양 복사 에너지와 우주로 내보내는 지구 복사 에너지를 비교해 보자.',
+    steps: [
+      { ly: ['ga'], t: '흡수하는 태양 복사 에너지는 저위도에서 많고, 고위도로 갈수록 크게 줄어든다.' },
+      { ly: ['ge'], t: '방출하는 지구 복사 에너지도 저위도에서 더 많지만, 위도에 따른 차이가 훨씬 작다.' },
+      { ly: ['gb'], t: '위도 약 38°보다 저위도에서는 흡수량이 방출량보다 많아 <b>에너지 과잉</b>이고, 고위도에서는 방출량이 흡수량보다 많아 <b>에너지 부족</b>이다.' },
+      { ly: ['gt'], t: '그런데도 저위도가 계속 뜨거워지거나 고위도가 계속 차가워지지는 않는다. 대기와 해수가 남는 에너지를 고위도로 운반하기 때문이다. 이때 지구 전체 규모로 일어나는 대기의 순환을 <b>대기 대순환</b>이라고 한다.' }
+    ]
+  },
+  {
+    ch: '자전하지 않는 지구', title: '반구마다 하나의 순환', scene: 'sec', base: { ly: ['tp', 'heat'], set: { r: 0 }, bd: 'r0' },
+    intro: '먼저 지구가 자전하지 않는다고 가정해 보자. 그림은 북반구를 적도에서 북극까지 세로로 자른 단면이다.',
+    steps: [
+      { ly: ['v0', 'p1L'], t: '적도에서는 지표가 강하게 가열되어 공기가 상승한다. 상승 기류가 생기는 곳의 지표에는 <b>저압대</b>가 만들어진다.' },
+      { ly: ['v90', 'p1H'], t: '극에서는 지표가 냉각되어 공기가 하강한다. 하강 기류가 생기는 곳의 지표에는 <b>고압대</b>가 만들어진다.' },
+      { ly: ['c1'], rm: ['v0', 'v90'], t: '적도에서 상승한 공기는 상층에서 극 쪽으로 이동하고, 극에서 하강한 공기는 지표를 따라 적도 쪽으로 돌아온다. 이렇게 반구마다 하나의 커다란 순환이 생기는 모형을 <b>단일 세포 순환</b>이라고 한다.' },
+      { ly: ['w1s'], t: '이 모형대로라면 북반구 지표에는 늘 북쪽에서 남쪽으로 부는 <b>북풍</b>만 분다.' },
+      { scene: 'globe', ly: ['cells1', 'w1', 'lat'], t: '지구 전체로 보면 남반구에도 같은 순환이 생겨 지표에는 남풍만 분다. 하지만 실제 지구에서는 위도에 따라 바람의 방향이 다르다. 지구가 자전하기 때문이다.' }
+    ]
+  },
+  {
+    ch: '전향력', title: '도는 원판 위에서 공을 굴리면', scene: 'disk', base: { ly: ['dk1'] },
+    intro: '회전하는 곳에서 움직이는 물체는 어떻게 보일까? 시계 반대 방향으로 도는 원판의 가운데에서 가장자리에 있는 친구에게 공을 굴려 보자.',
+    steps: [
+      { ly: ['d1'], t: '원판 밖에서 보면 공은 굴린 방향으로 똑바로 나아간다. 그동안 원판이 돌아 친구가 다른 곳으로 옮겨 가므로 공은 친구에게 닿지 못한다.' },
+      { ly: ['dk2', 'd2'], t: '이번에는 원판 위에서 함께 도는 친구의 눈으로 보자. 공이 진행 방향의 오른쪽으로 휘어 가는 것처럼 보인다. 실제로 공을 옆으로 미는 것은 없지만 회전하는 곳에서는 이렇게 보인다. 이렇게 물체를 휘게 하는 것처럼 보이는 겉보기 힘을 <b>전향력</b>이라고 한다.' },
+      { ly: ['dvec'], t: '전향력은 물체의 운동 방향에 항상 직각으로 작용한다. 그래서 운동 방향만 바꿀 뿐 속력은 바꾸지 못한다. 물체가 빠르게 움직일수록, 회전이 빠를수록 전향력이 크다.' },
+      { ly: ['dmap'], t: '북극 위에서 내려다보면 지구는 이 원판처럼 시계 반대 방향으로 돈다. 그래서 북반구에서는 움직이는 물체가 진행 방향의 오른쪽으로 휜다. 남극 위에서 내려다보면 지구는 시계 방향으로 돌므로, 남반구에서는 왼쪽으로 휜다.' }
+    ]
+  },
+  {
+    ch: '전향력', title: '저위도에서 고위도로 갈 때도 휠까', scene: 'disk', base: { ly: ['dk1', 'dk2', 'd1', 'd2', 'dhem'], set: { dm: 'out' } },
+    intro: '원판을 북극 위에서 내려다본 북반구라고 생각해 보자. 가운데는 북극(고위도), 가장자리는 적도(저위도)다. 앞에서 굴린 공은 고위도에서 저위도로 움직인 셈이다.',
+    steps: [
+      { set: { dm: 'in' }, t: '이번에는 가장자리(저위도)에서 가운데(고위도)를 향해 공을 굴려 보자. 원판 밖에서 보면 공은 가운데로 가지 않고 옆으로 비껴간다. 가장자리는 빠르게 돌고 있어서, 공도 처음부터 그 빠르기로 옆으로 함께 움직이기 때문이다.' },
+      { ly: ['deast'], t: '원판 위에서 보면 공은 이번에도 진행 방향의 오른쪽, 곧 동쪽으로 휜다. 가운데(고위도)로 갈수록 원판이 도는 속력이 느려지므로, 공이 원판보다 동쪽으로 앞서 나가기 때문이다.' },
+      { ly: ['dvec'], t: '이때도 전향력은 운동 방향의 오른쪽 직각으로 작용한다. 북반구에서는 바람이 고위도로 가든 저위도로 가든 진행 방향의 오른쪽으로 휜다.' },
+      { t: '적도에서 상승해 상층에서 고위도로 가던 공기가 동쪽으로 휘어, 위도 30° 부근에서 더 나아가지 못하고 쌓이는 것도 이 때문이다.' }
+    ]
+  },
+  {
+    ch: '전향력', title: '지구에서 휘는 바람', scene: 'globe', base: { ly: ['lat'], set: { r: 0 }, bd: 'r0' },
+    intro: '이제 실제 지구로 돌아와 보자.',
+    steps: [
+      { set: { r: 1 }, ly: ['spin'], bd: 'r1', t: '지구는 서쪽에서 동쪽으로 자전한다. 그래서 지구에서 움직이는 공기에도 전향력이 작용한다.' },
+      { ly: ['cor'], rm: ['spin'], t: '북반구에서는 공기가 진행 방향의 오른쪽으로, 남반구에서는 왼쪽으로 휜다. 북쪽으로 가든 남쪽으로 가든, 북반구에서는 모두 오른쪽으로 휜다.' },
+      { ly: ['cmag'], t: '극에서는 지표가 원판처럼 제자리에서 돈다. 위도가 낮아질수록 제자리에서 도는 정도가 작아지고, 적도에서는 전혀 돌지 않는다. 그래서 전향력은 적도에서 0이고 고위도로 갈수록 커진다.' },
+      { t: '전향력 때문에 공기는 적도와 극 사이를 한 번에 오가지 못하고 중간에 휘어 버린다. 그 결과 실제 지구에서는 반구마다 순환이 하나가 아니라 세 개로 나뉜다.' }
+    ]
+  },
+  {
+    ch: '해들리 순환', title: '적도에서 위도 30°까지', scene: 'sec', base: { ly: ['tp', 'bio'], bd: 'r1' },
+    intro: '자전하는 지구에서는 반구마다 세 개의 순환이 생긴다. 북반구 단면에서 적도 쪽부터 차례로 살펴보자.',
+    steps: [
+      { ly: ['cEq', 'pEq'], t: '적도에서 가열된 공기가 상승하여 지표에 <b>적도 저압대</b>가 만들어진다. 상승하는 공기 속에서 구름이 잘 생겨 비가 많이 내린다.' },
+      { ly: ['pile', 'p30', 'dry'], t: '상층에서 극 쪽으로 이동하던 공기는 냉각되고, 전향력을 받아 점점 동쪽으로 휘어 고위도로 더 나아가지 못한다. 그래서 위도 30° 부근에서 하강하여 지표에 <b>아열대 고압대</b>가 만들어진다. 하강하는 공기 속에서는 구름이 잘 생기지 않아 건조하다.' },
+      { ly: ['h'], rm: ['pile'], t: '하강한 공기는 지표를 따라 적도 쪽으로 돌아가 순환을 이룬다. 이 순환이 <b>해들리 순환</b>이다.' },
+      { ly: ['wh'], t: '지표에서 적도 쪽으로 부는 바람은 전향력을 받아 휘어져, 북반구에서는 <b>북동 무역풍</b>, 남반구에서는 남동 무역풍이 된다.' }
+    ]
+  },
+  {
+    ch: '극순환', title: '극에서 위도 60°까지', scene: 'sec', base: { ly: SEC3, bd: 'r1' },
+    intro: '이번에는 가장 추운 극 쪽을 보자.',
+    steps: [
+      { ly: ['p90'], t: '극에서는 냉각된 공기가 하강하여 지표에 <b>극 고압대</b>가 만들어진다.' },
+      { ly: ['p'], t: '하강한 공기는 지표를 따라 저위도 쪽으로 이동하다가 위도 60° 부근에서 상승하고, 상층에서 다시 극 쪽으로 이동한다. 이 순환이 <b>극순환</b>이다.' },
+      { ly: ['wp'], t: '지표에서 저위도 쪽으로 부는 바람은 전향력을 받아 동쪽에서 서쪽으로 부는 <b>극동풍</b>이 된다.' }
+    ]
+  },
+  {
+    ch: '페렐 순환', title: '두 순환 사이에서', scene: 'sec', base: { ly: SEC3.concat(['p90', 'p', 'wp']), bd: 'r1' },
+    intro: '위도 30°~60° 사이에서는 양옆의 두 순환에 맞물려 또 하나의 순환이 생긴다.',
+    steps: [
+      { ly: ['wf'], t: '위도 30° 부근에서 하강한 공기의 일부는 지표를 따라 고위도 쪽으로 이동한다. 이 바람이 전향력을 받아 서쪽에서 동쪽으로 부는 <b>편서풍</b>이 된다.' },
+      { ly: ['front', 'p60', 'c60'], t: '위도 60° 부근에서는 따뜻한 편서풍과 찬 극동풍이 만나 <b>한대 전선대</b>가 생긴다. 공기가 상승하는 저압대여서 구름이 잘 생기고 비나 눈이 자주 내린다.' },
+      { ly: ['f'], rm: ['front'], t: '상승한 공기는 상층에서 저위도 쪽으로 이동해 위도 30° 부근에서 하강한다. 이 순환이 <b>페렐 순환</b>이다.' },
+      { ly: ['kind'], t: '해들리 순환과 극순환은 따뜻한 곳에서 상승하고 찬 곳에서 하강하는 <b>직접 순환</b>이다. 페렐 순환은 두 순환 사이에서 함께 맞물려 도는 <b>간접 순환</b>이다.' }
+    ]
+  },
+  {
+    ch: '바람과 기압대', title: '지구를 두른 바람의 띠', scene: 'globe', base: { ly: ['lat'] },
+    intro: '세 순환이 만든 지상의 바람과 기압대를 지구 전체에서 보자.',
+    steps: [
+      { ly: ['w3', 'wlbl'], t: '지상에는 위도대에 따라 <b>무역풍</b>, <b>편서풍</b>, <b>극동풍</b>이 분다. 남반구에도 북반구와 대칭으로 같은 바람의 띠가 있다.' },
+      { ly: ['pres'], t: '바람의 띠 사이에는 <b>적도 저압대</b>, <b>아열대 고압대</b>, <b>한대 전선대</b>, <b>극 고압대</b>가 번갈아 자리 잡는다. 적도 저압대는 남북 반구의 무역풍이 모여드는 곳이어서 <b>열대 수렴대</b>라고도 한다.' },
+      { ly: ['korea'], foc: 127, t: '우리나라는 중위도의 편서풍대에 있다. 그래서 날씨가 대체로 서쪽에서 동쪽으로 변하고, 봄철 황사도 서쪽의 중국과 몽골 내륙에서 날아온다.' }
+    ]
+  },
+  {
+    ch: '기후의 띠', title: '사막과 열대 우림이 생기는 곳', scene: 'globe', base: { ly: ['lat', 'pres'] },
+    intro: '기압대는 그 지역의 강수량과 기후에도 큰 영향을 준다.',
+    steps: [
+      { ly: ['clEq', 'rf'], foc: -22, t: '상승 기류가 발달하는 적도 저압대에서는 구름이 잘 생겨 비가 많이 내린다. 아마존, 콩고, 동남아시아에는 <b>열대 우림</b>이 펼쳐져 있다.' },
+      { ly: ['ds'], foc: 66, t: '하강 기류가 발달하는 아열대 고압대에서는 구름이 잘 생기지 않아 매우 건조하다. 사하라, 아라비아, 칼라하리, 오스트레일리아의 큰 <b>사막</b>이 모두 위도 20°~30° 부근에 몰려 있다.' },
+      { ly: ['cl60'], foc: null, t: '한대 전선대가 있는 위도 60° 부근에서도 전선을 따라 구름이 생겨 강수량이 비교적 많다.' }
+    ]
+  },
+  {
+    ch: '해수의 표층 순환', title: '바람이 바닷물을 민다', scene: 'globe', base: { ly: ['lat', 'w3'] },
+    intro: '꾸준히 부는 지상의 바람은 바다의 표층 해수를 움직여 해류를 만든다.',
+    steps: [
+      { ly: ['gy'], t: '무역풍대에서는 표층 해수가 동쪽에서 서쪽으로, 편서풍대에서는 서쪽에서 동쪽으로 흐른다. 대륙에 막힌 해류는 남북 방향으로 흐르며 큰 순환을 이룬다.' },
+      { ly: ['gyl'], foc: -178, t: '북태평양에서는 북적도 해류, 쿠로시오 해류, 북태평양 해류, 캘리포니아 해류가 이어져 시계 방향으로 돈다. 남반구의 순환은 시계 반대 방향으로 돈다.' },
+      { t: '적도 태평양에서 무역풍의 세기가 평소와 달라지면 해류와 수온 분포도 함께 달라진다. 이것이 엘니뇨와 라니냐다.' }
+    ]
+  },
+  { ch: '실험', title: '직접 바꿔 보기', scene: 'sec', lab: true, interactive: true, steps: [] },
+  {
+    ch: '정리', title: '세 순환 한눈에 보기', scene: 'sec', table: true,
+    base: { ly: ['tp', 'bio', 'cEq', 'c60', 'dry', 'pEq', 'p30', 'p60', 'p90', 'h', 'f', 'p', 'wh', 'wf', 'wp', 'kind'], bd: 'r1' },
+    intro: '북반구의 세 순환을 나란히 놓고 비교해 보자. 누를 때마다 한 열씩 채워진다.',
+    steps: [{ ly: ['hH'] }, { ly: ['hF'], rm: ['hH'] }, { ly: ['hP'], rm: ['hF'] }]
+  },
+  { ch: '확인 문제', title: '확인 문제', scene: 'sec', quiz: true, interactive: true, steps: [] }
+];
+const TABLE_H = [['해들리 순환', 'ch'], ['페렐 순환', 'cf'], ['극순환', 'cp']];
+const TABLE = [
+  ['위도 범위', '0°~30°', '30°~60°', '60°~90°'],
+  ['상승하는 곳', '적도 부근', '위도 60° 부근', '위도 60° 부근'],
+  ['하강하는 곳', '위도 30° 부근', '위도 30° 부근', '극 부근'],
+  ['상층의 흐름', '고위도 쪽으로', '저위도 쪽으로', '고위도 쪽으로'],
+  ['지상의 바람', '무역풍', '편서풍', '극동풍'],
+  ['순환의 종류', '직접 순환', '간접 순환', '직접 순환']
+];
+const QUIZ = [
+  {
+    q: '위도 약 38°보다 고위도인 지역의 에너지 수지에 대한 설명으로 옳은 것은?',
+    o: ['흡수하는 태양 복사 에너지가 방출하는 지구 복사 에너지보다 많다.', '방출하는 지구 복사 에너지가 흡수하는 태양 복사 에너지보다 많다.', '흡수량과 방출량이 항상 같다.'], a: 1,
+    ex: '고위도는 방출량이 흡수량보다 많은 에너지 부족 지역이다. 부족한 에너지는 대기와 해수가 저위도에서 운반해 온다.',
+    scene: 'graph', ly: ['ga', 'ge'], lyA: ['gb']
+  },
+  {
+    q: '위도 30° 부근에 큰 사막이 많이 분포하는 까닭으로 옳은 것은?',
+    o: ['상승 기류가 발달하여 구름이 많이 생기기 때문이다.', '하강 기류가 발달하여 구름이 잘 생기지 않기 때문이다.', '찬 공기와 따뜻한 공기가 만나 전선이 자주 생기기 때문이다.'], a: 1,
+    ex: '위도 30° 부근은 해들리 순환과 페렐 순환의 공기가 하강하는 아열대 고압대다. 하강하는 공기 속에서는 구름이 잘 생기지 않아 강수량이 적다.',
+    scene: 'sec', ly: ['tp', 'h', 'f', 'p'], lyA: ['bio', 'p30', 'dry']
+  },
+  {
+    q: '우리나라가 위치한 중위도 지역의 지표 부근에서 주로 부는 바람은?',
+    o: ['무역풍', '편서풍', '극동풍'], a: 1, row: true,
+    ex: '우리나라는 위도 약 33°~43°에 있어 페렐 순환의 지상풍인 편서풍대에 속한다. 그래서 날씨가 대체로 서쪽에서 동쪽으로 변한다.',
+    scene: 'globe', ly: ['lat', 'korea'], lyA: ['w3', 'wlbl'], foc: 127
+  },
+  {
+    q: '북반구에서 북쪽으로 이동하는 공기는 전향력 때문에 어느 쪽으로 휘어지는가?',
+    o: ['동쪽 (진행 방향의 오른쪽)', '서쪽 (진행 방향의 왼쪽)', '휘어지지 않는다'], a: 0,
+    ex: '북반구에서는 전향력이 진행 방향의 오른쪽 직각으로 작용한다. 북쪽으로 가는 공기의 오른쪽은 동쪽이다. 그래서 상층에서 극 쪽으로 가던 공기가 동쪽으로 휘어 위도 30° 부근에 쌓인다.',
+    scene: 'globe', ly: ['lat'], lyA: ['cor'], set: { r: 1 }
+  },
+  {
+    q: '지구가 자전하지 않는다고 가정할 때, 북반구 지표 부근에서 부는 바람은?',
+    o: ['북풍', '남풍', '서풍'], a: 0, row: true,
+    ex: '자전하지 않으면 반구마다 하나의 순환(단일 세포 순환)만 생긴다. 극에서 하강한 공기가 지표를 따라 적도 쪽으로 이동하므로 북반구 지표에는 북풍이 분다.',
+    scene: 'sec', ly: ['tp', 'heat'], lyA: ['c1', 'w1s', 'p1L', 'p1H'], set: { r: 0 }
+  },
+  {
+    q: '그림은 북반구의 대기 대순환을 모식적으로 나타낸 것이다. A, B, C는 각각 순환 세포이다. 이에 대한 설명으로 옳은 것만을 〈보기〉에서 있는 대로 고른 것은?',
+    bogi: ['ㄱ. A와 C는 직접 순환이다.', 'ㄴ. ㉠의 지표 부근에서는 상승 기류가 발달한다.', 'ㄷ. B의 지표 부근에서는 편서풍이 분다.'],
+    o: ['① ㄱ', '② ㄴ', '③ ㄱ, ㄴ', '④ ㄱ, ㄷ', '⑤ ㄴ, ㄷ'], a: 3, row: true,
+    ex: 'A는 해들리 순환, B는 페렐 순환, C는 극순환이다. A와 C는 따뜻한 곳에서 상승하고 찬 곳에서 하강하는 직접 순환이다(ㄱ 옳음). ㉠은 위도 30° 부근으로, 하강 기류가 발달하는 아열대 고압대다(ㄴ 틀림). B의 지표에서는 편서풍이 분다(ㄷ 옳음).',
+    scene: 'mini', ly: [], lyA: []
+  }
+];
+const QT = ['고위도의 에너지 수지', '위도 30° 부근의 사막', '우리나라의 지상풍', '북반구에서 전향력의 방향', '자전하지 않는 지구의 바람', '대기 대순환 모형 해석'];
+
+/* ================= sound (Web Audio, synthesized) ================= */
+const SND = { ctx: null, on: true, master: null, amb: null, last: 0 };
+try { if (localStorage.getItem('gcirc-sound') === '0') SND.on = false; } catch (e) {}
+function sndInit() {
+  if (SND.ctx) { if (SND.ctx.state === 'suspended' && !document.hidden) SND.ctx.resume(); return; }
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+  const ctx = SND.ctx = new AC();
+  SND.master = ctx.createGain();
+  SND.master.gain.value = SND.on ? 1 : 0;
+  SND.master.connect(ctx.destination);
+  const len = ctx.sampleRate * 3, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+  let b = 0;
+  for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; b = .97 * b + .03 * w; d[i] = w * .6 + b * 2.4; }
+  SND.buf = buf;
+  const mk = (type, freq, q, off) => {
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+    const g = ctx.createGain(); g.gain.value = 0;
+    src.connect(f); f.connect(g); g.connect(SND.master);
+    src.start(ctx.currentTime, off);
+    return { f, g };
+  };
+  SND.amb = { wave: mk('lowpass', 380, .7, 0), wind: mk('bandpass', 600, 1.1, 1), rain: mk('highpass', 2800, .5, 2) };
+  if (ctx.state === 'suspended') ctx.resume();
+}
+function sndReady() { return SND.ctx && SND.ctx.state === 'running' && SND.on; }
+function tone(f1, f2, dur, type, vol, delay) {
+  if (!sndReady()) return;
+  const ctx = SND.ctx, t = ctx.currentTime + (delay || 0);
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type || 'sine';
+  o.frequency.setValueAtTime(f1, t);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + .012);
+  g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g); g.connect(SND.master);
+  o.start(t); o.stop(t + dur + .05);
+}
+function whoosh() {
+  if (!sndReady()) return;
+  const ctx = SND.ctx, t = ctx.currentTime;
+  const src = ctx.createBufferSource(); src.buffer = SND.buf;
+  const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.4;
+  f.frequency.setValueAtTime(260, t); f.frequency.exponentialRampToValueAtTime(1600, t + .32);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.16, t + .08); g.gain.exponentialRampToValueAtTime(.0001, t + .42);
+  src.connect(f); f.connect(g); g.connect(SND.master);
+  src.start(t, Math.random()); src.stop(t + .5);
+}
+const SFX = {
+  step: () => tone(520, 760, .13, 'sine', .07),
+  slide: () => whoosh(),
+  tick: () => tone(880, 0, .06, 'triangle', .05),
+  ok: () => { tone(1047, 0, .4, 'sine', .09); tone(1319, 0, .5, 'sine', .09, .11); },
+  no: () => { tone(330, 0, .2, 'triangle', .09); tone(247, 0, .32, 'triangle', .09, .15); },
+  done: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0, .45, 'sine', .07, i * .1))
+};
+function sndUpdate() {
+  if (!SND.ctx || SND.ctx.state !== 'running' || !SND.amb) return;
+  const t = SND.ctx.currentTime;
+  if (t - SND.last < .08) return;
+  SND.last = t;
+  const has = (...a) => a.some(n => LAYERS.has(n));
+  let wave = 0, wind = 0, rain = 0;
+  if (curScene === 'globe') {
+    if (has('w3', 'w1', 'cells', 'cells1')) wind = .04;
+    if (has('clEq', 'cl60')) rain = .022;
+    if (has('gy')) wave = .045;
+  } else if (curScene === 'sec') {
+    if (has('c1', 'h', 'f', 'p')) wind = .035;
+    if (has('cEq', 'c60')) rain = .03;
+  }
+  wind *= .75 + .25 * Math.sin(T * .9) * Math.sin(T * .37);
+  const A = SND.amb;
+  A.wave.g.gain.setTargetAtTime(wave, t, .4);
+  A.wind.g.gain.setTargetAtTime(wind, t, .4);
+  A.wind.f.frequency.setTargetAtTime(560 + 90 * Math.sin(T * 1.3), t, .4);
+  A.rain.g.gain.setTargetAtTime(rain, t, .5);
+}
+function sndSet(on, init) {
+  SND.on = on;
+  try { localStorage.setItem('gcirc-sound', on ? '1' : '0'); } catch (e) {}
+  if (on && !init) sndInit();
+  if (SND.master) SND.master.gain.setTargetAtTime(on ? 1 : 0, SND.ctx.currentTime, .08);
+  const btn = document.getElementById('snd');
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  btn.setAttribute('aria-label', on ? '소리 끄기' : '소리 켜기');
+  btn.querySelector('.w').style.display = on ? '' : 'none';
+  btn.querySelector('.x').style.display = on ? 'none' : '';
+}
+['pointerdown', 'keydown'].forEach(ev => addEventListener(ev, () => { if (SND.on) sndInit(); }, true));
+document.addEventListener('visibilitychange', () => {
+  if (!SND.ctx) return;
+  if (document.hidden) SND.ctx.suspend(); else if (SND.on) SND.ctx.resume();
+});
+document.getElementById('snd').addEventListener('click', () => sndSet(!SND.on));
+sndSet(SND.on, true);
+
+/* ================= state & rendering ================= */
+let LAYERS = new Set();
+let curScene = null, BADGE = null, badgeKey = '';
+const cur = { s: 0, k: 0 };
+const stage = $('#stage'), cap = $('#cap'), inner = cap.querySelector('.inner');
+const DRAWN = { ga: () => GG.ca, ge: () => GG.ce };
+
+function setScene(name) {
+  if (curScene === name) return false;
+  for (const k in SCN) SCN[k].classList.toggle('on', k === name);
+  curScene = name;
+  return true;
+}
+function restartDraw(p, dur) {
+  p.style.transition = 'none';
+  p.style.strokeDashoffset = '1000';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    p.style.transition = 'stroke-dashoffset ' + (RM ? .01 : dur) + 's ease-in-out';
+    p.style.strokeDashoffset = '0';
+  }));
+}
+function setLayers(set) {
+  svg.querySelectorAll('[data-ly]').forEach(n => {
+    const name = n.getAttribute('data-ly'), on = set.has(name), was = n.classList.contains('vis');
+    if (on && !was && DRAWN[name]) restartDraw(DRAWN[name](), 2);
+    n.classList.toggle('vis', on);
+  });
+  LAYERS = new Set(set);
+}
+function drawNow() { lastLon = null; if (curScene === 'sec') drawSec(0); else if (curScene === 'globe') drawGlobe(0); else if (curScene === 'disk') drawDisk(); }
+function applyState(st) {
+  const changed = setScene(st.scene);
+  SC.r.tgt = st.set && st.set.r != null ? st.set.r : 1;
+  if (changed) SC.r.cur = SC.r.tgt;
+  SC.foc = st.foc == null ? null : st.foc;
+  const dm = st.set && st.set.dm ? st.set.dm : 'out';
+  if (dm !== DK.mode || changed) { DK.mode = dm; DK.t0 = T; }
+  setLayers(st.ly);
+  BADGE = st.bd || null;
+  drawNow();
+}
+function stateAt(sl, k) {
+  const b = sl.base || {};
+  const st = { scene: sl.scene, ly: new Set(b.ly || []), set: Object.assign({ r: 1 }, b.set || {}), bd: b.bd || null, foc: b.foc == null ? null : b.foc };
+  for (let i = 0; i < k; i++) {
+    const s = sl.steps[i];
+    if (s.scene) st.scene = s.scene;
+    (s.ly || []).forEach(x => st.ly.add(x));
+    (s.rm || []).forEach(x => st.ly.delete(x));
+    if (s.set) Object.assign(st.set, s.set);
+    if ('bd' in s) st.bd = s.bd;
+    if ('foc' in s) st.foc = s.foc;
+  }
+  return st;
+}
+const BD = { r0: '자전하지 않는 지구', r1: '자전하는 지구' };
+function updateBadge() {
+  let k = BADGE;
+  if (k === 'lab') k = LAB.rot ? 'r1' : 'r0';
+  k = k || '';
+  if (k === badgeKey) return;
+  badgeKey = k;
+  const b = $('#badge');
+  if (!k) { b.classList.remove('on'); return; }
+  b.className = 'on ' + k;
+  b.textContent = BD[k];
+}
+
+/* ---------- captions ---------- */
+function h(tag, cls, html) { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; }
+function renderCaption(sl) {
+  inner.innerHTML = '';
+  cap.classList.toggle('inter', !!sl.interactive);
+  stage.classList.toggle('inter', !!sl.interactive);
+  cap.scrollTop = 0;
+  if (sl.cover) return renderCover();
+  if (sl.lab) return renderLab();
+  if (sl.quiz) return renderQuiz();
+  inner.appendChild(h('h2', null, sl.title));
+  inner.appendChild(h('p', 'intro', sl.intro));
+  if (sl.table) return renderTable();
+  sl.steps.forEach(s => inner.appendChild(h('p', 'st', s.t)));
+}
+function updateSteps(sl, k) {
+  if (sl.table) { inner.querySelectorAll('[data-c]').forEach(n => n.classList.toggle('on', +n.dataset.c <= k)); return; }
+  let now = null;
+  inner.querySelectorAll('.st').forEach((p, i) => {
+    p.classList.toggle('on', i < k);
+    p.classList.toggle('now', i === k - 1);
+    if (i === k - 1) now = p;
+  });
+  if (now && now.scrollIntoView) now.scrollIntoView({ block: 'nearest', behavior: RM ? 'auto' : 'smooth' });
+}
+function renderCover() {
+  inner.innerHTML = '<div class="cover"><h1>대기<br>대순환</h1><div class="en">General Circulation of the Atmosphere</div>' +
+    '<p class="lead">위도에 따른 에너지 불균형 때문에 지구 전체 규모로 일어나는 대기의 순환</p>' +
+    '<p class="org">위도 20°~30° 부근에는 사하라, 아라비아, 오스트레일리아 사막 같은 큰 사막이 띠처럼 늘어서 있고, 적도 부근에는 열대 우림이 펼쳐져 있다. 이런 배치가 생기는 까닭을 대기의 순환에서 찾아보자.</p>' +
+    '<button class="go" type="button" id="goBtn">시작하기</button>' +
+    '<p class="small">화면을 누르면 다음 내용이 나온다. 좌우로 밀거나 키보드의 ←, → 키(발표용 리모컨 포함)로도 넘길 수 있다.</p></div>';
+  $('#goBtn').onclick = () => next();
+}
+function renderTable() {
+  const t = h('table', 'cmp');
+  t.innerHTML = '<thead><tr><th></th>' + TABLE_H.map((c, i) => `<th data-c="${i + 1}" class="${c[1]}">${c[0]}</th>`).join('') + '</tr></thead><tbody>' +
+    TABLE.map((r, j) => `<tr><th>${r[0]}</th>${[1, 2, 3].map(i => `<td data-c="${i}"${j >= 4 ? ' class="k"' : ''}>${r[i]}</td>`).join('')}</tr>`).join('') + '</tbody>';
+  inner.appendChild(t);
+}
+
+/* ---------- lab ---------- */
+const LAB = { lat: 37, rot: 1 };
+function labInfo(lat, rot) {
+  const L = Math.round(lat);
+  if (!rot) {
+    if (L <= 5) return ['단일 세포 순환', '상승 기류', ['저압대', 'lo'], '약함 (바람이 모여드는 곳)', '구름이 많고 비가 많이 내린다.', '지구가 자전하지 않아도 적도에서는 가열된 공기가 상승한다.'];
+    if (L >= 85) return ['단일 세포 순환', '하강 기류', ['고압대', 'hi'], '약함 (바람이 흩어지는 곳)', '매우 춥고 건조하다.', '극에서 냉각된 공기가 하강한다.'];
+    const n = L >= 25 && L <= 35 ? '자전하지 않으면 이 위도에는 하강 기류가 생기지 않는다. 자전하는 지구로 바꿔 비교해 보자.'
+      : L >= 55 && L <= 65 ? '자전하지 않으면 이 위도에는 상승 기류가 생기지 않는다. 자전하는 지구로 바꿔 비교해 보자.'
+        : '이 모형에서는 적도와 극 사이 어디에서나 지표의 공기가 적도 쪽으로 흐른다.';
+    return ['단일 세포 순환', '뚜렷하지 않음 (지표에서는 적도 쪽으로 흐름)', ['뚜렷한 기압대 없음', ''], '북풍', '적도에서 멀어질수록 춥다.', n];
+  }
+  const cell = L < 30 ? '해들리 순환 (직접 순환)' : L < 60 ? '페렐 순환 (간접 순환)' : '극순환 (직접 순환)';
+  const cellB = L === 30 ? '해들리 순환과 페렐 순환의 경계' : L === 60 ? '페렐 순환과 극순환의 경계' : cell;
+  if (L <= 5) return [cellB, '상승 기류', ['적도 저압대', 'lo'], '약함 (남북의 무역풍이 모여드는 곳)', '구름이 많고 비가 많이 내린다. 열대 우림이 발달한다.', '남북 반구의 무역풍이 모이는 이곳을 열대 수렴대라고도 한다.'];
+  if (L < 25) return [cellB, '뚜렷하지 않음 (지표에서는 적도 쪽으로 흐름)', ['뚜렷한 기압대 없음', ''], '북동 무역풍', '비교적 맑은 날이 많다.', '적도 쪽으로 가던 바람이 전향력을 받아 오른쪽(서쪽)으로 휘어 북동풍이 된다.'];
+  if (L <= 35) return [cellB, '하강 기류', ['아열대 고압대', 'hi'], '약함 (바람이 흩어지는 곳)', '건조하다. 큰 사막이 많다.', '자전하는 지구에서는 이 위도에 하강 기류가 생겨 사막이 발달한다. 자전하지 않는 지구로 바꿔 비교해 보자.'];
+  if (L < 55) return [cellB, '뚜렷하지 않음 (지표에서는 고위도 쪽으로 흐름)', ['뚜렷한 기압대 없음', ''], '편서풍', '날씨 변화가 잦다.', L >= 33 && L <= 43 ? '우리나라가 있는 위도다. 편서풍의 영향으로 날씨가 대체로 서쪽에서 동쪽으로 변한다.' : '고위도 쪽으로 가던 바람이 전향력을 받아 오른쪽(동쪽)으로 휘어 서풍이 된다.'];
+  if (L <= 65) return [cellB, '상승 기류', ['한대 전선대', 'lo'], '편서풍과 극동풍이 만남', '구름이 많고 비나 눈이 자주 내린다.', '따뜻한 편서풍과 찬 극동풍이 만나 전선이 생긴다.'];
+  if (L < 85) return [cellB, '뚜렷하지 않음 (지표에서는 저위도 쪽으로 흐름)', ['뚜렷한 기압대 없음', ''], '극동풍', '춥고 건조하다.', '저위도 쪽으로 가던 바람이 전향력을 받아 오른쪽(서쪽)으로 휘어 동풍이 된다.'];
+  return [cellB, '하강 기류', ['극 고압대', 'hi'], '약함 (바람이 흩어지는 곳)', '매우 춥고 건조하다.', '극에서 냉각된 공기가 하강한다.'];
+}
+function labLayers() {
+  const L = Math.round(LAB.lat);
+  const base = ['tp', 'lab', 'kor'];
+  if (!LAB.rot) return new Set(base.concat(['heat', 'c1', 'p1L', 'p1H', 'w1s', 'cEq', 'h1']));
+  return new Set(base.concat(['bio', 'h', 'f', 'p', 'pEq', 'p30', 'p60', 'p90', 'wh', 'wf', 'wp', 'cEq', 'c60', 'dry', L < 30 ? 'hH' : L < 60 ? 'hF' : 'hP']));
+}
+const RO = ['순환', '연직 기류', '지표의 기압대', '지표의 바람', '날씨'];
+function renderLab() {
+  inner.innerHTML = '<h2>직접 바꿔 보기</h2><p class="intro">지구의 자전 여부와 위도를 바꾸며 대기 대순환이 어떻게 달라지는지 확인해 보자. 그림을 눌러 위도를 고를 수도 있다.</p>' +
+    '<div class="seg" role="group" aria-label="지구 고르기"><button type="button" data-r="0">자전하지 않는 지구</button><button type="button" data-r="1">자전하는 지구</button></div>' +
+    '<label class="sl" for="latR">위도 <span id="latV"></span></label>' +
+    `<input type="range" id="latR" min="0" max="90" step="1" value="${LAB.lat}">` +
+    '<div class="scale4"><span style="left:0">적도</span><span style="left:33.33%">30°N</span><span style="left:66.67%">60°N</span><span style="left:100%">북극</span></div>' +
+    '<button type="button" class="kor" id="korB">우리나라 위도(약 37°N)로</button>' +
+    '<div class="ro">' + RO.map((r, i) => `<span>${r}</span><span id="ro${i}"></span>`).join('') + '</div>' +
+    '<p class="note" id="labNote"></p>';
+  const r = $('#latR');
+  r.addEventListener('input', () => setLab(+r.value, LAB.rot));
+  inner.querySelectorAll('.seg button').forEach(b => b.onclick = () => { SFX.tick(); setLab(LAB.lat, +b.dataset.r); });
+  $('#korB').onclick = () => { SFX.tick(); setLab(37, LAB.rot); };
+  applyState({ scene: 'sec', ly: labLayers(), set: { r: LAB.rot }, bd: 'lab' });
+  setLab(LAB.lat, LAB.rot);
+}
+let labKey = '';
+function setLab(lat, rot) {
+  LAB.lat = clamp(lat, 0, 90); LAB.rot = rot;
+  const r = $('#latR'); if (r && +r.value !== Math.round(LAB.lat)) r.value = Math.round(LAB.lat);
+  inner.querySelectorAll('.seg button').forEach(b => b.classList.toggle('sel', +b.dataset.r === rot));
+  const v = $('#latV'); if (v) v.textContent = Math.round(LAB.lat) ? Math.round(LAB.lat) + '°N' : '0° (적도)';
+  const info = labInfo(LAB.lat, rot);
+  RO.forEach((_, i) => {
+    const n = document.getElementById('ro' + i); if (!n) return;
+    if (i === 2) n.innerHTML = `<b class="${info[2][1]}">${info[2][0]}</b>`;
+    else n.innerHTML = `<b>${info[i > 2 ? i : i]}</b>`;
+  });
+  const nt = $('#labNote'); if (nt) nt.textContent = info[5];
+  const set = labLayers(), key = [...set].join();
+  if (key !== labKey) { labKey = key; setLayers(set); SC.r.tgt = rot; }
+}
+function stageLat(e) {
+  const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+  const m = svg.getScreenCTM(); if (!m) return null;
+  const q = pt.matrixTransform(m.inverse());
+  return (q.x - X0) / (X1 - X0) * 90;
+}
+
+/* ---------- quiz ---------- */
+const QZ = { i: 0, ans: QUIZ.map(() => null), done: false };
+const CIR = ['①', '②', '③', '④', '⑤', '⑥'];
+function quizScene(q, answered) {
+  applyState({ scene: q.scene, ly: new Set(q.ly.concat(answered ? q.lyA || [] : [])), set: Object.assign({ r: 1 }, q.set || {}), bd: null, foc: q.foc == null ? null : q.foc });
+}
+function renderQuiz() {
+  if (QZ.done) return renderResult();
+  const q = QUIZ[QZ.i], a = QZ.ans[QZ.i];
+  quizScene(q, a !== null);
+  inner.innerHTML = `<h2>확인 문제</h2><div class="qh">${QZ.i + 1} / ${QUIZ.length}</div><p class="q">${q.q}</p>` +
+    (q.bogi ? `<div class="bogi"><div class="bt">〈보기〉</div>${q.bogi.map(b => `<p>${b}</p>`).join('')}</div>` : '') +
+    `<div class="opts${q.row ? ' row' : ''}">` + q.o.map((o, i) => `<button type="button" class="opt" data-i="${i}">${q.bogi ? o : CIR[i] + ' ' + o}</button>`).join('') + '</div>' +
+    '<div id="fbx"></div>' +
+    `<div class="qnav"><button type="button" id="qp"${QZ.i === 0 ? ' disabled' : ''}>이전 문제</button><button type="button" id="qn" class="pri">${QZ.i === QUIZ.length - 1 ? '결과 보기' : '다음 문제'}</button></div>`;
+  inner.querySelectorAll('.opt').forEach(b => b.onclick = () => answer(+b.dataset.i));
+  $('#qp').onclick = () => { SFX.step(); QZ.i--; renderQuiz(); };
+  $('#qn').onclick = () => { if (QZ.i === QUIZ.length - 1) { QZ.done = true; SFX.done(); } else { QZ.i++; SFX.step(); } renderQuiz(); };
+  if (a !== null) showFb();
+  cap.scrollTop = 0;
+  updateNav();
+}
+function answer(i) {
+  if (QZ.ans[QZ.i] !== null) return;
+  QZ.ans[QZ.i] = i;
+  (i === QUIZ[QZ.i].a ? SFX.ok : SFX.no)();
+  showFb();
+  quizScene(QUIZ[QZ.i], true);
+}
+function showFb() {
+  const q = QUIZ[QZ.i], a = QZ.ans[QZ.i], ok = a === q.a;
+  inner.querySelectorAll('.opt').forEach(b => {
+    const i = +b.dataset.i;
+    b.disabled = true;
+    if (i === q.a) b.classList.add('right');
+    else if (i === a) b.classList.add('wrong');
+  });
+  const lab = q.bogi ? q.o[q.a] : CIR[q.a] + ' ' + q.o[q.a];
+  $('#fbx').innerHTML = `<div class="fb${ok ? '' : ' x'}"><b>${ok ? '정답' : '오답'}</b>${ok ? '' : ` (정답: ${lab})`}<br>${q.ex}</div>`;
+  const f = $('#fbx .fb'); if (f && f.scrollIntoView) f.scrollIntoView({ block: 'nearest', behavior: RM ? 'auto' : 'smooth' });
+}
+function renderResult() {
+  const n = QZ.ans.filter((a, i) => a === QUIZ[i].a).length;
+  applyState({ scene: 'globe', ly: new Set(['cells', 'w3', 'lat', 'clEq']), set: { r: 1 }, bd: null });
+  inner.innerHTML = `<h2>확인 문제 결과</h2><div class="score">${n} / ${QUIZ.length}</div><ul class="rlist">` +
+    QUIZ.map((q, i) => { const ok = QZ.ans[i] === q.a; return `<li><span class="mk ${ok ? 'o' : 'x'}">${ok ? '○' : '×'}</span><span>${i + 1}. ${QT[i]}</span></li>`; }).join('') +
+    '</ul><div class="qnav"><button type="button" id="qr">다시 풀기</button><button type="button" id="q0" class="pri">처음부터 다시 보기</button></div>';
+  $('#qr').onclick = () => { SFX.step(); QZ.i = 0; QZ.ans = QUIZ.map(() => null); QZ.done = false; renderQuiz(); };
+  $('#q0').onclick = () => go(0);
+  cap.scrollTop = 0;
+  updateNav();
+}
+
+/* ---------- navigation ---------- */
+function maxK(sl) { return sl.steps.length; }
+function show(slideChanged) {
+  const sl = SLIDES[cur.s];
+  if (slideChanged) { labKey = ''; renderCaption(sl); }
+  if (!sl.lab && !sl.quiz) applyState(stateAt(sl, cur.k));
+  (slideChanged ? SFX.slide : SFX.step)();
+  updateSteps(sl, cur.k);
+  updateNav();
+}
+function next() {
+  const sl = SLIDES[cur.s];
+  if (!sl.interactive && cur.k < maxK(sl)) { cur.k++; show(false); }
+  else if (cur.s < SLIDES.length - 1) { cur.s++; cur.k = 0; show(true); }
+}
+function prev() {
+  const sl = SLIDES[cur.s];
+  if (!sl.interactive && cur.k > 0) { cur.k--; show(false); }
+  else if (cur.s > 0) { cur.s--; cur.k = maxK(SLIDES[cur.s]); show(true); }
+}
+function go(s) { cur.s = s; cur.k = 0; show(true); }
+function updateNav() {
+  const sl = SLIDES[cur.s], mk = maxK(sl), N = SLIDES.length;
+  $('#prev').disabled = cur.s === 0 && cur.k === 0;
+  $('#next').disabled = cur.s === N - 1;
+  $('#barI').style.width = ((cur.s + (mk ? cur.k / mk : 1)) / N * 100).toFixed(1) + '%';
+  $('#cnt').textContent = (cur.s + 1) + ' / ' + N;
+  $('#kicker').textContent = sl.ch;
+  $('#pips').innerHTML = Array.from({ length: mk }, (_, i) => `<i class="${i < cur.k ? 'on' : ''}"></i>`).join('');
+  const hint = document.getElementById('hint');
+  const on = !sl.interactive && cur.s < N - 1;
+  hint.classList.toggle('on', on);
+  hint.querySelector('span').textContent = sl.cover ? '누르면 시작' : cur.k < mk ? '누르면 계속' : '누르면 다음 장';
+}
+
+/* ---------- input ---------- */
+let suppress = false, sx = null, sy = 0, dragLab = false;
+function onTap(e) {
+  if (suppress) { suppress = false; return; }
+  if (SLIDES[cur.s].interactive) return;
+  if (e.target.closest('button,a,input,label,select')) return;
+  const sel = window.getSelection && String(window.getSelection());
+  if (sel) return;
+  next();
+}
+function pd(e) {
+  if (e.target.closest('input,button')) { sx = null; return; }
+  if (SLIDES[cur.s].lab && e.currentTarget === stage) {
+    const l = stageLat(e);
+    if (l != null) { dragLab = true; sx = null; try { stage.setPointerCapture(e.pointerId); } catch (_) {} setLab(Math.round(l), LAB.rot); }
+    return;
+  }
+  sx = e.clientX; sy = e.clientY;
+}
+function pm(e) {
+  if (!dragLab) return;
+  const l = stageLat(e); if (l != null) setLab(Math.round(l), LAB.rot);
+}
+function pu(e) {
+  if (dragLab) { dragLab = false; return; }
+  if (sx === null) return;
+  const dx = e.clientX - sx, dy = e.clientY - sy;
+  sx = null;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > 1.4 * Math.abs(dy)) {
+    suppress = true; setTimeout(() => { suppress = false; }, 450);
+    dx < 0 ? next() : prev();
+  }
+}
+[stage, cap].forEach(n => {
+  n.addEventListener('click', onTap);
+  n.addEventListener('pointerdown', pd);
+  n.addEventListener('pointerup', pu);
+  n.addEventListener('pointercancel', () => { sx = null; dragLab = false; });
+});
+stage.addEventListener('pointermove', pm);
+$('#next').onclick = () => next();
+$('#prev').onclick = () => prev();
+addEventListener('keydown', e => {
+  const t = e.target, tag = t && t.tagName;
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (tag === 'BUTTON' && (e.key === ' ' || e.key === 'Enter')) return;
+  if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); next(); }
+  else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); prev(); }
+  else if (e.key === 'Home') { e.preventDefault(); go(0); }
+  else if (e.key === 'End') { e.preventDefault(); go(SLIDES.length - 1); }
+  else if (e.key === 'f' || e.key === 'F') toggleFS();
+  else if (e.key === 'm' || e.key === 'M') sndSet(!SND.on);
+});
+const fsb = $('#fs');
+if (!document.fullscreenEnabled) fsb.hidden = true;
+function toggleFS() {
+  if (!document.fullscreenEnabled) return;
+  if (document.fullscreenElement) document.exitFullscreen();
+  else { const p = document.documentElement.requestFullscreen(); if (p && p.catch) p.catch(() => {}); }
+}
+fsb.onclick = toggleFS;
+document.addEventListener('fullscreenchange', () => fsb.setAttribute('aria-label', document.fullscreenElement ? '전체 화면 끝내기' : '전체 화면'));
+
+/* ---------- loop ---------- */
+let last = performance.now();
+function frame(now) {
+  let dt = (now - last) / 1000; last = now;
+  if (!(dt > 0)) dt = 0;
+  dt = Math.min(dt, .05);
+  T += dt * MOT;
+  SC.r.cur += (SC.r.tgt - SC.r.cur) * (1 - Math.exp(-dt * 1.6));
+  if (curScene === 'sec') drawSec(dt); else if (curScene === 'globe') drawGlobe(dt); else if (curScene === 'disk') drawDisk();
+  updateBadge();
+  sndUpdate();
+  requestAnimationFrame(frame);
+}
+
+buildGlobe(); buildDisk(); buildSec(); buildGraph(); buildMini();
+show(true);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

@@ -1,0 +1,1494 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>엘니뇨 인터랙티브 학습 자료</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e6ecf1; --ink:#0f2236; --muted:#566779; --line:#c8d3dc; --panel:#f5f8fa;
+  --warm:#d9412f; --cold:#2f7fc1; --ok:#1f8a5b; --hi:#f6c46a;
+  --sky1:#86c8ee; --sky2:#d6eefa; --skyInk:#0d2945; --halo:#eef7fc; --walk:#123f70;
+  --btn:#0f2236; --btnInk:#f2f6f9;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#07121d; --ink:#e3ecf4; --muted:#8ea3b6; --line:#1d3349; --panel:#0d1c2c;
+    --warm:#ef5a44; --cold:#4d9be0; --ok:#3cc488;
+    --sky1:#0c2848; --sky2:#265687; --skyInk:#e8f2fb; --halo:#0b2440; --walk:#e8f2fb;
+    --btn:#e3ecf4; --btnInk:#07121d; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#07121d; --ink:#e3ecf4; --muted:#8ea3b6; --line:#1d3349; --panel:#0d1c2c;
+  --warm:#ef5a44; --cold:#4d9be0; --ok:#3cc488;
+  --sky1:#0c2848; --sky2:#265687; --skyInk:#e8f2fb; --halo:#0b2440; --walk:#e8f2fb;
+  --btn:#e3ecf4; --btnInk:#07121d; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{height:100%;margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:16px/1.65 "IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  overflow:hidden; -webkit-tap-highlight-color:transparent; word-break:keep-all;
+}
+button{font:inherit}
+:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+#app{
+  height:100%; max-width:1680px; margin:0 auto; display:flex; flex-direction:column;
+  padding:0 max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px));
+}
+header{flex:none;display:flex;align-items:center;gap:10px;min-height:54px}
+.brand{font-family:"Black Han Sans","IBM Plex Sans KR",sans-serif;font-size:23px;line-height:1;white-space:nowrap}
+.brand small{font-family:"IBM Plex Sans KR",sans-serif;font-weight:500;font-size:14px;color:var(--muted);margin-left:6px}
+#kicker{flex:1;min-width:0;color:var(--muted);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-left:1px solid var(--line);padding-left:14px}
+.ibtn{flex:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.ibtn svg{width:20px;height:20px}
+main{flex:1;min-height:0;display:flex;flex-direction:column;gap:14px}
+#stageWrap{flex:none;width:100%}
+#stage{
+  position:relative;width:100%;margin:0 auto;aspect-ratio:1000/560;
+  max-width:calc(52vh * 1.7857); max-width:calc(52dvh * 1.7857);
+  border-radius:18px;overflow:hidden;background:#0b2440;cursor:pointer;
+  touch-action:pan-y;user-select:none;-webkit-user-select:none;
+}
+#stage.inter{cursor:default}
+#scene{position:absolute;inset:0;width:100%;height:100%;display:block;font-family:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+#cap{flex:1;min-height:0;overflow:auto;padding:2px 4px 18px;cursor:pointer;touch-action:pan-y;overscroll-behavior:contain;display:flex;flex-direction:column}
+#cap.inter{cursor:auto}
+#cap>.inner{margin:0}
+nav{flex:none;display:flex;align-items:center;gap:14px;height:70px}
+.nbtn{flex:none;width:48px;height:48px;border-radius:50%;border:0;background:var(--btn);color:var(--btnInk);display:grid;place-items:center;cursor:pointer}
+.nbtn svg{width:22px;height:22px}
+.nbtn:disabled{opacity:.28;cursor:default}
+.prog{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--warm);transition:width .4s ease}
+.meta{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted)}
+#pips{display:flex;gap:6px}
+#pips i{width:8px;height:8px;border-radius:50%;background:var(--line);transition:background .3s}
+#pips i.on{background:var(--warm)}
+@media (min-aspect-ratio:5/4) and (min-width:640px){
+  main{flex-direction:row;align-items:center;gap:30px}
+  #stageWrap{flex:1.75 1 0;min-width:0}
+  #stage{max-width:calc((100vh - 140px) * 1.7857);max-width:calc((100dvh - 140px) * 1.7857)}
+  #cap{flex:1 1 0;min-width:320px;max-width:560px;max-height:100%;align-self:stretch}
+  #cap>.inner{margin:auto 0}
+}
+@media (max-height:560px){
+  header{min-height:44px}
+  nav{height:58px}
+  .nbtn{width:44px;height:44px}
+}
+/* stage overlays */
+#badge{position:absolute;right:12px;top:12px;padding:5px 14px;border-radius:999px;font-weight:700;font-size:clamp(12px,1.5vw,16px);color:#fff;opacity:0;transition:opacity .3s,background-color .5s;pointer-events:none}
+#badge.on{opacity:1}
+#badge.n{background:#41566d}#badge.e{background:#c93a28}#badge.l{background:#2468b0}#badge.c{background:#b7791f}
+#hint{display:flex;align-items:center;gap:7px;opacity:0;transition:opacity .3s;white-space:nowrap}
+#hint.on{opacity:1}
+#hint b{width:7px;height:7px;border-radius:50%;background:var(--warm);animation:tap 1.6s ease-in-out infinite}
+@keyframes tap{0%,100%{transform:scale(.7);opacity:.6}50%{transform:scale(1.25);opacity:1}}
+/* svg scenes */
+.scene{opacity:0;transition:opacity .45s ease;pointer-events:none}
+.scene.on{opacity:1}
+.lyr{opacity:0;transition:opacity .55s ease}
+.lyr.vis{opacity:1}
+.tw{fill:#fff;font-weight:600;paint-order:stroke;stroke:rgba(4,18,34,.8);stroke-width:5px;stroke-linejoin:round}
+.ts{fill:var(--skyInk);font-weight:700;paint-order:stroke;stroke:var(--halo);stroke-width:5px;stroke-linejoin:round}
+.tn{fill:#2a3526;font-weight:700;paint-order:stroke;stroke:#efe9d5;stroke-width:4px;stroke-linejoin:round}
+.tp{fill:#fff;font-weight:700}
+.tq{font-weight:600;paint-order:stroke;stroke:#fbfaf6;stroke-width:5px;stroke-linejoin:round}
+.rain line{stroke:#bfe2f7;stroke-width:2.2;stroke-linecap:round;stroke-dasharray:9 13;animation:rain .55s linear infinite}
+@keyframes rain{to{stroke-dashoffset:-22}}
+.flow{stroke-dasharray:7 7;animation:flow 1s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-14}}
+.ping{transform-box:fill-box;transform-origin:center;animation:ping 1.8s ease-out infinite}
+@keyframes ping{0%{transform:scale(.4);opacity:.95}100%{transform:scale(2.6);opacity:0}}
+/* caption */
+#cap h2{font-family:"Black Han Sans","IBM Plex Sans KR",sans-serif;font-weight:400;font-size:clamp(24px,2.3vw,34px);line-height:1.25;margin:0 0 12px}
+#cap p{margin:0 0 10px}
+.intro{font-size:clamp(16px,1.2vw,19px)}
+.st{display:none;padding:2px 0 2px 14px;border-left:3px solid transparent;color:var(--muted);font-size:clamp(16px,1.2vw,19px)}
+.st.on{display:block;animation:stIn .4s ease both}
+.st.now{color:var(--ink);border-left-color:var(--warm)}
+@keyframes stIn{from{opacity:0}to{opacity:1}}
+#cap b{font-weight:700}
+.cover h1{font-family:"Black Han Sans","IBM Plex Sans KR",sans-serif;font-weight:400;font-size:clamp(58px,7vw,104px);line-height:.95;margin:0}
+.cover .en{font-size:clamp(17px,1.5vw,22px);color:var(--muted);margin:10px 0 18px;letter-spacing:.02em}
+.cover .lead{font-size:clamp(18px,1.5vw,22px);font-weight:600;line-height:1.5;margin-bottom:14px}
+.cover .org{color:var(--muted)}
+.go{margin:8px 0 14px;padding:14px 28px;border-radius:999px;border:0;background:var(--warm);color:#fff;font-weight:700;font-size:17px;cursor:pointer;min-height:48px}
+.small{font-size:14px;color:var(--muted)}
+/* lab */
+.seg{display:flex;gap:8px;margin:14px 0 16px;flex-wrap:wrap}
+.seg button{flex:1 1 0;min-width:84px;min-height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font-weight:700;cursor:pointer}
+.seg button[data-e="1"].sel{border-color:#c93a28;background:#c93a28;color:#fff}
+.seg button[data-e="0"].sel{border-color:#41566d;background:#41566d;color:#fff}
+.seg button[data-e="-1"].sel{border-color:#2468b0;background:#2468b0;color:#fff}
+.sl{display:block;font-weight:700;margin-bottom:2px}
+input[type=range]{width:100%;height:36px;accent-color:var(--warm);cursor:pointer}
+.scale{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:-4px}
+.meters{display:grid;grid-template-columns:auto 1fr auto;gap:9px 12px;align-items:center;margin:16px 0 12px;font-size:15px}
+.mbar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.mbar i{display:block;height:100%;border-radius:5px}
+.mv{font-weight:700;min-width:6.5em;text-align:right;font-size:14px}
+.nowst{font-size:17px}
+/* compare table */
+.cmp{width:100%;border-collapse:collapse;font-size:14px;line-height:1.45;margin-top:4px}
+.cmp th,.cmp td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.cmp thead th{font-size:15px;border-bottom:2px solid var(--ink)}
+.cmp tbody th{font-weight:600;color:var(--muted);width:30%}
+.cmp [data-c]{opacity:0;transition:opacity .45s}
+.cmp [data-c].on{opacity:1}
+.cmp .ce{color:var(--warm)} .cmp .cl{color:var(--cold)}
+/* quiz */
+.qh{font-size:14px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.q{font-size:clamp(16px,1.2vw,19px);font-weight:600}
+.bogi{border:1.5px solid var(--ink);border-radius:3px;padding:8px 14px 4px;margin:8px 0 12px;font-size:15px}
+.bogi .bt{text-align:center;font-weight:700;margin-bottom:4px}
+.bogi p{margin:0 0 6px!important}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.opts.row{flex-direction:row;flex-wrap:wrap}
+.opt{text-align:left;padding:11px 14px;min-height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.opts.row .opt{flex:1 1 92px;text-align:center;padding:10px 6px;white-space:nowrap}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,var(--panel))}
+.opt.wrong{border-color:var(--warm);background:color-mix(in srgb,var(--warm) 12%,var(--panel))}
+.fb{margin-top:12px;padding:12px 14px;border-radius:12px;background:var(--panel);border-left:4px solid var(--ok)}
+.fb.x{border-left-color:var(--warm)}
+.qnav{display:flex;gap:8px;margin-top:14px}
+.qnav button,.btn2{flex:1;min-height:46px;border-radius:12px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font-weight:700;cursor:pointer;padding:0 12px}
+.qnav button.pri,.btn2.pri{background:var(--btn);color:var(--btnInk);border-color:var(--btn)}
+.qnav button:disabled{opacity:.35;cursor:default}
+.score{font-family:"Black Han Sans","IBM Plex Sans KR",sans-serif;font-size:clamp(40px,5vw,64px);line-height:1;margin:6px 0 14px}
+.rlist{list-style:none;padding:0;margin:0 0 14px}
+.rlist li{padding:6px 0;border-bottom:1px solid var(--line);display:flex;gap:10px}
+.rlist .mk{font-weight:700;width:1.4em}
+.rlist .o{color:var(--ok)} .rlist .x{color:var(--warm)}
+@media (prefers-reduced-motion:reduce){
+  .scene,.lyr{transition-duration:.2s}
+  .st.on{animation:none}
+  #hint b,.ping{animation:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">엘니뇨<small>El Niño</small></div>
+    <div id="kicker" aria-live="polite"></div>
+    <button class="ibtn" id="snd" type="button" aria-label="소리 끄기" aria-pressed="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke-width="1.6"/><path class="w" d="M15.5 9a4.5 4.5 0 0 1 0 6M18.2 6.5a8 8 0 0 1 0 11"/><path class="x" d="M16 9.5l5 5M21 9.5l-5 5" style="display:none"/></svg>
+    </button>
+    <button class="ibtn" id="fs" type="button" aria-label="전체 화면">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+    </button>
+  </header>
+  <main>
+    <div id="stageWrap">
+      <div id="stage">
+        <svg id="scene" viewBox="0 0 1000 560" role="img" aria-label="엘니뇨 설명 그림"></svg>
+        <div id="badge"></div>
+      </div>
+    </div>
+    <section id="cap" aria-live="polite"><div class="inner"></div></section>
+  </main>
+  <nav>
+    <button class="nbtn" id="prev" type="button" aria-label="이전">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <div class="prog">
+      <div class="bar"><i id="barI"></i></div>
+      <div class="meta"><span id="cnt"></span><span id="hint"><b></b><span></span></span><span id="pips"></span></div>
+    </div>
+    <button class="nbtn" id="next" type="button" aria-label="다음">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </nav>
+</div>
+<script>
+'use strict';
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  if (attrs) for (const k in attrs) {
+    if (k === 'text') e.textContent = attrs[k]; else e.setAttribute(k, attrs[k]);
+  }
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function tx(parent, x, y, str, cls, size, anchor) {
+  return el('text', { x, y, class: cls || 'tw', 'font-size': size || 22, 'text-anchor': anchor || 'middle', text: str }, parent);
+}
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const mix = (a, b, t) => a + (b - a) * t;
+function l3(e, la, no, en) { return e < 0 ? mix(no, la, -e) : mix(no, en, e); }
+function hex(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function c3(e, la, no, en) {
+  const B = hex(no), X = hex(e < 0 ? la : en), t = Math.min(1, Math.abs(e));
+  const r = B.map((v, i) => Math.round(mix(v, X[i], t)));
+  return 'rgb(' + r.join(',') + ')';
+}
+const f1 = v => v.toFixed(1);
+function rrPath(pts, r) {
+  let d = ''; const n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const p0 = pts[(i - 1 + n) % n], p1 = pts[i], p2 = pts[(i + 1) % n];
+    const v1 = [p0[0] - p1[0], p0[1] - p1[1]], v2 = [p2[0] - p1[0], p2[1] - p1[1]];
+    const l1 = Math.hypot(v1[0], v1[1]) || 1, l2 = Math.hypot(v2[0], v2[1]) || 1;
+    const rr = Math.min(r, l1 / 2, l2 / 2);
+    const a = [p1[0] + v1[0] / l1 * rr, p1[1] + v1[1] / l1 * rr];
+    const b = [p1[0] + v2[0] / l2 * rr, p1[1] + v2[1] / l2 * rr];
+    d += (i ? 'L' : 'M') + f1(a[0]) + ',' + f1(a[1]) + 'Q' + f1(p1[0]) + ',' + f1(p1[1]) + ' ' + f1(b[0]) + ',' + f1(b[1]);
+  }
+  return d + 'Z';
+}
+function loopInfo(pts) {
+  const seg = []; let L = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length];
+    const l = Math.hypot(b[0] - a[0], b[1] - a[1]); seg.push(l); L += l;
+  }
+  return { pts, seg, L };
+}
+function loopPt(info, u) {
+  let d = (((u % 1) + 1) % 1) * info.L;
+  const { pts, seg } = info;
+  for (let i = 0; i < pts.length; i++) {
+    if (d <= seg[i] || i === pts.length - 1) {
+      const a = pts[i], b = pts[(i + 1) % pts.length], t = seg[i] ? Math.min(1, d / seg[i]) : 0;
+      return { x: mix(a[0], b[0], t), y: mix(a[1], b[1], t), ang: Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI };
+    }
+    d -= seg[i];
+  }
+}
+function bez(p, t) {
+  const u = 1 - t;
+  const x = u * u * u * p[0][0] + 3 * u * u * t * p[1][0] + 3 * u * t * t * p[2][0] + t * t * t * p[3][0];
+  const y = u * u * u * p[0][1] + 3 * u * u * t * p[1][1] + 3 * u * t * t * p[2][1] + t * t * t * p[3][1];
+  const dx = 3 * u * u * (p[1][0] - p[0][0]) + 6 * u * t * (p[2][0] - p[1][0]) + 3 * t * t * (p[3][0] - p[2][0]);
+  const dy = 3 * u * u * (p[1][1] - p[0][1]) + 6 * u * t * (p[2][1] - p[1][1]) + 3 * t * t * (p[3][1] - p[2][1]);
+  return { x, y, ang: Math.atan2(dy, dx) * 180 / Math.PI };
+}
+function lyr(name, parent) { return el('g', { class: 'lyr', 'data-ly': name }, parent); }
+function pill(parent, label, fill, w, h, size) {
+  const g = el('g', null, parent);
+  w = w || 78; h = h || 32;
+  el('rect', { x: -w / 2, y: -h / 2, width: w, height: h, rx: h / 2, fill }, g);
+  const t = el('text', { x: 0, y: (size || 19) * 0.36, 'text-anchor': 'middle', class: 'tp', 'font-size': size || 19, text: label }, g);
+  g.t = t;
+  return g;
+}
+
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MOT = RM ? 0.35 : 1;
+const svg = $('#scene');
+const defs = el('defs', null, svg);
+function lin(id, x1, y1, x2, y2, stops, user) {
+  const g = el('linearGradient', { id, x1, y1, x2, y2 }, defs);
+  if (user) g.setAttribute('gradientUnits', 'userSpaceOnUse');
+  return stops.map(s => el('stop', { offset: s[0], style: 'stop-color:' + s[1] + ';stop-opacity:' + (s[2] == null ? 1 : s[2]) }, g));
+}
+function rad(id, stops) {
+  const g = el('radialGradient', { id, cx: .5, cy: .5, r: .5 }, defs);
+  return stops.map(s => el('stop', { offset: s[0], style: 'stop-color:' + s[1] + ';stop-opacity:' + (s[2] == null ? 1 : s[2]) }, g));
+}
+lin('skyG', 0, 0, 0, 1, [[0, 'var(--sky1)'], [1, 'var(--sky2)']]);
+lin('deepG', 0, 0, 0, 1, [[0, '#1d5f92'], [.45, '#123f6c'], [1, '#081d37']]);
+lin('andesG', 0, 0, 0, 1, [[0, '#9d7b52'], [1, '#6f5237']]);
+lin('isleG', 0, 0, 0, 1, [[0, '#5f9a52'], [1, '#3f6d3a']]);
+lin('oceanG', 0, 0, 0, 1, [[0, '#0e365f'], [.5, '#114272'], [1, '#0b2a4b']]);
+rad('plumeG', [[0, '#c3f0ff', .95], [.6, '#8fd3ec', .5], [1, '#7cc3e0', 0]]);
+rad('anWG', [[0, '#ff4a2a', .95], [.55, '#ff7440', .55], [1, '#ff8a4a', 0]]);
+rad('anCG', [[0, '#2a90ff', .95], [.55, '#46a6ff', .55], [1, '#5ab4ff', 0]]);
+const WS = lin('warmG', 100, 0, 895, 0, [[0, '#dc4430'], [.18, '#ef7a3d'], [.55, '#f5c46b'], [1, '#7cc3e0']], true);
+
+const gSec = el('g', { id: 'sec', class: 'scene' }, svg);
+const gMap = el('g', { id: 'map', class: 'scene' }, svg);
+const gGraph = el('g', { id: 'graph', class: 'scene' }, svg);
+const gMini = el('g', { id: 'mini', class: 'scene' }, svg);
+const SCN = { sec: gSec, map: gMap, graph: gGraph, mini: gMini };
+
+/* ================= cross-section scene ================= */
+const X0 = 100, X1 = 895, SURF = 250;
+const SC = { sec: { cur: { w: 0, o: 0, a: 0 }, tgt: { w: 0, o: 0, a: 0 } }, map: { cur: { e: 0 }, tgt: { e: 0 }, osc: false } };
+let T = 0;
+const S = {};
+function surfY(x, H) {
+  const t = (x - X0) / (X1 - X0);
+  return SURF + H * (t - .5) + 2.2 * Math.sin(x * .045 - T * 1.7) + 1.3 * Math.sin(x * .11 + T * 2.4);
+}
+function thY(x, H, o) {
+  const t = clamp((x - X0) / (X1 - X0));
+  const s = .5 * t + .5 * t * t * (3 - 2 * t);
+  const dW = l3(o, 182, 150, 108), dE = l3(o, 16, 38, 94);
+  return SURF + H * (t - .5) + dW + (dE - dW) * s + 3 * Math.sin(x * .02 + T * .7);
+}
+function buildSec() {
+  const g = gSec;
+  el('rect', { x: 0, y: 0, width: 1000, height: 330, fill: 'url(#skyG)' }, g);
+  S.water = el('path', { fill: 'url(#deepG)' }, g);
+  S.warm = el('path', { fill: 'url(#warmG)' }, g);
+  S.surf = el('path', { fill: 'none', stroke: 'rgba(255,255,255,.6)', 'stroke-width': 2 }, g);
+  el('path', { d: 'M60,560L60,542C200,530 260,548 380,538C500,528 560,550 690,540C780,534 840,546 940,536L940,560Z', fill: '#061a2e' }, g);
+
+
+  // thermocline
+  const lt = lyr('thermo', g);
+  S.thLine = el('path', { fill: 'none', stroke: '#e9f6ff', 'stroke-width': 2.5, 'stroke-dasharray': '10 7', opacity: .9 }, lt);
+  S.thLbl = tx(lt, 500, 330, '수온 약층', 'tw', 20);
+
+  // upwelling
+  const lu = lyr('up', g);
+  S.plume = el('ellipse', { cx: 805, cy: 284, rx: 105, ry: 26, fill: 'url(#plumeG)' }, lu);
+  S.lanes = [
+    [[610, 548], [640, 440], [760, 360], [790, 272]],
+    [[690, 548], [720, 450], [800, 372], [826, 272]],
+    [[770, 548], [800, 462], [850, 384], [862, 272]]
+  ];
+  S.chev = [];
+  S.guides = el('g', null, lu);
+  S.lanes.forEach(ln => el('path', { d: 'M' + ln[0].join(',') + 'C' + ln[1].join(',') + ' ' + ln[2].join(',') + ' ' + ln[3].join(','), fill: 'none', stroke: '#c9f1ff', 'stroke-width': 1.5, 'stroke-dasharray': '2 6', opacity: .35 }, S.guides));
+  S.lanes.forEach((ln, i) => {
+    for (let j = 0; j < 6; j++) {
+      const c = el('path', { d: 'M-6,-7L4,0L-6,7', fill: 'none', stroke: '#c9f1ff', 'stroke-width': 3.2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, lu);
+      S.chev.push({ el: c, lane: i, u: j / 6 + i * .05 });
+    }
+  });
+  S.upLbl = tx(lu, 628, 452, '용승 ↑', 'tw', 22, 'end');
+
+  // fish
+  const lf = lyr('fish', g);
+  S.fish = [[722, 302], [768, 322], [812, 298], [852, 318], [706, 336], [790, 344], [860, 344]].map((p, i) => {
+    const f = el('g', null, lf);
+    el('path', { d: 'M-11,0Q-3,-7 8,0Q-3,7 -11,0ZM8,0L15,-6L15,6Z', fill: '#e1f4fa' }, f);
+    el('circle', { cx: -5, cy: -1.5, r: 1.4, fill: '#10314f' }, f);
+    return { el: f, bx: p[0], by: p[1], ph: i * 1.7, op: 1 };
+  });
+
+  // thermometers
+  const lte = lyr('temp', g);
+  S.th = [330, 600].map((x, i) => {
+    const gg = el('g', null, lte);
+    el('rect', { x: x - 8, y: 256, width: 16, height: 66, rx: 8, fill: '#f4f8fb', stroke: '#0b2440', 'stroke-width': 2 }, gg);
+    el('circle', { cx: x, cy: 330, r: 13, fill: '#f4f8fb', stroke: '#0b2440', 'stroke-width': 2 }, gg);
+    const fl = el('rect', { x: x - 4, y: 280, width: 8, height: 42, rx: 3 }, gg);
+    const bulb = el('circle', { cx: x, cy: 330, r: 8.5 }, gg);
+    const bg = el('rect', { x: x + 18, y: 262, width: 124, height: 56, rx: 10, fill: 'rgba(5,20,38,.78)' }, gg);
+    tx(gg, x + 30, 285, '표층 수온', 'tp', 16, 'start');
+    const v = tx(gg, x + 30, 308, '', 'tp', 18, 'start');
+    return { x, fl, bulb, v, bg };
+  });
+
+  // sea level markers
+  const lsl = lyr('sl', g);
+  el('line', { x1: X0, y1: SURF, x2: X1, y2: SURF, stroke: '#ffffff', 'stroke-width': 2, 'stroke-dasharray': '4 7', opacity: .8 }, lsl);
+  S.slW = tx(lsl, 116, 0, '', 'tw', 19, 'start');
+  S.slE = tx(lsl, 884, 0, '', 'tw', 19, 'end');
+
+  // lands (drawn above water)
+  el('path', { d: 'M0,560L0,214C30,206 70,206 92,214C102,220 108,232 112,252L118,300L126,560Z', fill: 'url(#isleG)' }, g);
+  el('path', { d: 'M0,222C40,214 80,214 104,226', fill: 'none', stroke: '#e6d9a8', 'stroke-width': 5, opacity: .75 }, g);
+  [[34, 208, 1], [70, 209, -1]].forEach(p => {
+    const pg = el('g', { transform: `translate(${p[0]},${p[1]}) scale(${p[2]},1)` }, g);
+    el('path', { d: 'M0,0C2,-18 5,-34 12,-48', fill: 'none', stroke: '#6b4f2e', 'stroke-width': 4, 'stroke-linecap': 'round' }, pg);
+    el('path', { d: 'M12,-48C0,-54 -12,-50 -18,-42M12,-48C2,-44 -4,-36 -6,-28M12,-48C22,-56 34,-54 40,-46M12,-48C22,-44 28,-36 30,-28M12,-48C10,-58 16,-66 24,-68', fill: 'none', stroke: '#2f7a3a', 'stroke-width': 5, 'stroke-linecap': 'round' }, pg);
+  });
+  el('path', { d: 'M1000,560L880,560L884,318L890,272C896,258 906,250 922,246L936,212L952,168L966,128L980,104L992,132L1000,124Z', fill: 'url(#andesG)' }, g);
+  el('path', { d: 'M966,128L980,104L992,132L985,128L979,136L973,126Z', fill: '#f4f6f8' }, g);
+  el('path', { d: 'M884,274C900,260 914,252 926,250', fill: 'none', stroke: '#e6d9a8', 'stroke-width': 5, opacity: .7 }, g);
+
+  // base labels (above lands)
+  S.warmLbl = tx(g, 185, 322, '따뜻한 표층수', 'tw', 22);
+  tx(g, 250, 478, '차가운 심층수', 'tw', 22);
+  tx(g, 134, 551, '◀ 서태평양 (인도네시아 쪽)', 'tw', 19, 'start');
+  tx(g, 870, 551, '동태평양 (페루 쪽) ▶', 'tw', 19, 'end');
+
+  // wind
+  const lw = lyr('wind', g);
+  S.cur = [];
+  for (let i = 0; i < 12; i++) {
+    const l = el('line', { stroke: 'rgba(235,248,255,.8)', 'stroke-width': 2.4, 'stroke-linecap': 'round' }, lw);
+    S.cur.push({ el: l, x: X0 + 40 + i * 64 + (i % 3) * 13, row: i % 3 });
+  }
+  S.arrows = [];
+  const order = [0, 7, 3, 10, 5, 12, 1, 8, 13, 4, 11, 2, 9, 6];
+  for (let i = 0; i < 14; i++) {
+    const a = el('path', { d: 'M-19,0L-6,-10L-6,-4.5L19,-4.5L19,4.5L-6,4.5L-6,10Z', fill: '#ffffff', stroke: '#0d2945', 'stroke-width': 2, 'stroke-linejoin': 'round' }, lw);
+    S.arrows.push({ el: a, x: X0 + 30 + (i % 7) * 112 + (i >= 7 ? 56 : 0), lane: i >= 7 ? 1 : 0, rank: order[i], op: 1 });
+  }
+  S.windLbl = tx(lw, 420, 182, '← 무역풍', 'ts', 23);
+
+  // cloud + rain
+  const lc = lyr('cloud', g);
+  S.cloud = el('g', null, lc);
+  S.cloudIn = el('g', null, S.cloud);
+  const rn = el('g', { class: 'rain' }, S.cloudIn);
+  for (let i = 0; i < 9; i++) {
+    const x = -44 + i * 11;
+    el('line', { x1: x, y1: 132 + (i % 3) * 6, x2: x - 6, y2: 236, style: 'animation-delay:' + (-i * .13) + 's' }, rn);
+  }
+  el('ellipse', { cx: 0, cy: 46, rx: 76, ry: 15, fill: '#dfe7ee' }, S.cloudIn);
+  [[-44, 108, 27], [-14, 94, 33], [22, 104, 28], [44, 118, 20], [-2, 70, 30], [14, 56, 22], [-24, 64, 20]].forEach(c =>
+    el('circle', { cx: c[0], cy: c[1], r: c[2], fill: '#f3f6f9' }, S.cloudIn));
+  el('path', { d: 'M-64,124Q0,138 60,126L60,132Q0,144 -64,130Z', fill: '#b8c4cf' }, S.cloudIn);
+
+  // walker circulation
+  const lwk = lyr('walker', g);
+  S.wkPath = el('path', { fill: 'none', stroke: 'var(--walk)', 'stroke-width': 2, 'stroke-dasharray': '3 8', opacity: .55 }, lwk);
+  S.wkPath2 = el('path', { fill: 'none', stroke: 'var(--walk)', 'stroke-width': 2, 'stroke-dasharray': '3 8', opacity: .55 }, lwk);
+  S.wk = []; S.wk2 = [];
+  for (let i = 0; i < 26; i++) S.wk.push({ el: el('path', { d: 'M7,0L-5,-6L-5,6Z', fill: 'var(--walk)' }, lwk), u: i / 26 });
+  for (let i = 0; i < 16; i++) S.wk2.push({ el: el('path', { d: 'M7,0L-5,-6L-5,6Z', fill: 'var(--walk)' }, lwk), u: i / 16 });
+  S.wkLbl = tx(lwk, 548, 42, '워커 순환', 'ts', 23);
+
+  // pressure pills
+  const lpl = lyr('pL', g);
+  S.pL = pill(lpl, '저기압', '#d63a27');
+  const lph = lyr('pH', g);
+  S.pHe = pill(lph, '고기압', '#2466ad');
+  S.pHw = pill(lph, '고기압', '#2466ad');
+
+  // highlight ring
+  const lh = lyr('hi', g);
+  S.hi = el('circle', { cx: 815, cy: 300, r: 64, fill: 'none', stroke: '#ffd166', 'stroke-width': 4, 'stroke-dasharray': '14 9' }, lh);
+  tx(lh, 815, 392, '용승 약화', 'tw', 20);
+
+  // feedback panel
+  const lfb = lyr('fb', g);
+  const P = el('g', { transform: 'translate(372,424)' }, lfb);
+  el('rect', { x: 0, y: 0, width: 518, height: 112, rx: 14, fill: 'rgba(4,16,30,.86)', stroke: 'rgba(255,209,102,.7)', 'stroke-width': 1.5 }, P);
+  tx(P, 16, 26, '되먹임', 'tp', 17, 'start').setAttribute('fill', '#ffd166');
+  ['무역풍 약화', '동태평양 수온 ↑', '동서 기압 차 ↓'].forEach((t, i) => {
+    const x = 16 + i * 166;
+    el('rect', { x, y: 38, width: 152, height: 38, rx: 9, fill: i === 1 ? '#c93a28' : '#23466c' }, P);
+    tx(P, x + 76, 63, t, 'tp', 17);
+    if (i < 2) el('path', { d: `M${x + 154},57L${x + 164},57`, stroke: '#ffd166', 'stroke-width': 3, 'marker-end': 'url(#ah)' }, P);
+  });
+  el('path', { d: 'M424,78L424,96L92,96L92,82', fill: 'none', stroke: '#ffd166', 'stroke-width': 2.6, class: 'flow', 'marker-end': 'url(#ah)' }, P);
+  const mk = el('marker', { id: 'ah', viewBox: '0 0 10 10', refX: 6, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' }, defs);
+  el('path', { d: 'M0,0L10,5L0,10Z', fill: '#ffd166' }, mk);
+}
+
+function drawSec(dt) {
+  const { w, o, a } = SC.sec.cur;
+  const H = l3(o, 40, 28, 4);
+  let top = '', th = '';
+  const ths = [];
+  for (let x = X0 - 40; x <= X1 + 40; x += 10) {
+    const y = surfY(x, H);
+    top += (x === X0 - 40 ? 'M' : 'L') + x + ',' + f1(y);
+    ths.push(x + ',' + f1(thY(x, H, o)));
+  }
+  S.water.setAttribute('d', top + `L${X1 + 40},560L${X0 - 40},560Z`);
+  S.warm.setAttribute('d', top + 'L' + ths.slice().reverse().join('L') + 'Z');
+  S.surf.setAttribute('d', top);
+  S.thLine.setAttribute('d', 'M' + ths.join('L'));
+  S.thLbl.setAttribute('y', f1(thY(500, H, o) - 10));
+  S.warmLbl.setAttribute('y', f1((surfY(185, H) + thY(185, H, o)) / 2 + 10));
+  WS[1].setAttribute('offset', l3(o, .12, .18, .42));
+  WS[2].setAttribute('offset', l3(o, .36, .55, .9));
+  WS[3].style.stopColor = c3(o, '#4d9bd6', '#7cc3e0', '#f2a449');
+
+  const k = 1 - Math.exp(-dt * 3);
+  const vis = n => LAYERS.has(n);
+  // wind
+  if (vis('wind')) {
+    const s = l3(w, 1.55, 1, .28);
+    const nv = Math.round(clamp(s) * 14);
+    S.arrows.forEach(ar => {
+      ar.x -= (40 + 80 * s) * dt * MOT;
+      if (ar.x < X0 + 10) ar.x += X1 - X0 - 20;
+      ar.op += ((ar.rank < nv ? 1 : 0) - ar.op) * k;
+      const fade = clamp((ar.x - X0 - 10) / 60) * clamp((X1 - 10 - ar.x) / 60);
+      const y = ar.lane ? 229 : 207;
+      ar.el.setAttribute('transform', `translate(${f1(ar.x)},${y + 2 * Math.sin(T * 2 + ar.x * .02)}) scale(${f1(.72 + .3 * s)})`);
+      ar.el.setAttribute('opacity', f1(ar.op * fade * 10) / 10);
+    });
+    S.cur.forEach(c => {
+      c.x -= (18 + 42 * s) * dt * MOT;
+      if (c.x < X0 + 10) c.x += X1 - X0 - 30;
+      const y = surfY(c.x, H) + 14 + c.row * 10;
+      c.el.setAttribute('x1', f1(c.x)); c.el.setAttribute('x2', f1(c.x + 26));
+      c.el.setAttribute('y1', f1(y)); c.el.setAttribute('y2', f1(y));
+      const fade = clamp((c.x - X0 - 10) / 50) * clamp((X1 - 40 - c.x) / 50);
+      c.el.setAttribute('opacity', f1(fade * clamp(s) * 10) / 10);
+    });
+  }
+  // sea level labels
+  if (vis('sl')) {
+    S.slW.textContent = o > .6 ? '해수면 낮아짐 ▼' : '▲ 해수면 높음';
+    S.slE.textContent = o > .6 ? '▲ 해수면 높아짐' : '해수면 낮음 ▼';
+    S.slW.setAttribute('y', f1(surfY(160, H) + 26));
+    S.slE.setAttribute('y', f1(surfY(830, H) + 26));
+  }
+  // upwelling
+  const us = l3(o, 1.45, 1, .12);
+  if (vis('up')) {
+    S.plume.setAttribute('opacity', f1(clamp(us / 1.45) * 10) / 10);
+    S.plume.setAttribute('cy', f1(surfY(805, H) + 30));
+    S.chev.forEach(c => {
+      c.u += dt * MOT * .1 * (.35 + us);
+      if (c.u > 1) c.u -= 1;
+      const p = bez(S.lanes[c.lane], c.u);
+      c.el.setAttribute('transform', `translate(${f1(p.x)},${f1(p.y)}) rotate(${f1(p.ang)})`);
+      c.el.setAttribute('opacity', f1(Math.sin(Math.PI * c.u) * clamp(us) * 10) / 10);
+    });
+    S.upLbl.setAttribute('opacity', f1(clamp(us) * 10) / 10);
+    S.guides.setAttribute('opacity', f1(clamp(us) * 10) / 10);
+  }
+  // fish
+  if (vis('fish')) {
+    const nf = l3(o, 7, 6, 1);
+    S.fish.forEach((f, i) => {
+      f.op += ((i < nf - .01 ? 1 : 0) - f.op) * k;
+      const ph = T * .7 + f.ph;
+      const x = f.bx + 14 * Math.sin(ph), dir = Math.cos(ph) >= 0 ? -1 : 1;
+      f.el.setAttribute('transform', `translate(${f1(x)},${f1(f.by + 3 * Math.sin(T * 1.3 + f.ph))}) scale(${dir},1)`);
+      f.el.setAttribute('opacity', f1(f.op * 10) / 10);
+    });
+  }
+  // thermometers
+  if (vis('temp')) {
+    const lv = [l3(o, .95, .88, .76), l3(o, .2, .34, .74)];
+    const col = [c3(o, '#d63a27', '#dc4430', '#e0673a'), c3(o, '#2f7fc1', '#4aa3dc', '#e0553a')];
+    S.th.forEach((t, i) => {
+      const h = 62 * lv[i];
+      t.fl.setAttribute('y', f1(322 - h)); t.fl.setAttribute('height', f1(h));
+      t.fl.setAttribute('fill', col[i]); t.bulb.setAttribute('fill', col[i]);
+      let s, c = '#ffffff';
+      if (i === 0) { s = o > .35 ? '평소보다 ↓' : o < -.35 ? '평소보다 ↑' : '높다'; if (o > .35) c = '#8cc8ff'; if (o < -.35) c = '#ff9c85'; }
+      else { s = o > .35 ? '평소보다 ↑' : o < -.35 ? '평소보다 ↓' : '낮다'; if (o > .35) c = '#ff9c85'; if (o < -.35) c = '#8cc8ff'; }
+      if (t.v.textContent !== s) t.v.textContent = s;
+      t.v.setAttribute('fill', c);
+    });
+  }
+  // atmosphere
+  const riseX = l3(a, 190, 235, 612);
+  if (vis('cloud')) {
+    const sc = l3(a, 1.22, 1, .95);
+    S.cloud.setAttribute('transform', `translate(${f1(riseX)},0)`);
+    S.cloudIn.setAttribute('transform', `translate(0,236) scale(${f1(sc * 100) / 100}) translate(0,-236)`);
+  }
+  if (vis('pL')) S.pL.setAttribute('transform', `translate(${f1(riseX)},170)`);
+  if (vis('pH')) {
+    S.pHe.setAttribute('transform', 'translate(860,170)');
+    S.pHe.setAttribute('opacity', f1((1 - .6 * clamp(a)) * 10) / 10);
+    S.pHw.setAttribute('transform', 'translate(172,170)');
+    S.pHw.setAttribute('opacity', f1(clamp(a) * 10) / 10);
+  }
+  if (vis('walker')) {
+    const yt = 60, yb = 190;
+    const m = loopInfo([[riseX, yb], [riseX, yt], [860, yt], [860, yb]]);
+    S.wkPath.setAttribute('d', rrPath(m.pts, 24));
+    const sp = 90 * l3(a, 1.4, 1, .5);
+    S.wk.forEach(p => {
+      p.u = (p.u + dt * MOT * sp / m.L) % 1;
+      const q = loopPt(m, p.u);
+      p.el.setAttribute('transform', `translate(${f1(q.x)},${f1(q.y)}) rotate(${f1(q.ang)})`);
+    });
+    const a2 = clamp(a);
+    const m2 = loopInfo([[riseX, yb], [riseX, 84], [172, 84], [172, yb]]);
+    S.wkPath2.setAttribute('d', rrPath(m2.pts, 20));
+    S.wkPath2.setAttribute('opacity', f1(a2 * .55 * 10) / 10);
+    S.wk2.forEach(p => {
+      p.u = (p.u + dt * MOT * 60 / m2.L) % 1;
+      const q = loopPt(m2, p.u);
+      p.el.setAttribute('transform', `translate(${f1(q.x)},${f1(q.y)}) rotate(${f1(q.ang)})`);
+      p.el.setAttribute('opacity', f1(a2 * 10) / 10);
+    });
+    S.wkLbl.setAttribute('x', f1((riseX + 860) / 2));
+  }
+  if (vis('hi')) S.hi.setAttribute('transform', `rotate(${f1(T * 28)} 815 300)`);
+}
+
+/* ================= map scene ================= */
+function ll(lon, lat) { return [(lon - 100) * 1000 / 190, (45 - lat) * 560 / 90]; }
+function polyD(pts) { return 'M' + pts.map(p => { const q = ll(p[0], p[1]); return f1(q[0]) + ',' + f1(q[1]); }).join('L') + 'Z'; }
+const LAND = {
+  asia: [[95, 50], [140, 50], [138, 47], [135.5, 43.5], [132, 43], [130.6, 42.4], [129.7, 41], [128.5, 39.6], [129.4, 37], [129.4, 35.6], [129, 35.1], [127.5, 34.7], [126.3, 34.4], [126.5, 35.8], [126.6, 37], [126, 37.7], [125.2, 38], [125, 39.5], [124.3, 39.9], [121.3, 39], [122, 40.5], [121, 40.8], [119.5, 39.9], [118, 39.2], [117.7, 38.5], [118.9, 37.4], [120.7, 37.8], [122.5, 37.4], [120.3, 36], [119.3, 34.8], [120.8, 32.5], [121.9, 31], [121.5, 29.9], [120.8, 28], [119.6, 26], [118, 24.5], [116.5, 23], [114.2, 22.3], [111, 21.5], [110, 20.3], [109.7, 21.5], [108.2, 21.5], [106.7, 20.5], [105.8, 19], [106.5, 17.5], [108.8, 15.3], [109.3, 13], [109, 11.5], [106.8, 10.3], [105, 8.7], [104.8, 10.3], [103.2, 10.8], [102.3, 12.2], [100.9, 12.7], [100.4, 13.5], [100, 12.5], [99.2, 10.5], [100.2, 8.5], [100.5, 7.2], [101.3, 6.9], [102.3, 6.1], [103.4, 4.8], [103.4, 3], [104.2, 1.4], [103.5, 1.3], [102.2, 2.2], [101.2, 2.8], [100.4, 4.2], [100.3, 6], [99.5, 7], [98, 8], [95, 8]],
+  hainan: [[108.6, 19.2], [109.6, 18.2], [110.5, 18.4], [111, 19.6], [110.6, 20.1], [109.3, 20]],
+  taiwan: [[121, 25.1], [121.9, 25], [121.6, 23.5], [120.8, 22], [120.1, 23], [120.3, 24.3]],
+  hokkaido: [[140, 41.5], [141.2, 41.8], [143.3, 42], [145.5, 43.3], [145.2, 44.3], [142, 45.6], [141.6, 45], [141.4, 43.3], [140.4, 43.2], [139.9, 42.5]],
+  honshu: [[140.9, 41.5], [141.5, 40.5], [142, 39.5], [141, 38.3], [141, 37], [140.6, 36], [140.9, 35.7], [139.8, 35], [138.8, 34.6], [137, 34.6], [136, 33.5], [135, 34.3], [133, 34.4], [131, 33.9], [130.9, 34.4], [132.5, 35.5], [135.8, 35.6], [136.8, 37.2], [138.5, 37.8], [139.5, 38.5], [140, 40], [140.2, 41.2]],
+  kyushu: [[129.8, 33.2], [130.9, 33.9], [131.8, 33], [131.3, 31.4], [130.6, 31], [130.1, 32.2]],
+  shikoku: [[132.5, 33.2], [133.5, 33.4], [134.7, 33.8], [134.2, 34.3], [132.9, 34.1]],
+  luzon: [[120.6, 18.5], [122.2, 18.5], [122.5, 17], [121.6, 15.8], [122, 14], [124, 13], [123.3, 12.6], [121.7, 13.9], [120.6, 14.2], [120, 16], [120.4, 17.5]],
+  visayas: [[122, 11.8], [124, 12.3], [125.7, 11.2], [125, 10], [123.2, 9.2], [122.2, 10.4]],
+  mindanao: [[122, 7], [123.5, 8.5], [125.3, 9.7], [126.5, 8], [126.2, 6.3], [125.3, 5.6], [124, 6.4], [122.3, 6.9]],
+  borneo: [[109, 1.8], [109.6, 2], [111.5, 2.6], [113, 3.2], [115, 5], [116.8, 7], [117.7, 6], [119.2, 5.2], [118, 4.3], [117.6, 3], [118.8, 1], [117.5, 0], [116.8, -1.5], [116.3, -3.9], [114.5, -4], [113, -3.2], [111, -3], [110.1, -1.8], [109.1, -.3]],
+  sumatra: [[95.3, 5.6], [97.5, 5.2], [100.3, 2.3], [103.5, -.9], [104.5, -2.5], [106, -3.2], [105.8, -5.8], [104.6, -5.9], [102.3, -4], [100.5, -1.5], [98.7, 1.6], [95.9, 3.8]],
+  java: [[105.2, -6.8], [106.1, -5.9], [108.3, -6.2], [110.4, -6.9], [112.6, -6.9], [114.6, -7.7], [114.4, -8.7], [111.5, -8.3], [108.7, -7.8], [106.4, -7.4]],
+  sunda: [[115.2, -8.1], [117, -8.2], [119, -8.4], [120.8, -8.3], [122.8, -8.3], [122.9, -8.8], [120.5, -9.4], [119, -9], [117, -9], [115.4, -8.8]],
+  timor: [[123.5, -10.3], [125.3, -8.6], [127.3, -8.4], [124.2, -10.2]],
+  sulawesi: [[118.8, -2.5], [119.5, .2], [120.3, .9], [123, 1], [125, 1.6], [124.2, .4], [121.2, .3], [120.8, -1], [123.3, -.9], [121.6, -1.8], [123, -4], [122.2, -5.2], [121, -3.5], [120.4, -5.6], [119.5, -5.5], [119.6, -3.5]],
+  halmahera: [[127.4, 2.2], [128.6, 1.4], [128.2, -.6], [127.6, .8]],
+  guinea: [[131, -1.2], [132.5, -.4], [134.2, -.9], [135.4, -3.3], [137.5, -1.5], [140, -2.4], [142, -3.1], [144.5, -3.9], [145.8, -5.3], [147.6, -6.1], [147.3, -7.9], [149, -9.5], [150.8, -10.3], [148.5, -10.3], [146.2, -8.6], [144, -7.8], [142.5, -9.3], [141, -9.1], [139, -8.1], [138, -8.4], [137.8, -5], [135.5, -4.4], [133.5, -4], [132.2, -2.9], [131.2, -1.8]],
+  britain: [[148.4, -5.5], [150.3, -5.4], [152.2, -4.2], [151.8, -5.6], [149.5, -6.2]],
+  australia: [[113.4, -22], [114.2, -21.8], [116.7, -20.6], [119, -19.9], [121.4, -18.9], [122.3, -17.2], [123.6, -16.3], [125.3, -14.6], [126.8, -13.8], [128.2, -14.9], [129.6, -14.9], [130.2, -12.9], [131, -12.2], [132.6, -11.5], [133.9, -11.9], [136, -12.1], [136.9, -12.3], [135.9, -13.3], [135.5, -14.8], [137.8, -16.3], [139.6, -17.6], [140.8, -17.4], [141.6, -15], [141.5, -12.6], [142.5, -10.7], [143.5, -12.9], [144.5, -14.3], [145.4, -14.9], [146.3, -18.9], [148.8, -20.4], [150.8, -22.6], [153.2, -25.2], [153.6, -28.2], [153, -31], [151.5, -33.5], [150.1, -36.3], [149.9, -37.6], [147.5, -38], [146.3, -39.1], [144.9, -37.9], [143.5, -38.8], [140.6, -38], [139.6, -37.2], [139.8, -35.8], [138.5, -35.6], [138, -34.5], [137.8, -33], [137.4, -34.9], [135.9, -35], [135.3, -34.6], [134.2, -32.9], [131.1, -31.5], [128, -32.1], [124, -33.2], [121.9, -33.8], [119.5, -34.4], [117.8, -35.1], [115.1, -34.3], [115.7, -31.7], [115, -29.5], [113.4, -26.2], [113.8, -24.5]],
+  tasmania: [[144.7, -40.7], [148.3, -40.9], [148.3, -42.2], [147, -43.6], [145.3, -42.4]],
+  nzn: [[172.7, -34.4], [174.4, -35.3], [175.9, -37.4], [178.5, -37.7], [177.9, -39.2], [176.8, -40], [175.2, -41.6], [174.6, -41.2], [175.1, -40], [173.8, -39.2], [174.6, -37.3]],
+  nzs: [[172.7, -40.5], [174.3, -41.3], [173.9, -42.3], [172.7, -43.4], [171.2, -44.4], [170.7, -45.9], [169.3, -46.6], [166.5, -46], [166.7, -45.3], [168.3, -44], [170.8, -42.8], [172.1, -41.2]],
+  america: [[300, 50], [235.5, 50], [235.8, 45], [235.5, 43], [235.6, 41.5], [235.8, 40.3], [237.5, 38], [238.1, 36.6], [239.3, 34.5], [240.5, 34], [242.8, 32.6], [243.6, 31], [244.3, 29.8], [245.5, 28], [245.9, 27], [247.5, 25], [249.9, 22.9], [250.2, 24.2], [248.5, 26], [247.2, 28.5], [245.3, 31.3], [246.5, 31.2], [248.3, 29.5], [249.1, 27.9], [250.9, 25.8], [253.6, 23.2], [254.8, 20.6], [254.6, 19.6], [256, 18.9], [257.8, 17.9], [260.1, 16.8], [263.5, 15.8], [264.8, 16.1], [266.5, 15.3], [267.8, 14.5], [269.8, 13.6], [272.4, 12.4], [274.2, 10], [275.3, 9.5], [277.2, 8.2], [278.3, 7.5], [279.7, 7.4], [280.4, 8.3], [280.6, 8.9], [281.8, 8.4], [282.3, 7.3], [282.7, 5.6], [282.9, 3.9], [281.5, 2.5], [281, 1.4], [279.8, .8], [279.6, -1], [279.1, -2.2], [279.8, -3], [278.7, -4.6], [279.1, -6.2], [280.3, -7.8], [281.5, -9.8], [283, -12.1], [283.8, -13.8], [284.8, -15.4], [287, -17.3], [289.7, -18.5], [289.8, -23.5], [288.5, -30], [288.3, -33], [286.8, -37], [286.4, -40], [286.2, -43], [285.8, -46], [300, -50], [300, 10.5], [292, 10.8], [290, 11.8], [288.5, 11.5], [288.3, 12.4], [286.7, 11.1], [284.5, 10.4], [283.8, 9.2], [283.2, 8.3], [282.5, 8.8], [280.5, 9.6], [279, 9], [277.8, 9.3], [276.6, 10], [276.3, 11], [276.4, 12.5], [276.8, 15], [275.5, 15.9], [272, 15.9], [271.5, 17], [272.2, 18.5], [273.2, 21.3], [271.5, 21.5], [269.8, 21.3], [269.6, 19.8], [267.5, 18.5], [265.8, 18.5], [264.2, 19.2], [262.6, 21.5], [262.2, 23.5], [262.8, 25.9], [263, 27.8], [265, 29.5], [266.6, 29.5], [268, 29.2], [270.7, 30.4], [273, 29.8], [275.4, 29.8], [276.6, 29.2], [277.5, 27.9], [278.8, 25.2], [279.8, 25.9], [279.7, 27.5], [278.6, 30.5], [279.8, 32.5], [282.3, 35.2], [284, 37.5], [285, 38.8], [286, 40.5], [290, 41.6], [295, 43]],
+  cuba: [[275.1, 21.9], [276.2, 22.7], [278, 23.2], [280, 22.8], [282.5, 21.5], [285.8, 20.2], [285.5, 19.9], [282.8, 19.9], [282.3, 20.7], [279.6, 21.6], [277.5, 22], [276, 21.8]],
+  hispaniola: [[287.3, 19.9], [289.5, 19.6], [291.6, 18.4], [290.5, 18.1], [288.5, 17.9], [286.5, 18.3]],
+  jamaica: [[281.6, 18.4], [282.8, 18.5], [283.7, 18.1], [282.9, 17.8], [282.1, 17.9]]
+};
+const M = {};
+function buildMap() {
+  const g = gMap;
+  el('rect', { x: 0, y: 0, width: 1000, height: 560, fill: 'url(#oceanG)' }, g);
+  // graticule
+  const gr = el('g', { stroke: '#ffffff', fill: 'none' }, g);
+  [134.1, 425.9].forEach(y => el('line', { x1: 0, y1: y, x2: 1000, y2: y, 'stroke-width': 1, 'stroke-dasharray': '3 7', opacity: .25 }, gr));
+  [120, 150, 180, 210, 240, 270].forEach(lon => { const x = ll(lon, 0)[0]; el('line', { x1: x, y1: 0, x2: x, y2: 540, 'stroke-width': 1, 'stroke-dasharray': '2 8', opacity: .2 }, gr); });
+  el('line', { x1: 0, y1: 280, x2: 1000, y2: 280, 'stroke-width': 1.6, opacity: .45 }, gr);
+  // anomalies (under land)
+  const la = lyr('anom', g);
+  M.anW = el('g', null, la); M.anC = el('g', null, la);
+  [[M.anW, 'url(#anWG)'], [M.anC, 'url(#anCG)']].forEach(([gg, f]) => {
+    el('ellipse', { cx: 712, cy: 283, rx: 250, ry: 44, fill: f }, gg);
+    el('ellipse', { cx: 930, cy: 318, rx: 62, ry: 70, fill: f }, gg);
+  });
+  M.anWt = tx(la, 800, 352, '수온 평소보다 ↑', 'tw', 20);
+  M.anCt = tx(la, 800, 352, '수온 평소보다 ↓', 'tw', 20);
+  // land
+  const lg = el('g', { fill: '#d3c9a8', stroke: '#efe8d0', 'stroke-width': .8, 'stroke-linejoin': 'round' }, g);
+  for (const k in LAND) el('path', { d: polyD(LAND[k]) }, lg);
+  [[204.5, 19.6, 3.5], [203.7, 20.8, 2.6], [202, 21.5, 2.4], [200.5, 22.1, 2.2], [269.5, -.6, 3]].forEach(p => {
+    const q = ll(p[0], p[1]); el('circle', { cx: q[0], cy: q[1], r: p[2] }, lg);
+  });
+  tx(g, 300, 273, '적도', 'tw', 17);
+  [[120, '120°E'], [150, '150°E'], [180, '180°'], [210, '150°W'], [240, '120°W'], [270, '90°W']].forEach(p => tx(g, ll(p[0], 0)[0], 552, p[1], 'tw', 15).setAttribute('opacity', .75));
+  // names
+  el('text', { x: 470, y: 205, 'text-anchor': 'middle', 'font-size': 64, 'font-weight': 700, fill: '#ffffff', opacity: .1, 'letter-spacing': 24, text: '태평양' }, g);
+  tx(g, 14, 84, '아시아', 'tn', 22, 'start');
+  tx(g, 126, 440, '호주', 'tn', 22);
+  tx(g, 53, 340, '인도네시아', 'tn', 18);
+  tx(g, 832, 60, '북아메리카', 'tn', 22);
+  tx(g, 994, 244, '남아메리카', 'tn', 18, 'end');
+  tx(g, 988, 368, '페루', 'tn', 18, 'end');
+
+  // region labels
+  const lb = lyr('lbl', g);
+  tx(lb, 263, 196, '서태평양', 'tw', 32);
+  tx(lb, 780, 196, '동태평양', 'tw', 32);
+
+  // trade winds
+  const lt = lyr('trade', g);
+  M.trade = [];
+  for (let i = 0; i < 64; i++) {
+    const l = el('line', { stroke: 'rgba(255,255,255,.85)', 'stroke-width': 2.4, 'stroke-linecap': 'round' }, lt);
+    const p = { el: l }; spawnTrade(p, true); M.trade.push(p);
+  }
+  tx(lt, 600, 150, '북동 무역풍', 'tw', 22);
+  tx(lt, 600, 430, '남동 무역풍', 'tw', 22);
+
+  // equator cut
+  const lc = lyr('cut', g);
+  M.cut = el('path', { d: 'M0,280L1000,280', pathLength: 1000, stroke: '#ffd166', 'stroke-width': 5, 'stroke-dasharray': '1000', 'stroke-dashoffset': 1000, fill: 'none' }, lc);
+  const cp = pill(lc, '적도를 따라 자르기', 'rgba(4,16,30,.85)', 210, 36, 19);
+  cp.setAttribute('transform', 'translate(500,322)');
+  cp.t.setAttribute('fill', '#ffd166');
+
+  // Nino 3.4 box
+  const ln = lyr('nino', g);
+  el('rect', { x: 474, y: 249, width: 263, height: 62, fill: 'rgba(255,209,102,.12)', stroke: '#ffd166', 'stroke-width': 3, 'stroke-dasharray': '10 6' }, ln);
+  tx(ln, 605, 238, '엘니뇨 감시 구역', 'tw', 22).setAttribute('fill', '#ffd166');
+  tx(ln, 605, 338, '5°N~5°S, 170°W~120°W', 'tw', 17);
+
+  // impacts
+  const ie = lyr('imp-e', g);
+  icon(ie, 944, 300, 'rain'); tag(ie, 918, 300, '폭우·홍수', 'end');
+  icon(ie, 900, 410, 'fish'); tag(ie, 874, 410, '어획량 감소', 'end');
+  const iw = lyr('imp-w', g);
+  icon(iw, 74, 272, 'fire'); tag(iw, 100, 272, '가뭄·산불', 'start');
+  icon(iw, 218, 470, 'sun'); tag(iw, 244, 470, '가뭄', 'start');
+  const ik = lyr('korea', g);
+  el('circle', { cx: 145, cy: 53, r: 10, fill: 'none', stroke: '#ffd166', 'stroke-width': 3, class: 'ping' }, ik);
+  el('circle', { cx: 145, cy: 53, r: 6, fill: '#ffd166', stroke: '#0b2440', 'stroke-width': 2 }, ik);
+  el('path', { d: 'M150,60L176,96', stroke: '#ffd166', 'stroke-width': 2.4 }, ik);
+  tag(ik, 176, 106, '우리나라에도 영향', 'start');
+
+  // stations
+  const ls = lyr('sta', g);
+  M.sta = [[163, 357, '다윈'], [582, 389, '타히티']].map(s => {
+    el('circle', { cx: s[0], cy: s[1], r: 7, fill: '#ffffff', stroke: '#0b2440', 'stroke-width': 2.5 }, ls);
+    tx(ls, s[0], s[1] + 30, s[2], 'tw', 19);
+    const b = pill(ls, '평년', '#41566d', 96, 32, 17);
+    b.setAttribute('transform', `translate(${s[0]},${s[1] - 30})`);
+    return b;
+  });
+
+  // seesaw
+  const lse = lyr('see', g);
+  el('rect', { x: 612, y: 430, width: 328, height: 122, rx: 14, fill: 'rgba(4,16,30,.82)' }, lse);
+  M.soi = tx(lse, 776, 458, '', 'tp', 18);
+  M.beam = el('g', null, lse);
+  el('rect', { x: -120, y: -4, width: 240, height: 8, rx: 4, fill: '#e8eef3' }, M.beam);
+  M.wD = pill(M.beam, '다윈', '#41566d', 66, 28, 15); M.wD.setAttribute('transform', 'translate(-100,-18)');
+  M.wT = pill(M.beam, '타히티', '#41566d', 74, 28, 15); M.wT.setAttribute('transform', 'translate(98,-18)');
+  el('path', { d: 'M776,514L760,540L792,540Z', fill: '#c9d4de' }, lse);
+  M.seeNote = tx(lse, 928, 546, '기압이 높은 쪽이 내려간다', 'tp', 15, 'end');
+  M.seeNote.setAttribute('opacity', .7);
+}
+function icon(p, x, y, kind) {
+  const g = el('g', { transform: `translate(${x},${y})` }, p);
+  el('circle', { r: 21, fill: '#ffffff', stroke: '#0b2440', 'stroke-width': 2 }, g);
+  if (kind === 'rain') {
+    el('path', { d: 'M-11,1a7,7 0 0 1 3,-12a9,9 0 0 1 16,2a6,6 0 0 1 3,10Z', fill: '#6d8aa3' }, g);
+    [-7, 0, 7].forEach(dx => el('line', { x1: dx, y1: 5, x2: dx - 3, y2: 13, stroke: '#2f7fc1', 'stroke-width': 2.4, 'stroke-linecap': 'round' }, g));
+  } else if (kind === 'fish') {
+    el('path', { d: 'M-12,-3Q-4,-10 7,-3Q-4,4 -12,-3ZM7,-3L13,-8L13,2Z', fill: '#2f7fc1' }, g);
+    el('path', { d: 'M0,6L0,14M-4,10L0,14L4,10', stroke: '#d63a27', 'stroke-width': 2.6, fill: 'none', 'stroke-linecap': 'round' }, g);
+  } else if (kind === 'fire') {
+    el('path', { d: 'M0,-14C6,-6 11,-1 9,6C8,12 4,14 0,14C-5,14 -10,10 -9,3C-8,-3 -3,-4 -2,-10C1,-7 2,-4 0,0C4,-2 3,-9 0,-14Z', fill: '#e8552f' }, g);
+    el('path', { d: 'M0,2C3,5 4,8 2,11C0,13 -3,12 -3,9C-3,6 0,5 0,2Z', fill: '#ffd166' }, g);
+  } else {
+    el('circle', { r: 7, fill: '#f2a449' }, g);
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI / 4;
+      el('line', { x1: 10 * Math.cos(a), y1: 10 * Math.sin(a), x2: 15 * Math.cos(a), y2: 15 * Math.sin(a), stroke: '#f2a449', 'stroke-width': 2.4, 'stroke-linecap': 'round' }, g);
+    }
+  }
+}
+function tag(p, x, y, str, anchor) {
+  const w = str.length * 17 + 22, h = 34;
+  const rx = anchor === 'end' ? x - w : x;
+  el('rect', { x: rx, y: y - h / 2, width: w, height: h, rx: 17, fill: 'rgba(4,16,30,.86)' }, p);
+  tx(p, rx + w / 2, y + 6.5, str, 'tp', 18);
+}
+function spawnTrade(p, init) {
+  const north = Math.random() < .5;
+  const lat = 4 + Math.random() * 22;
+  p.north = north;
+  p.x = init ? 170 + Math.random() * 760 : 560 + Math.random() * 360;
+  p.y = 280 + (north ? -1 : 1) * lat * 6.22;
+  p.v = 38 + Math.random() * 22;
+  p.age = 0;
+}
+function drawMap(dt) {
+  const e = SC.map.cur.e;
+  const vis = n => LAYERS.has(n);
+  if (vis('anom')) {
+    const s = 1 + .035 * Math.sin(T * 2.2);
+    const tf = `translate(712,283) scale(${f1(s * 1000) / 1000}) translate(-712,-283)`;
+    M.anW.setAttribute('transform', tf); M.anC.setAttribute('transform', tf);
+    M.anW.setAttribute('opacity', f1(clamp(e) * 10) / 10);
+    M.anC.setAttribute('opacity', f1(clamp(-e) * 10) / 10);
+    M.anWt.setAttribute('opacity', e > .3 ? 1 : 0);
+    M.anCt.setAttribute('opacity', e < -.3 ? 1 : 0);
+  }
+  if (vis('trade')) {
+    M.trade.forEach(p => {
+      const d = p.v * dt * MOT;
+      p.x -= d; p.y += (p.north ? 1 : -1) * d * .3; p.age += dt * MOT;
+      const lat = Math.abs(p.y - 280) / 6.22;
+      if (p.x < 175 || lat < 1.2) spawnTrade(p, false);
+      const f = clamp(p.age / .6) * clamp((lat - 1.2) / 3) * clamp((p.x - 175) / 60);
+      p.el.setAttribute('x1', f1(p.x)); p.el.setAttribute('y1', f1(p.y));
+      p.el.setAttribute('x2', f1(p.x + 22)); p.el.setAttribute('y2', f1(p.y - (p.north ? 1 : -1) * 6.6));
+      p.el.setAttribute('opacity', f1(f * 10) / 10);
+    });
+  }
+  if (vis('sta') || vis('see')) {
+    const st = e > .35 ? 1 : e < -.35 ? -1 : 0;
+    if (M.stState !== st) {
+      M.stState = st;
+      const hiC = '#2466ad', loC = '#d63a27', nC = '#41566d';
+      const d = st === 1 ? ['기압 ↑', hiC] : st === -1 ? ['기압 ↓', loC] : ['평년', nC];
+      const t = st === 1 ? ['기압 ↓', loC] : st === -1 ? ['기압 ↑', hiC] : ['평년', nC];
+      [[M.sta[0], d], [M.sta[1], t]].forEach(([b, v]) => { b.t.textContent = v[0]; b.firstChild.setAttribute('fill', v[1]); });
+      M.wD.firstChild.setAttribute('fill', d[1]); M.wT.firstChild.setAttribute('fill', t[1]);
+      M.soi.textContent = '남방 진동 지수 ' + (st === 1 ? '음(−)' : st === -1 ? '양(+)' : '≈ 0');
+    }
+    M.beam.setAttribute('transform', `translate(776,510) rotate(${f1(-e * 10)})`);
+  }
+}
+
+/* ================= graph scene ================= */
+const CP = [[0, -.1], [4, .2], [8, .8], [13, 1.6], [18, 2.1], [22, 1.7], [26, .8], [29, .1], [33, -.7], [38, -1.3], [43, -1.1], [47, -.4], [51, .1], [54, .62], [56, .6], [59, .15], [60, .05]];
+function herm(x) {
+  const n = CP.length; let i = 0;
+  while (i < n - 2 && x > CP[i + 1][0]) i++;
+  const sl = j => {
+    if (j <= 0) return (CP[1][1] - CP[0][1]) / (CP[1][0] - CP[0][0]);
+    if (j >= n - 1) return (CP[n - 1][1] - CP[n - 2][1]) / (CP[n - 1][0] - CP[n - 2][0]);
+    return .5 * ((CP[j + 1][1] - CP[j][1]) / (CP[j + 1][0] - CP[j][0]) + (CP[j][1] - CP[j - 1][1]) / (CP[j][0] - CP[j - 1][0]));
+  };
+  const [x0, y0] = CP[i], [x1, y1] = CP[i + 1], h = x1 - x0, t = (x - x0) / h, m0 = sl(i) * h, m1 = sl(i + 1) * h, t2 = t * t, t3 = t2 * t;
+  return (2 * t3 - 3 * t2 + 1) * y0 + (t3 - 2 * t2 + t) * m0 + (-2 * t3 + 3 * t2) * y1 + (t3 - t2) * m1;
+}
+const GX = m => 120 + m * 13.5, GY = v => 290 - v * 72;
+const G = {};
+function buildGraph() {
+  const g = gGraph;
+  el('rect', { x: 0, y: 0, width: 1000, height: 560, fill: '#0b1f35' }, g);
+  tx(g, 60, 50, '엘니뇨 감시 구역의 해수면 온도 편차', 'tp', 26, 'start');
+  tx(g, 60, 80, '모식적 예시 (실제 관측값이 아님)', 'tp', 17, 'start').setAttribute('opacity', .65);
+  const ax = el('g', null, g);
+  [-2, -1, 0, 1, 2].forEach(v => {
+    el('line', { x1: 120, y1: GY(v), x2: 930, y2: GY(v), stroke: '#ffffff', opacity: v === 0 ? .45 : .1, 'stroke-width': v === 0 ? 1.6 : 1 }, ax);
+    tx(ax, 108, GY(v) + 6, (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v), 'tp', 16, 'end').setAttribute('opacity', .75);
+  });
+  tx(ax, 60, 128, '편차(℃)', 'tp', 15, 'start').setAttribute('opacity', .7);
+  for (let m = 0; m <= 60; m += 12) {
+    el('line', { x1: GX(m), y1: 466, x2: GX(m), y2: 474, stroke: '#ffffff', opacity: .5 }, ax);
+    tx(ax, GX(m), 496, m + '', 'tp', 16).setAttribute('opacity', .75);
+  }
+  tx(ax, 930, 524, '경과 기간(개월)', 'tp', 15, 'end').setAttribute('opacity', .7);
+  el('line', { x1: 120, y1: GY(.5), x2: 930, y2: GY(.5), stroke: '#ff8a65', 'stroke-width': 2, 'stroke-dasharray': '9 6' }, ax);
+  el('line', { x1: 120, y1: GY(-.5), x2: 930, y2: GY(-.5), stroke: '#64b5f6', 'stroke-width': 2, 'stroke-dasharray': '9 6' }, ax);
+  tx(ax, 936, GY(.5) + 6, '+0.5', 'tp', 16, 'start').setAttribute('fill', '#ff9c85');
+  tx(ax, 936, GY(-.5) + 6, '−0.5', 'tp', 16, 'start').setAttribute('fill', '#8cc8ff');
+
+  const vals = []; for (let m = 0; m <= 60; m++) vals.push(herm(m));
+  const runs = []; let cur = null;
+  vals.forEach((y, m) => {
+    const s = y >= .5 ? 1 : y <= -.5 ? -1 : 0;
+    if (s && cur && cur.s === s) cur.e = m;
+    else { if (cur) runs.push(cur); cur = s ? { s, b: m, e: m } : null; }
+  });
+  if (cur) runs.push(cur);
+  G.runs = runs;
+
+  const jd = lyr('judge', g);
+  runs.forEach(r => {
+    const len = r.e - r.b + 1, ok = len >= 5;
+    let d = `M${f1(GX(r.b))},${f1(GY(0))}`;
+    for (let x = r.b; x <= r.e + 1e-6; x += .25) d += `L${f1(GX(x))},${f1(GY(herm(x)))}`;
+    d += `L${f1(GX(r.e))},${f1(GY(0))}Z`;
+    const col = !ok ? 'rgba(255,255,255,.2)' : r.s > 0 ? 'rgba(239,90,60,.55)' : 'rgba(70,150,235,.55)';
+    el('path', { d, fill: col }, jd);
+    const mid = (r.b + r.e) / 2;
+    let peak = 0; for (let m = r.b; m <= r.e; m++) peak = r.s > 0 ? Math.max(peak, vals[m]) : Math.min(peak, vals[m]);
+    const ty = r.s > 0 ? GY(peak) - 16 : GY(peak) + 34;
+    const lab = !ok ? `${len}개월 → 엘니뇨 아님` : (r.s > 0 ? '엘니뇨' : '라니냐') + ` (${len}개월)`;
+    const t = tx(jd, GX(mid), ty, lab, 'tw', 20);
+    if (!ok) t.setAttribute('text-anchor', 'end'), t.setAttribute('x', GX(r.e) + 30);
+    if (ok) t.setAttribute('fill', r.s > 0 ? '#ffb199' : '#a9d4ff');
+  });
+  const dr = lyr('draw', g);
+  let d = '';
+  for (let x = 0; x <= 60; x += .25) d += (x ? 'L' : 'M') + f1(GX(x)) + ',' + f1(GY(herm(x)));
+  G.curve = el('path', { d, fill: 'none', stroke: '#f4f7fa', 'stroke-width': 3.4, 'stroke-linejoin': 'round', pathLength: 1000, 'stroke-dasharray': 1000, 'stroke-dashoffset': 1000 }, dr);
+  const dots = el('g', null, jd);
+  vals.forEach((v, m) => {
+    const r = runs.find(q => m >= q.b && m <= q.e);
+    const c = !r ? 'rgba(255,255,255,.45)' : (r.e - r.b + 1 < 5) ? '#c8d0d8' : r.s > 0 ? '#ff7a5c' : '#5aa8ff';
+    el('circle', { cx: f1(GX(m)), cy: f1(GY(v)), r: 3.6, fill: c }, dots);
+  });
+}
+
+/* ================= exam figure ================= */
+function buildMini() {
+  const g = gMini;
+  el('rect', { x: 0, y: 0, width: 1000, height: 560, fill: '#fbfaf6' }, g);
+  const hp = el('pattern', { id: 'hatch', width: 8, height: 8, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, defs);
+  el('rect', { width: 8, height: 8, fill: '#d9dcdf' }, hp);
+  el('line', { x1: 0, y1: 0, x2: 0, y2: 8, stroke: '#9aa2aa', 'stroke-width': 2 }, hp);
+  const panel = (x0, name, sW, sE, tW, tE) => {
+    const x1 = x0 + 400, top = 150, bot = 440;
+    const gp = el('g', null, g);
+    tx(gp, x0 + 200, 118, name, 'tq', 26).setAttribute('fill', '#111');
+    const surf = `M${x0},${sW}L${x1},${sE}`;
+    const th = `M${x0},${tW}Q${x0 + 200},${(tW + tE) / 2 + (tW - tE) * .12} ${x1},${tE}`;
+    el('path', { d: `M${x0},${sW}L${x1},${sE}L${x1},${bot}L${x0},${bot}Z`, fill: 'url(#hatch)' }, gp);
+    el('path', { d: `M${x0},${sW}L${x1},${sE}L${x1},${tE}Q${x0 + 200},${(tW + tE) / 2 + (tW - tE) * .12} ${x0},${tW}Z`, fill: '#ecebe5' }, gp);
+    el('path', { d: surf, stroke: '#111', 'stroke-width': 2.5, fill: 'none' }, gp);
+    el('path', { d: th, stroke: '#111', 'stroke-width': 2.5, 'stroke-dasharray': '10 6', fill: 'none' }, gp);
+    el('rect', { x: x0, y: top, width: 400, height: bot - top, fill: 'none', stroke: '#111', 'stroke-width': 2 }, gp);
+    const tl = (x, y, s, sz, an) => { const t = tx(gp, x, y, s, 'tq', sz || 20, an); t.setAttribute('fill', '#111'); return t; };
+    tl(x0 + 110, Math.min(tW, sW + 60) - (tW - sW > 80 ? 30 : 12), '따뜻한 해수', 19);
+    tl(x0 + 250, 420, '찬 해수', 19);
+    const cy = (tW + tE) / 2 + (tW - tE) * .12, yq = t => (1 - t) * (1 - t) * tW + 2 * (1 - t) * t * cy + t * t * tE;
+    tl(x0 + 320, yq(.8) - 10, '수온 약층', 17);
+    tl(x0 + 14, 470, '서', 20, 'start');
+    tl(x1 - 14, 470, '동', 20, 'end');
+    tl(x0 + 200, 470, '← 적도 태평양 →', 16).setAttribute('fill', '#555');
+  };
+  panel(70, '(가)', 196, 200, 290, 282);
+  panel(530, '(나)', 184, 210, 360, 226);
+  tx(g, 500, 536, '※ 점선은 수온 약층, 빗금 친 부분은 수온 약층 아래의 찬 해수이다.', 'tq', 16).setAttribute('fill', '#444');
+}
+
+/* ================= slide data ================= */
+const SEC_ALL = ['wind', 'thermo', 'up', 'temp', 'cloud', 'pL', 'pH', 'walker'];
+const SLIDES = [
+  { ch: '들어가며', scene: 'map', base: { set: { e: 1 }, ly: ['anom'] }, cover: true, steps: [] },
+  {
+    ch: '적도 태평양', title: '엘니뇨가 일어나는 곳', scene: 'map', base: { ly: [] },
+    intro: '엘니뇨는 적도 부근의 넓은 태평양에서 일어난다. 서쪽 끝에는 인도네시아와 호주, 동쪽 끝에는 남아메리카의 페루가 있다.',
+    steps: [
+      { ly: ['lbl'], t: '인도네시아 부근의 바다를 <b>서태평양</b>, 페루 부근의 바다를 <b>동태평양</b>이라고 부르자.' },
+      { ly: ['trade'], t: '적도 부근에서는 1년 내내 동쪽에서 서쪽으로 <b>무역풍</b>이 분다. 북반구의 북동 무역풍과 남반구의 남동 무역풍이 적도를 향해 모여든다.' },
+      { ly: ['cut'], rm: ['lbl'], t: '이제 적도를 따라 바다를 세로로 잘라 단면을 들여다보자.' }
+    ]
+  },
+  {
+    ch: '평상시', title: '무역풍이 바닷물을 민다', scene: 'sec', base: { ly: [], bd: 'n' },
+    intro: '적도를 따라 자른 태평양의 단면이다. 왼쪽이 서태평양, 오른쪽이 동태평양이며 위쪽은 대기, 아래쪽은 바다다.',
+    steps: [
+      { ly: ['wind'], t: '무역풍이 동쪽에서 서쪽으로 불면서 따뜻한 표층 해수를 서쪽으로 밀어 보낸다.' },
+      { ly: ['sl'], t: '따뜻한 해수가 서쪽에 쌓이므로 서태평양의 해수면이 동태평양보다 높다. 실제 차이는 수십 cm 정도이며, 그림은 과장하여 나타냈다.' },
+      { ly: ['thermo'], t: '따뜻한 해수층이 두꺼운 서쪽은 <b>수온 약층</b>이 깊고, 따뜻한 해수층이 얇은 동쪽은 수온 약층이 얕다.' }
+    ]
+  },
+  {
+    ch: '평상시', title: '동쪽에서는 찬물이 솟는다', scene: 'sec', base: { ly: ['wind', 'thermo'], bd: 'n' },
+    intro: '표층 해수가 서쪽으로 빠져나간 동태평양에서는 빈자리를 채우기 위해 아래쪽의 해수가 올라온다.',
+    steps: [
+      { ly: ['up'], t: '이처럼 깊은 곳의 찬 해수가 표층으로 올라오는 현상을 <b>용승</b>이라고 한다. 용승 때문에 동태평양의 표층 수온은 낮다.' },
+      { ly: ['fish'], t: '올라오는 찬 해수에는 영양염류가 풍부하여 플랑크톤이 번성한다. 그래서 페루 연안은 안초비(멸치류)가 많이 잡히는 세계적인 어장이다.' },
+      { ly: ['temp'], t: '결과적으로 적도 부근 태평양의 표층 수온은 서쪽이 높고 동쪽이 낮다.' }
+    ]
+  },
+  {
+    ch: '평상시', title: '대기도 함께 돈다: 워커 순환', scene: 'sec', base: { ly: ['thermo', 'temp'], bd: 'n' },
+    intro: '바다의 수온 차이는 그 위 대기의 움직임도 바꾼다.',
+    steps: [
+      { ly: ['cloud', 'pL'], t: '따뜻한 서태평양에서는 공기가 데워져 상승하므로 <b>저기압</b>이 발달한다. 구름이 잘 생기고 비가 많이 내린다.' },
+      { ly: ['pH'], t: '찬 동태평양에서는 공기가 하강하므로 <b>고기압</b>이 발달하고 날씨가 건조하다.' },
+      { ly: ['walker'], t: '서쪽에서 상승한 공기는 상층에서 동쪽으로 이동해 하강하고, 지표 부근에서는 무역풍이 되어 다시 서쪽으로 분다. 적도를 따라 동서 방향으로 도는 이 순환을 <b>워커 순환</b>이라고 한다.' }
+    ]
+  },
+  {
+    ch: '엘니뇨', title: '엘니뇨가 일어나면', scene: 'sec', base: { ly: SEC_ALL, bd: 'n' },
+    intro: '그런데 몇 년에 한 번씩 이 균형이 무너진다. 무슨 일이 차례로 일어나는지 살펴보자.',
+    steps: [
+      { set: { w: 1 }, bd: 'c', t: '먼저 무역풍이 평소보다 약해진다.' },
+      { set: { o: 1 }, ly: ['sl'], t: '서쪽에 쌓여 있던 따뜻한 해수가 동쪽으로 퍼진다. 서쪽 해수면은 낮아지고 동쪽 해수면은 높아진다. 수온 약층은 서쪽에서 얕아지고 동쪽에서 깊어져 평평해진다.' },
+      { ly: ['hi'], bd: 'e', t: '동태평양의 용승이 약해져 찬 해수가 덜 올라오므로 표층 수온이 평년보다 높아진다. 이 상태가 몇 달 이상 지속되는 것이 <b>엘니뇨</b>다.' },
+      { set: { a: 1 }, rm: ['hi'], t: '따뜻한 바다를 따라 상승 기류와 저기압의 중심이 중앙 태평양 쪽으로 옮겨 가고, 서태평양에는 고기압이 자리 잡는다. 워커 순환은 약해진다.' },
+      { ly: ['fb'], rm: ['sl'], t: '동서 기압 차가 줄면 무역풍이 더 약해지고, 무역풍이 약해지면 동태평양은 더 따뜻해진다. 이렇게 원인과 결과가 서로를 강화하는 <b>되먹임</b> 때문에 엘니뇨는 한번 시작되면 몇 달 이상 이어진다.' }
+    ]
+  },
+  {
+    ch: '엘니뇨의 영향', title: '멀리까지 퍼지는 영향', scene: 'map', base: { set: { e: 1 }, ly: ['anom'], bd: 'e' },
+    intro: '엘니뇨가 일어나면 태평양 주변은 물론 멀리 떨어진 지역의 날씨도 평소와 달라진다.',
+    steps: [
+      { ly: ['imp-e'], t: '동태평양 연안의 페루·에콰도르에는 비가 많이 내려 홍수가 잦아진다. 용승이 약해져 영양염류가 줄어들므로 어획량도 크게 줄어든다.' },
+      { ly: ['imp-w'], t: '서태평양의 인도네시아와 호주 동부는 강수량이 줄어 가뭄이 들고, 큰 산불이 나기도 한다.' },
+      { ly: ['korea'], t: '대기의 흐름을 타고 영향이 멀리까지 전달되기도 한다. 우리나라는 엘니뇨가 발달한 해 겨울에 기온이 높고 강수량이 많은 경향이 있지만, 해마다 똑같이 나타나지는 않는다.' }
+    ]
+  },
+  {
+    ch: '라니냐', title: '라니냐: 평상시가 더 강해질 때', scene: 'sec', base: { ly: SEC_ALL, bd: 'n' },
+    intro: '<b>라니냐</b>는 스페인어로 ‘여자아이’라는 뜻으로, 엘니뇨와 반대 방향의 변화다. 평상시의 모습이 더 강해진다.',
+    steps: [
+      { set: { w: -1 }, bd: 'c', t: '무역풍이 평소보다 강해진다.' },
+      { set: { o: -1 }, ly: ['sl'], bd: 'l', t: '따뜻한 해수가 서쪽으로 더 많이 밀려 가 서쪽 해수면이 더 높아진다. 동태평양은 용승이 강해져 수온 약층이 더 얕아지고 표층 수온이 평년보다 낮아진다.' },
+      { set: { a: -1 }, t: '서태평양에서는 상승 기류가 더 활발해져 폭우와 홍수가 잦아지고, 동태평양은 더 건조해져 가뭄이 들기 쉽다. 워커 순환은 강해진다.' }
+    ]
+  },
+  { ch: '실험', title: '직접 바꿔 보기', scene: 'sec', lab: true, interactive: true, steps: [] },
+  {
+    ch: '판단 기준', title: '엘니뇨라고 말하려면', scene: 'map', base: { set: { e: 1 }, ly: ['anom'] },
+    intro: '수온이 잠깐 올랐다고 해서 모두 엘니뇨는 아니다. 정해진 해역의 수온을 꾸준히 관측해 판단한다.',
+    steps: [
+      { ly: ['nino'], t: '적도 부근 중앙·동태평양의 5°N~5°S, 170°W~120°W 해역을 <b>엘니뇨 감시 구역</b>으로 정해 두고 해수면 온도를 관측한다.' },
+      { scene: 'graph', ly: ['draw'], t: '이 구역의 해수면 온도가 평년보다 얼마나 높거나 낮은지(편차)를 달마다 이어 그리면 이런 그래프가 된다. 기상청은 3개월 이동 평균한 편차를 쓴다.' },
+      { ly: ['judge'], t: '편차가 +0.5 ℃ 이상인 상태가 5개월 이상 지속되면 <b>엘니뇨</b>, −0.5 ℃ 이하인 상태가 5개월 이상 지속되면 <b>라니냐</b>로 판단한다. 기준을 넘었더라도 5개월을 채우지 못하면 엘니뇨가 아니다.' }
+    ]
+  },
+  {
+    ch: '남방 진동', title: '대기의 시소: 남방 진동', scene: 'map', base: { ly: ['sta', 'see'], bd: 'n' },
+    intro: '엘니뇨와 라니냐 때는 바다뿐 아니라 대기의 기압 분포도 함께 바뀐다. 호주의 다윈과 남태평양의 타히티에서 잰 해면 기압을 비교해 보자.',
+    steps: [
+      { set: { e: 1 }, ly: ['anom'], bd: 'e', t: '엘니뇨 때는 서쪽의 다윈에서 기압이 평년보다 높아지고, 동쪽의 타히티에서는 낮아진다. 두 지점의 기압 차(타히티 − 다윈)로 구하는 <b>남방 진동 지수</b>는 음(−)의 값이 된다.' },
+      { set: { e: -1 }, bd: 'l', t: '라니냐 때는 반대로 다윈의 기압이 낮아지고 타히티의 기압이 높아져, 남방 진동 지수가 양(+)의 값이 된다.' },
+      { osc: true, bd: 'auto', t: '이처럼 태평양 동서의 기압이 시소처럼 번갈아 오르내리는 현상을 <b>남방 진동</b>이라고 한다. 바다의 엘니뇨·라니냐와 대기의 남방 진동은 함께 일어나므로, 둘을 묶어 <b>엔소(ENSO)</b>라고 부른다.' }
+    ]
+  },
+  {
+    ch: '정리', title: '한눈에 비교하기', scene: 'sec', base: { ly: ['wind', 'sl', 'thermo', 'up', 'cloud', 'pL', 'pH', 'walker'], bd: 'n' }, table: true,
+    intro: '세 상태를 나란히 놓고 비교해 보자. 누를 때마다 한 열씩 채워진다.',
+    steps: [
+      { set: { w: 0, o: 0, a: 0 }, bd: 'n' },
+      { set: { w: 1, o: 1, a: 1 }, bd: 'e' },
+      { set: { w: -1, o: -1, a: -1 }, bd: 'l' }
+    ]
+  },
+  { ch: '확인 문제', title: '확인 문제', scene: 'sec', quiz: true, interactive: true, steps: [] }
+];
+const TABLE = [
+  ['무역풍', '동 → 서로 분다', '약해진다', '강해진다'],
+  ['동태평양 용승', '활발하다', '약해진다', '강해진다'],
+  ['동태평양 표층 수온', '낮다', '평년보다 높다', '평년보다 낮다'],
+  ['동태평양 수온 약층', '얕다', '깊어진다', '더 얕아진다'],
+  ['서–동 해수면 높이 차', '서쪽이 높다', '작아진다', '커진다'],
+  ['서태평양 날씨', '비가 많다', '건조, 가뭄', '폭우, 홍수'],
+  ['동태평양 날씨', '건조하다', '비가 많다, 홍수', '더 건조, 가뭄'],
+  ['남방 진동 지수', '0 부근', '음(−)', '양(+)']
+];
+const QUIZ = [
+  {
+    q: '엘니뇨가 발생할 때 적도 부근 태평양의 무역풍은 평상시와 비교하여 어떻게 변하는가?',
+    o: ['강해진다', '약해진다', '변화 없다'], a: 1,
+    ex: '엘니뇨 때는 무역풍이 약해져, 서쪽에 쌓여 있던 따뜻한 해수가 동쪽으로 퍼진다.',
+    scene: 'sec', ly: ['wind', 'thermo'], before: {}, after: { w: 1, o: 1 }
+  },
+  {
+    q: '엘니뇨 시기 페루 연안에서 나타나는 변화로 옳은 것은?',
+    o: ['용승이 강해져 어획량이 늘어난다.', '용승이 약해져 영양염류가 줄고 어획량이 감소한다.', '수온이 낮아져 비가 적게 내린다.'], a: 1,
+    ex: '용승이 약해지면 영양염류가 풍부한 찬 해수가 덜 올라와 플랑크톤과 어획량이 줄어든다. 수온이 올라 비도 많이 내린다.',
+    scene: 'sec', ly: ['thermo', 'up', 'fish', 'temp'], before: {}, after: { w: 1, o: 1 }
+  },
+  {
+    q: '라니냐 시기 서태평양(인도네시아 부근)의 날씨로 옳은 것은?',
+    o: ['강수량이 줄어 가뭄이 든다.', '강수량이 늘어 홍수가 잦아진다.', '평상시와 차이가 없다.'], a: 1,
+    ex: '라니냐 때는 무역풍이 강해져 따뜻한 해수가 서쪽에 더 많이 쌓이고, 서태평양의 상승 기류가 활발해져 비가 많이 내린다.',
+    scene: 'sec', ly: ['wind', 'cloud', 'pL', 'pH', 'walker'], before: {}, after: { w: -1, o: -1, a: -1 }
+  },
+  {
+    q: '엘니뇨 시기 다윈(호주)과 타히티의 해면 기압 변화로 옳은 것은?',
+    o: ['다윈은 높아지고, 타히티는 낮아진다.', '다윈은 낮아지고, 타히티는 높아진다.', '두 지점 모두 높아진다.'], a: 0,
+    ex: '엘니뇨 때는 서태평양 쪽의 기압이 높아지고 중앙·동태평양 쪽의 기압이 낮아진다. 그래서 남방 진동 지수는 음(−)의 값이 된다.',
+    scene: 'map', ly: ['sta', 'see'], before: { e: 0 }, after: { e: 1 }
+  },
+  {
+    q: '그림 (가)와 (나)는 평상시와 엘니뇨 시기 중 하나일 때 적도 부근 태평양의 연직 수온 분포를 모식적으로 나타낸 것이다. 이에 대한 설명으로 옳은 것만을 〈보기〉에서 있는 대로 고른 것은?',
+    bogi: ['ㄱ. (가)는 엘니뇨 시기이다.', 'ㄴ. 동태평양에서 용승은 (나)가 (가)보다 강하다.', 'ㄷ. 서태평양과 동태평양의 해수면 높이 차는 (가)가 (나)보다 크다.'],
+    o: ['① ㄱ', '② ㄷ', '③ ㄱ, ㄴ', '④ ㄴ, ㄷ', '⑤ ㄱ, ㄴ, ㄷ'], a: 2, row: true,
+    ex: '(가)는 수온 약층이 거의 평평하므로 엘니뇨 시기, (나)는 서쪽이 깊고 동쪽이 얕으므로 평상시다. 용승은 평상시인 (나)가 더 강하다(ㄴ 옳음). 해수면 높이 차는 무역풍이 강한 (나)가 더 크다(ㄷ 틀림).',
+    scene: 'mini', ly: [], before: {}, after: {}
+  }
+];
+
+/* ================= sound (Web Audio, synthesized) ================= */
+const SND = { ctx: null, on: true, master: null, amb: null, last: 0 };
+try { if (localStorage.getItem('elnino-sound') === '0') SND.on = false; } catch (e) {}
+function sndInit() {
+  if (SND.ctx) { if (SND.ctx.state === 'suspended' && !document.hidden) SND.ctx.resume(); return; }
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+  const ctx = SND.ctx = new AC();
+  SND.master = ctx.createGain();
+  SND.master.gain.value = SND.on ? 1 : 0;
+  SND.master.connect(ctx.destination);
+  const len = ctx.sampleRate * 3, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+  let b = 0;
+  for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; b = .97 * b + .03 * w; d[i] = w * .6 + b * 2.4; }
+  SND.buf = buf;
+  const mk = (type, freq, q, off) => {
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+    const g = ctx.createGain(); g.gain.value = 0;
+    src.connect(f); f.connect(g); g.connect(SND.master);
+    src.start(ctx.currentTime, off);
+    return { f, g };
+  };
+  SND.amb = { wave: mk('lowpass', 380, .7, 0), wind: mk('bandpass', 600, 1.1, 1), rain: mk('highpass', 2800, .5, 2) };
+  if (ctx.state === 'suspended') ctx.resume();
+}
+function sndReady() { return SND.ctx && SND.ctx.state === 'running' && SND.on; }
+function tone(f1, f2, dur, type, vol, delay) {
+  if (!sndReady()) return;
+  const ctx = SND.ctx, t = ctx.currentTime + (delay || 0);
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type || 'sine';
+  o.frequency.setValueAtTime(f1, t);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  g.gain.setValueAtTime(.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + .012);
+  g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g); g.connect(SND.master);
+  o.start(t); o.stop(t + dur + .05);
+}
+function whoosh() {
+  if (!sndReady()) return;
+  const ctx = SND.ctx, t = ctx.currentTime;
+  const src = ctx.createBufferSource(); src.buffer = SND.buf;
+  const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.4;
+  f.frequency.setValueAtTime(260, t); f.frequency.exponentialRampToValueAtTime(1600, t + .32);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.16, t + .08); g.gain.exponentialRampToValueAtTime(.0001, t + .42);
+  src.connect(f); f.connect(g); g.connect(SND.master);
+  src.start(t, Math.random()); src.stop(t + .5);
+}
+const SFX = {
+  step: () => tone(520, 760, .13, 'sine', .07),
+  slide: () => whoosh(),
+  tick: () => tone(880, 0, .06, 'triangle', .05),
+  ok: () => { tone(1047, 0, .4, 'sine', .09); tone(1319, 0, .5, 'sine', .09, .11); },
+  no: () => { tone(330, 0, .2, 'triangle', .09); tone(247, 0, .32, 'triangle', .09, .15); },
+  done: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0, .45, 'sine', .07, i * .1))
+};
+function sndUpdate() {
+  if (!SND.ctx || SND.ctx.state !== 'running' || !SND.amb) return;
+  const t = SND.ctx.currentTime;
+  if (t - SND.last < .08) return;
+  SND.last = t;
+  let wave = 0, wind = 0, windF = 600, rain = 0;
+  if (curScene === 'sec') {
+    const { w, a } = SC.sec.cur;
+    wave = .05 + .05 * (.5 + .5 * Math.sin(T * .55));
+    if (LAYERS.has('wind')) {
+      const s = l3(w, 1.55, 1, .28);
+      wind = .05 * s * (.75 + .25 * Math.sin(T * .9) * Math.sin(T * .37));
+      windF = 360 + 440 * s;
+    }
+    if (LAYERS.has('cloud')) rain = .035 * l3(a, 1.35, 1, .9);
+  } else if (curScene === 'map') {
+    wave = .025;
+    if (LAYERS.has('trade')) { wind = .045 * (.8 + .2 * Math.sin(T * .8)); windF = 650; }
+  }
+  const A = SND.amb;
+  A.wave.g.gain.setTargetAtTime(wave, t, .4);
+  A.wind.g.gain.setTargetAtTime(wind, t, .4);
+  A.wind.f.frequency.setTargetAtTime(windF + 70 * Math.sin(T * 1.3), t, .4);
+  A.rain.g.gain.setTargetAtTime(rain, t, .5);
+}
+function sndSet(on, init) {
+  SND.on = on;
+  try { localStorage.setItem('elnino-sound', on ? '1' : '0'); } catch (e) {}
+  if (on && !init) sndInit();
+  if (SND.master) SND.master.gain.setTargetAtTime(on ? 1 : 0, SND.ctx.currentTime, .08);
+  const btn = document.getElementById('snd');
+  btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  btn.setAttribute('aria-label', on ? '소리 끄기' : '소리 켜기');
+  btn.querySelector('.w').style.display = on ? '' : 'none';
+  btn.querySelector('.x').style.display = on ? 'none' : '';
+}
+['pointerdown', 'keydown'].forEach(ev => addEventListener(ev, () => { if (SND.on) sndInit(); }, true));
+document.addEventListener('visibilitychange', () => {
+  if (!SND.ctx) return;
+  if (document.hidden) SND.ctx.suspend(); else if (SND.on) SND.ctx.resume();
+});
+document.getElementById('snd').addEventListener('click', () => sndSet(!SND.on));
+sndSet(SND.on, true);
+
+/* ================= state & rendering ================= */
+let LAYERS = new Set();
+let curScene = null, BADGE = null, badgeKey = '';
+const cur = { s: 0, k: 0 };
+const stage = $('#stage'), cap = $('#cap'), inner = cap.querySelector('.inner');
+
+function setScene(name) {
+  if (curScene === name) return false;
+  for (const k in SCN) SCN[k].classList.toggle('on', k === name);
+  curScene = name;
+  return true;
+}
+function restartDraw(p, dur) {
+  p.style.transition = 'none';
+  p.style.strokeDashoffset = '1000';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    p.style.transition = 'stroke-dashoffset ' + (RM ? .01 : dur) + 's ease-in-out';
+    p.style.strokeDashoffset = '0';
+  }));
+}
+function setLayers(set) {
+  svg.querySelectorAll('[data-ly]').forEach(n => {
+    const name = n.getAttribute('data-ly'), on = set.has(name), was = n.classList.contains('vis');
+    if (on && !was) {
+      if (name === 'draw') restartDraw(G.curve, 2.6);
+      if (name === 'cut') restartDraw(M.cut, 1.5);
+    }
+    n.classList.toggle('vis', on);
+  });
+  LAYERS = new Set(set);
+}
+function drawNow() { if (curScene === 'sec') drawSec(0); else if (curScene === 'map') drawMap(0); }
+function applyState(st) {
+  const changed = setScene(st.scene);
+  const s = st.set;
+  SC.sec.tgt = { w: s.w || 0, o: s.o || 0, a: s.a || 0 };
+  SC.map.tgt.e = s.e || 0;
+  SC.map.osc = !!st.osc;
+  if (changed) { Object.assign(SC.sec.cur, SC.sec.tgt); SC.map.cur.e = SC.map.tgt.e; }
+  setLayers(st.ly);
+  BADGE = st.bd || null;
+  drawNow();
+}
+function stateAt(sl, k) {
+  const b = sl.base || {};
+  const st = { scene: sl.scene, ly: new Set(b.ly || []), set: Object.assign({ w: 0, o: 0, a: 0, e: 0 }, b.set || {}), bd: b.bd || null, osc: false };
+  for (let i = 0; i < k; i++) {
+    const s = sl.steps[i];
+    if (s.scene) st.scene = s.scene;
+    (s.ly || []).forEach(x => st.ly.add(x));
+    (s.rm || []).forEach(x => st.ly.delete(x));
+    if (s.set) Object.assign(st.set, s.set);
+    if ('bd' in s) st.bd = s.bd;
+    if (s.osc) st.osc = true;
+  }
+  return st;
+}
+const BD = { n: '평상시', e: '엘니뇨', l: '라니냐', c: '변하는 중' };
+function updateBadge() {
+  let k = BADGE;
+  if (k === 'auto') { const e = SC.map.cur.e; k = e > .5 ? 'e' : e < -.5 ? 'l' : 'n'; }
+  else if (k === 'lab') { const e = LAB.e; k = e > .6 ? 'e' : e < -.6 ? 'l' : Math.abs(e) < .15 ? 'n' : 'c'; }
+  k = k || '';
+  if (k === badgeKey) return;
+  badgeKey = k;
+  const b = $('#badge');
+  if (!k) { b.classList.remove('on'); return; }
+  b.className = 'on ' + k;
+  b.textContent = BD[k];
+}
+
+/* ---------- captions ---------- */
+function h(tag, cls, html) { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; }
+function renderCaption(sl) {
+  inner.innerHTML = '';
+  cap.classList.toggle('inter', !!sl.interactive);
+  stage.classList.toggle('inter', !!sl.interactive);
+  cap.scrollTop = 0;
+  if (sl.cover) return renderCover();
+  if (sl.lab) return renderLab();
+  if (sl.quiz) return renderQuiz();
+  inner.appendChild(h('h2', null, sl.title));
+  inner.appendChild(h('p', 'intro', sl.intro));
+  if (sl.table) return renderTable();
+  sl.steps.forEach(s => inner.appendChild(h('p', 'st', s.t)));
+}
+function updateSteps(sl, k) {
+  if (sl.table) { inner.querySelectorAll('[data-c]').forEach(n => n.classList.toggle('on', +n.dataset.c <= k)); return; }
+  let now = null;
+  inner.querySelectorAll('.st').forEach((p, i) => {
+    p.classList.toggle('on', i < k);
+    p.classList.toggle('now', i === k - 1);
+    if (i === k - 1) now = p;
+  });
+  if (now && now.scrollIntoView) now.scrollIntoView({ block: 'nearest', behavior: RM ? 'auto' : 'smooth' });
+}
+function renderCover() {
+  inner.innerHTML = '<div class="cover"><h1>엘니뇨</h1><div class="en">El Niño</div>' +
+    '<p class="lead">적도 부근 동태평양의 표층 수온이 평년보다 높은 상태가 몇 달 이상 지속되는 현상</p>' +
+    '<p class="org">스페인어로 ‘남자아이’, 곧 아기 예수를 뜻한다. 크리스마스 무렵 페루 앞바다의 수온이 올라가는 현상을 어부들이 이렇게 부른 데서 이름이 붙었다.</p>' +
+    '<button class="go" type="button" id="goBtn">시작하기</button>' +
+    '<p class="small">화면을 누르면 다음 내용이 나온다. 좌우로 밀거나 키보드의 ←, → 키(발표용 리모컨 포함)로도 넘길 수 있다.</p></div>';
+  $('#goBtn').onclick = () => next();
+}
+function renderTable() {
+  const t = h('table', 'cmp');
+  t.innerHTML = '<thead><tr><th></th><th data-c="1">평상시</th><th data-c="2" class="ce">엘니뇨</th><th data-c="3" class="cl">라니냐</th></tr></thead><tbody>' +
+    TABLE.map(r => `<tr><th>${r[0]}</th><td data-c="1">${r[1]}</td><td data-c="2">${r[2]}</td><td data-c="3">${r[3]}</td></tr>`).join('') + '</tbody>';
+  inner.appendChild(t);
+}
+
+/* ---------- lab ---------- */
+const LAB = { e: 0, txt: [] };
+const METERS = [
+  ['동태평양 표층 수온', e => l3(e, .12, .38, .9), ['평년보다 낮음', '평년 수준', '평년보다 높음'], e => c3(e, '#2f7fc1', '#7fa7c4', '#d9412f')],
+  ['동태평양 용승', e => l3(e, 1, .68, .12), ['강함', '보통', '약함'], () => '#4aa3dc'],
+  ['동태평양 수온 약층 깊이', e => l3(e, .12, .26, .66), ['매우 얕음', '얕음', '깊음'], () => '#7fa0b8'],
+  ['서–동 해수면 높이 차', e => l3(e, 1, .7, .1), ['큼', '보통', '작음'], () => '#5f86ad'],
+  ['서태평양 강수량', e => l3(e, 1, .72, .2), ['매우 많음', '많음', '적음(가뭄)'], () => '#3f8fd0'],
+  ['동태평양 강수량', e => l3(e, .06, .16, .86), ['매우 적음', '적음', '많음(홍수)'], () => '#3f8fd0']
+];
+function renderLab() {
+  inner.innerHTML = '<h2>직접 바꿔 보기</h2><p class="intro">무역풍의 세기를 바꾸면서 바다와 대기가 어떻게 달라지는지 확인해 보자.</p>' +
+    '<div class="seg" role="group" aria-label="상태 고르기"><button type="button" data-e="1">엘니뇨</button><button type="button" data-e="0">평상시</button><button type="button" data-e="-1">라니냐</button></div>' +
+    '<label class="sl" for="wind">무역풍 세기</label>' +
+    `<input type="range" id="wind" min="-100" max="100" step="1" value="${Math.round(-LAB.e * 100)}">` +
+    '<div class="scale"><span>약하게</span><span>평상시</span><span>강하게</span></div>' +
+    '<div class="meters">' + METERS.map((m, i) => `<span>${m[0]}</span><div class="mbar"><i id="mb${i}"></i></div><span class="mv" id="mv${i}"></span>`).join('') + '</div>' +
+    '<p class="nowst">지금 상태: <b id="labNow"></b></p>';
+  const r = $('#wind');
+  r.addEventListener('input', () => setLab(-r.value / 100));
+  inner.querySelectorAll('.seg button').forEach(b => b.onclick = () => { SFX.tick(); setLab(+b.dataset.e); r.value = Math.round(-LAB.e * 100); });
+  LAB.txt = [];
+  applyState({ scene: 'sec', ly: new Set(SEC_ALL.concat(['sl', 'fish'])), set: { w: LAB.e, o: LAB.e, a: LAB.e }, bd: 'lab' });
+  setLab(LAB.e);
+}
+function setLab(e) {
+  LAB.e = clamp(e, -1, 1);
+  SC.sec.tgt = { w: LAB.e, o: LAB.e, a: LAB.e };
+  inner.querySelectorAll('.seg button').forEach(b => b.classList.toggle('sel', Math.abs(+b.dataset.e - LAB.e) < .005));
+  const n = $('#labNow');
+  if (n) {
+    const e = LAB.e;
+    n.textContent = e > .6 ? '엘니뇨' : e < -.6 ? '라니냐' : Math.abs(e) < .15 ? '평상시' : e > 0 ? '엘니뇨 쪽으로 변하는 중' : '라니냐 쪽으로 변하는 중';
+  }
+}
+function updateMeters() {
+  const e = SC.sec.cur.o;
+  METERS.forEach((m, i) => {
+    const b = document.getElementById('mb' + i), v = document.getElementById('mv' + i);
+    if (!b) return;
+    b.style.width = (m[1](e) * 100).toFixed(1) + '%';
+    b.style.background = m[3](e);
+    const t = m[2][e < -.5 ? 0 : e > .5 ? 2 : 1];
+    if (LAB.txt[i] !== t) { LAB.txt[i] = t; v.textContent = t; }
+  });
+}
+
+/* ---------- quiz ---------- */
+const QZ = { i: 0, ans: QUIZ.map(() => null), done: false };
+const QT = ['엘니뇨 때 무역풍의 변화', '엘니뇨 때 페루 연안의 변화', '라니냐 때 서태평양의 날씨', '엘니뇨 때 다윈과 타히티의 기압', '연직 수온 분포 해석'];
+const CIR = ['①', '②', '③', '④', '⑤'];
+function quizScene(q, answered) {
+  applyState({ scene: q.scene, ly: new Set(q.ly), set: Object.assign({ w: 0, o: 0, a: 0, e: 0 }, answered ? q.after : q.before), bd: null });
+}
+function renderQuiz() {
+  if (QZ.done) return renderResult();
+  const q = QUIZ[QZ.i], a = QZ.ans[QZ.i];
+  quizScene(q, a !== null);
+  inner.innerHTML = `<h2>확인 문제</h2><div class="qh">${QZ.i + 1} / ${QUIZ.length}</div><p class="q">${q.q}</p>` +
+    (q.bogi ? `<div class="bogi"><div class="bt">〈보기〉</div>${q.bogi.map(b => `<p>${b}</p>`).join('')}</div>` : '') +
+    `<div class="opts${q.row ? ' row' : ''}">` + q.o.map((o, i) => `<button type="button" class="opt" data-i="${i}">${q.row ? o : CIR[i] + ' ' + o}</button>`).join('') + '</div>' +
+    '<div id="fbx"></div>' +
+    `<div class="qnav"><button type="button" id="qp"${QZ.i === 0 ? ' disabled' : ''}>이전 문제</button><button type="button" id="qn" class="pri">${QZ.i === QUIZ.length - 1 ? '결과 보기' : '다음 문제'}</button></div>`;
+  inner.querySelectorAll('.opt').forEach(b => b.onclick = () => answer(+b.dataset.i));
+  $('#qp').onclick = () => { SFX.step(); QZ.i--; renderQuiz(); };
+  $('#qn').onclick = () => { if (QZ.i === QUIZ.length - 1) { QZ.done = true; SFX.done(); } else { QZ.i++; SFX.step(); } renderQuiz(); };
+  if (a !== null) showFb();
+  cap.scrollTop = 0;
+  updateNav();
+}
+function answer(i) {
+  if (QZ.ans[QZ.i] !== null) return;
+  QZ.ans[QZ.i] = i;
+  (i === QUIZ[QZ.i].a ? SFX.ok : SFX.no)();
+  showFb();
+  quizScene(QUIZ[QZ.i], true);
+}
+function showFb() {
+  const q = QUIZ[QZ.i], a = QZ.ans[QZ.i], ok = a === q.a;
+  inner.querySelectorAll('.opt').forEach(b => {
+    const i = +b.dataset.i;
+    b.disabled = true;
+    if (i === q.a) b.classList.add('right');
+    else if (i === a) b.classList.add('wrong');
+  });
+  const lab = q.row ? q.o[q.a] : CIR[q.a];
+  $('#fbx').innerHTML = `<div class="fb${ok ? '' : ' x'}"><b>${ok ? '정답' : '오답'}</b>${ok ? '' : ` (정답: ${lab})`}<br>${q.ex}</div>`;
+  const f = $('#fbx .fb'); if (f && f.scrollIntoView) f.scrollIntoView({ block: 'nearest', behavior: RM ? 'auto' : 'smooth' });
+}
+function renderResult() {
+  const n = QZ.ans.filter((a, i) => a === QUIZ[i].a).length;
+  applyState({ scene: 'map', ly: new Set(['anom', 'sta', 'see']), set: { e: 0 }, bd: 'auto', osc: true });
+  inner.innerHTML = `<h2>확인 문제 결과</h2><div class="score">${n} / ${QUIZ.length}</div><ul class="rlist">` +
+    QUIZ.map((q, i) => { const ok = QZ.ans[i] === q.a; return `<li><span class="mk ${ok ? 'o' : 'x'}">${ok ? '○' : '×'}</span><span>${i + 1}. ${QT[i]}</span></li>`; }).join('') +
+    '</ul><div class="qnav"><button type="button" id="qr">다시 풀기</button><button type="button" id="q0" class="pri">처음부터 다시 보기</button></div>';
+  $('#qr').onclick = () => { SFX.step(); QZ.i = 0; QZ.ans = QUIZ.map(() => null); QZ.done = false; renderQuiz(); };
+  $('#q0').onclick = () => go(0);
+  cap.scrollTop = 0;
+  updateNav();
+}
+
+/* ---------- navigation ---------- */
+function maxK(sl) { return sl.steps.length; }
+function show(slideChanged) {
+  const sl = SLIDES[cur.s];
+  if (slideChanged) renderCaption(sl);
+  if (!sl.lab && !sl.quiz) applyState(stateAt(sl, cur.k));
+  (slideChanged ? SFX.slide : SFX.step)();
+  updateSteps(sl, cur.k);
+  updateNav();
+}
+function next() {
+  const sl = SLIDES[cur.s];
+  if (!sl.interactive && cur.k < maxK(sl)) { cur.k++; show(false); }
+  else if (cur.s < SLIDES.length - 1) { cur.s++; cur.k = 0; show(true); }
+}
+function prev() {
+  const sl = SLIDES[cur.s];
+  if (!sl.interactive && cur.k > 0) { cur.k--; show(false); }
+  else if (cur.s > 0) { cur.s--; cur.k = maxK(SLIDES[cur.s]); show(true); }
+}
+function go(s) { cur.s = s; cur.k = 0; show(true); }
+function updateNav() {
+  const sl = SLIDES[cur.s], mk = maxK(sl), N = SLIDES.length;
+  $('#prev').disabled = cur.s === 0 && cur.k === 0;
+  $('#next').disabled = cur.s === N - 1;
+  $('#barI').style.width = ((cur.s + (mk ? cur.k / mk : 1)) / N * 100).toFixed(1) + '%';
+  $('#cnt').textContent = (cur.s + 1) + ' / ' + N;
+  $('#kicker').textContent = sl.ch;
+  $('#pips').innerHTML = Array.from({ length: mk }, (_, i) => `<i class="${i < cur.k ? 'on' : ''}"></i>`).join('');
+  const hint = document.getElementById('hint');
+  const on = !sl.interactive && cur.s < N - 1;
+  hint.classList.toggle('on', on);
+  hint.querySelector('span').textContent = sl.cover ? '누르면 시작' : cur.k < mk ? '누르면 계속' : '누르면 다음 장';
+}
+
+/* ---------- input ---------- */
+let suppress = false, sx = null, sy = 0;
+function onTap(e) {
+  if (suppress) { suppress = false; return; }
+  if (SLIDES[cur.s].interactive) return;
+  if (e.target.closest('button,a,input,label,select')) return;
+  const sel = window.getSelection && String(window.getSelection());
+  if (sel) return;
+  next();
+}
+function pd(e) {
+  if (e.target.closest('input,button')) { sx = null; return; }
+  sx = e.clientX; sy = e.clientY;
+}
+function pu(e) {
+  if (sx === null) return;
+  const dx = e.clientX - sx, dy = e.clientY - sy;
+  sx = null;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > 1.4 * Math.abs(dy)) {
+    suppress = true; setTimeout(() => { suppress = false; }, 450);
+    dx < 0 ? next() : prev();
+  }
+}
+[stage, cap].forEach(n => {
+  n.addEventListener('click', onTap);
+  n.addEventListener('pointerdown', pd);
+  n.addEventListener('pointerup', pu);
+  n.addEventListener('pointercancel', () => { sx = null; });
+});
+$('#next').onclick = () => next();
+$('#prev').onclick = () => prev();
+addEventListener('keydown', e => {
+  const t = e.target, tag = t && t.tagName;
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+  if (tag === 'BUTTON' && (e.key === ' ' || e.key === 'Enter')) return;
+  if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); next(); }
+  else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); prev(); }
+  else if (e.key === 'Home') { e.preventDefault(); go(0); }
+  else if (e.key === 'End') { e.preventDefault(); go(SLIDES.length - 1); }
+  else if (e.key === 'f' || e.key === 'F') toggleFS();
+  else if (e.key === 'm' || e.key === 'M') sndSet(!SND.on);
+});
+const fsb = $('#fs');
+if (!document.fullscreenEnabled) fsb.hidden = true;
+function toggleFS() {
+  if (!document.fullscreenEnabled) return;
+  if (document.fullscreenElement) document.exitFullscreen();
+  else { const p = document.documentElement.requestFullscreen(); if (p && p.catch) p.catch(() => {}); }
+}
+fsb.onclick = toggleFS;
+document.addEventListener('fullscreenchange', () => fsb.setAttribute('aria-label', document.fullscreenElement ? '전체 화면 끝내기' : '전체 화면'));
+
+/* ---------- loop ---------- */
+let last = performance.now();
+function frame(now) {
+  let dt = (now - last) / 1000; last = now;
+  if (!(dt > 0)) dt = 0;
+  dt = Math.min(dt, .05);
+  T += dt * MOT;
+  const k = 1 - Math.exp(-dt * 2.2);
+  for (const q of ['w', 'o', 'a']) SC.sec.cur[q] += (SC.sec.tgt[q] - SC.sec.cur[q]) * k;
+  if (SC.map.osc) SC.map.cur.e += (Math.sin(T * .9) - SC.map.cur.e) * (1 - Math.exp(-dt * 5));
+  else SC.map.cur.e += (SC.map.tgt.e - SC.map.cur.e) * k;
+  if (curScene === 'sec') drawSec(dt); else if (curScene === 'map') drawMap(dt);
+  if (SLIDES[cur.s].lab) updateMeters();
+  updateBadge();
+  sndUpdate();
+  requestAnimationFrame(frame);
+}
+
+buildSec(); buildMap(); buildGraph(); buildMini();
+show(true);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>몰 농도 학습지</title>
+<meta name="description" content="몰 농도 개념, 질량에서 몰 농도 구하기, 용액 만들기와 묽히기를 단계별로 익히는 고등학교 화학 학습지">
+<style>
+:root{--bg:#EEF1F2;--paper:#FBFCFC;--ink:#1A1F23;--ink2:#4A555D;--line:#D3D9DD;--accent:#A9531F;--tag:#F3E3D7;--head:#E6ECEE;color-scheme:light}
+@media (prefers-color-scheme: dark){:root{--bg:#14181B;--paper:#1C2227;--ink:#E5EAED;--ink2:#A3AFB7;--line:#2F383F;--accent:#E08A55;--tag:#3A2A20;--head:#252D33;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:16px;line-height:1.75;word-break:keep-all}
+.bar{max-width:860px;margin:0 auto;padding:18px 20px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px}
+.bar a{color:var(--ink2);text-underline-offset:3px}
+.bar button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer;min-height:40px}
+main{max-width:860px;margin:12px auto 48px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:36px clamp(18px,5vw,48px) 44px}
+h1{font-size:clamp(28px,5vw,36px);line-height:1.25;margin:0 0 6px}
+h2{font-size:22px;margin:38px 0 12px;padding-top:18px;border-top:1px solid var(--line)}
+h3{font-size:18px;margin:26px 0 8px}
+.meta{color:var(--ink2);font-size:14px;margin:0 0 22px}
+p{margin:10px 0}
+ul,ol{padding-left:1.4em} li{margin:4px 0}
+a{color:var(--accent);text-underline-offset:3px}
+.tbl{overflow-x:auto;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--head);font-weight:700;white-space:nowrap}
+td:empty::after{content:'\00a0'}
+pre{background:var(--head);border-radius:10px;padding:14px 16px;overflow-x:auto;font-size:15px;line-height:1.6}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.93em}
+.formula{background:var(--tag);border-radius:10px;padding:12px 16px;font-weight:700;text-align:center}
+.name-box{max-width:460px} .name-box td{height:40px}
+.answer-line{border-bottom:1px solid var(--ink2);padding-bottom:28px}
+.checklist{list-style:none;padding-left:0} .checklist input{width:18px;height:18px;margin-right:8px;vertical-align:-3px}
+@media (max-width:600px){table{font-size:14px} th{white-space:normal} th,td{padding:6px 7px} main{border-radius:0;border-left:0;border-right:0}}
+footer{max-width:860px;margin:0 auto 40px;padding:0 20px;color:var(--ink2);font-size:13px}
+@media print{
+  :root{--bg:#fff;--paper:#fff;--ink:#000;--ink2:#333;--line:#999;--head:#eee;--tag:#f2f2f2}
+  .bar,footer{display:none} main{border:0;margin:0;padding:0;max-width:none}
+  h2{break-after:avoid} table,pre,.formula{break-inside:avoid} a{color:#000;text-decoration:none}
+}
+</style>
+</head>
+<body>
+<nav class="bar"><a href="../">← 과학 수업 도구</a><button type="button" onclick="window.print()">인쇄하기</button></nav>
+<main>
+<h1>몰 농도 학습지</h1>
+<p class="meta">2026. 10. 1. · KJE · 고등학교 화학</p>
+
+<table class="name-box"><tr><th>학년 · 반</th><th>번호</th><th>이름</th></tr><tr><td></td><td></td><td></td></tr></table></div>
+
+<h2>학습 목표</h2>
+<ol>
+<li>질량이 같은 두 용액에서 녹아 있는 입자 수가 다를 수 있음을 설명할 수 있다.</li>
+<li>용질의 질량과 용액의 부피로 몰 농도를 구할 수 있다.</li>
+<li>일정한 몰 농도의 용액을 만들고 묽힐 때 용질의 양이 어떻게 되는지 설명할 수 있다.</li>
+</ol>
+<p>수업 화면의 알갱이 1개는 용질 0.01 mol을 나타낸다. 번호 빈칸 ①~⑯은 수업 화면의 번호와 같다.</p>
+<h2>도입 — 질량이 같으면 입자 수도 같을까?</h2>
+<p>두 용액의 퍼센트 농도는 같지만, 녹아 있는 용질의 양(mol)은 다르다. 빈칸을 채워 보자.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>구분</th>
+<th>포도당 수용액</th>
+<th>요소 수용액</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>녹인 용질</td>
+<td>포도당 18 g</td>
+<td>요소 18 g</td>
+</tr>
+<tr>
+<td>용매</td>
+<td>물 82 g</td>
+<td>물 82 g</td>
+</tr>
+<tr>
+<td>퍼센트 농도</td>
+<td>18 %</td>
+<td>18 %</td>
+</tr>
+<tr>
+<td>몰 질량</td>
+<td>180 g/mol</td>
+<td>60 g/mol</td>
+</tr>
+<tr>
+<td>용질의 양</td>
+<td>(가　　　　) mol</td>
+<td>(나　　　　) mol</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>녹아 있는 입자 수가 더 많은 쪽은 (다　　　　　　　　) 수용액이고, 다른 쪽의 (　　)배이다.</li>
+<li>화학 반응은 질량이 아니라 입자 수의 비로 일어난다. HCl + NaOH → NaCl + H₂O에서 계수비 = 입자 수의 비 = (라　　　　)의 비이다.</li>
+<li>그래서 용액끼리 반응시킬 때는 용액 속 용질의 양을 mol로 바로 알 수 있는 농도가 편리하다. 이것이 <strong>몰 농도</strong>이다.</li>
+</ul>
+<h2>1. 몰 농도</h2>
+<ul>
+<li><strong>정의</strong>: 몰 농도는 (①　　　　) (②　　　　) 속에 녹아 있는 용질의 (③　　　　　　)이다.</li>
+<li><strong>단위</strong>: (④　　　　). mol/L와 같고, ‘몰’이라고 읽는다. 1 M = 1 mol/L이다.</li>
+<li><strong>주의</strong>: 기준이 되는 1 L는 용매(물)의 부피가 아니라 <strong>용액 전체의 부피</strong>이다.</li>
+</ul>
+<h3>1 L에 몇 mol?</h3>
+<ul>
+<li>0.5 M 용액 1 L에는 용질이 (마　　　　) mol 녹아 있다.</li>
+<li>1 M 용액 1 L에서 절반을 따라 내면, 남은 용액의 몰 농도는 (바　　　　) M이다. 줄어든 것은 용질의 양뿐이다.</li>
+</ul>
+<h3>직접 구해 보기</h3>
+<p>용액 500 mL에 용질 0.3 mol이 녹아 있다.</p>
+<ul>
+<li>같은 용액 2개를 합치면 용액 1 L 속에 용질이 (사　　　　) mol 녹아 있다.</li>
+<li>따라서 이 용액의 몰 농도는 (아　　　　) M이다.</li>
+</ul>
+<p class="formula">몰 농도(M) = 용질의 양(mol) ÷ 용액의 부피(L)</p>
+
+<h2>2. 질량에서 몰 농도까지</h2>
+<p>질량을 몰 질량으로 나누면 mol이 되고, mol을 부피(L)로 나누면 몰 농도가 된다. 부피는 반드시 L로 바꾼다.</p>
+<p class="formula">질량(g) → ÷ 몰 질량(g/mol) → 용질의 양(mol) → ÷ 용액의 부피(L) → 몰 농도(M)</p>
+
+<p><strong>예제</strong> 수산화 나트륨(NaOH, 몰 질량 40 g/mol) 4.0 g을 물에 녹여 수용액 250 mL를 만들었다. 이 수용액 속 용질의 양은 (⑤　　　　) mol이고, 몰 농도는 (⑥　　　　) M이다.</p>
+<ol>
+<li>질량 → mol: 4.0 g ÷ 40 g/mol = 　　　　 mol</li>
+<li>mL → L: 250 mL = 　　　　 L</li>
+<li>mol ÷ L: 　　　　 mol ÷ 　　　　 L = 　　　　 M</li>
+</ol>
+<h2>3. 용액 만들기</h2>
+<h3>물 1 L에 녹이면 1 M일까?</h3>
+<p>물 1 L에 용질 1 mol을 녹이면, 용질이 녹으면서 전체 부피가 달라져 용액은 1 L가 되지 않는다. 몰 농도의 기준은 (차　　　　　) 1 L가 아니라 (카　　　　) 1 L이다.</p>
+<h3>0.4 M NaOH 수용액 250 mL 만들기</h3>
+<p>필요한 용질은 0.4 M × 0.25 L = 0.1 mol이고, 질량으로는 0.1 mol × 40 g/mol이다.</p>
+<ol>
+<li>수산화 나트륨 (⑦　　　　) g을 저울로 잰다.</li>
+<li>비커에서 적은 양의 증류수에 녹이고 식힌다.</li>
+<li>250 mL 부피 플라스크에 옮기고, 비커를 헹군 물도 넣는다.</li>
+<li>(⑧　　　　)까지 증류수를 채운다.</li>
+<li>마개를 막고 뒤집어 가며 섞는다.</li>
+</ol>
+<p><strong>표선 맞추기</strong>: 표선 가까이에서는 스포이트로 한 방울씩 넣는다. 액체 면의 (타　　　　　　　)이 표선에 오도록 눈높이에서 맞춘다. 표선을 넘기면 (파　　　　　　　　　　).</p>
+<p><strong>안전</strong>: 수산화 나트륨은 피부나 눈에 닿으면 위험하므로 보안경과 장갑을 착용한다.</p>
+<h2>4. 묽히기</h2>
+<ul>
+<li>용질의 양(mol) = 몰 농도(M) × (⑨　　　　)(L)</li>
+<li>물을 넣어 묽혀도 용질의 양은 (⑩　　　　)하다. 그래서 묽히기 전과 후에 <strong>M₁V₁ = M₂V₂</strong>가 성립한다.</li>
+<li>1 M 용액 100 mL(용질 0.1 mol)에 물을 넣어 500 mL로 만들면, 몰 농도는 (하　　　　) M이 된다.</li>
+</ul>
+<h3>어느 용액에 용질이 더 많을까?</h3>
+<ul>
+<li>규칙 ①: 부피가 같다면, 몰 농도가 (⑪　　　　) 용액에 용질이 더 많다.</li>
+<li>규칙 ②: 부피가 다르다면, 몰 농도 × (⑫　　　　)로 비교한다.</li>
+</ul>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>용액</th>
+<th>몰 농도 (M)</th>
+<th>부피 (L)</th>
+<th>용질의 양 (mol)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>0.5</td>
+<td>0.2</td>
+<td></td>
+</tr>
+<tr>
+<td>B</td>
+<td>0.1</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td>C</td>
+<td>2</td>
+<td>0.02</td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>가장 진한 C보다 가장 묽은 (⑬　　　　)에 용질이 더 많다. 몰 농도는 진하기일 뿐이고, 용질의 양은 (⑭　　　　)까지 곱해야 나온다.</p>
+<h2>실생활 — 생리 식염수 라벨 읽기</h2>
+<p>라벨에는 ‘생리 식염수 0.9 %, 1000 mL 중 염화 나트륨 9 g’이라고 적혀 있다. NaCl의 몰 질량은 58.5 g/mol이다.</p>
+<ul>
+<li>9 g ÷ 58.5 g/mol ≈ (⑮　　　　) mol</li>
+<li>용액 1 L에 이만큼 녹아 있으므로, 몰 농도는 약 (⑯　　　　) M이다.</li>
+<li>생각해 보기: 0.9 %와 약 0.15 M은 같은 용액의 진하기를 각각 무엇을 기준으로 나타낸 것인가?</li>
+</ul>
+<p class="answer-line">답:</p>
+
+<h2>확인 문제</h2>
+<p>풀이 과정을 쓰고, 답에는 단위를 붙인다.</p>
+<ol>
+<li>포도당(C₆H₁₂O₆, 몰 질량 180 g/mol) 9.0 g을 녹여 수용액 500 mL를 만들었다. 이 수용액의 몰 농도를 구하시오.</li>
+<li>0.2 M 염화 나트륨(NaCl, 몰 질량 58.5 g/mol) 수용액 500 mL 속에 녹아 있는 NaCl의 질량을 구하시오.</li>
+<li>0.1 M 수산화 나트륨(NaOH, 몰 질량 40 g/mol) 수용액 200 mL를 만드는 과정에 대한 설명으로 옳은 것을 모두 고르시오.<ul>
+<li>ㄱ. NaOH 0.8 g이 필요하다.</li>
+<li>ㄴ. NaOH 0.8 g을 물 200 mL에 녹이면 된다.</li>
+<li>ㄷ. 증류수가 표선을 넘었다면 넘친 만큼 덜어 내면 된다.</li>
+</ul>
+</li>
+<li>2 M 용액 50 mL에 물을 넣어 0.5 M 용액을 만들려고 한다. 묽힌 뒤 용액의 전체 부피는 몇 mL여야 하는지 구하시오.</li>
+<li>0.3 M 용액 100 mL와 0.1 M 용액 500 mL 중 용질이 더 많이 녹아 있는 것을 고르고, 그 까닭을 쓰시오.</li>
+<li>0.2 M 용액 100 mL와 0.4 M 용액 100 mL(용질이 같음)를 섞었다. 섞은 용액의 몰 농도를 구하시오. (단, 섞은 용액의 부피는 두 용액 부피의 합과 같다.)</li>
+</ol>
+</main>
+<footer>KJE · 수업 자료</footer>
+</body>
+</html>

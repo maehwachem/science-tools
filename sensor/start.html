@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>마이크로비트 처음 시작하기</title>
+<meta name="description" content="마이크로비트를 처음 쓰는 학생과 교사를 위한 안내: 각 부분, 연결, MakeCode, 첫 프로그램, 센서 예제, 문제 해결">
+<style>
+:root{--bg:#EEF1F2;--paper:#FBFCFC;--ink:#1A1F23;--ink2:#4A555D;--line:#D3D9DD;--accent:#A9531F;--tag:#F3E3D7;--head:#E6ECEE;color-scheme:light}
+@media (prefers-color-scheme: dark){:root{--bg:#14181B;--paper:#1C2227;--ink:#E5EAED;--ink2:#A3AFB7;--line:#2F383F;--accent:#E08A55;--tag:#3A2A20;--head:#252D33;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;font-size:16px;line-height:1.75;word-break:keep-all}
+.bar{max-width:860px;margin:0 auto;padding:18px 20px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px}
+.bar a{color:var(--ink2);text-underline-offset:3px}
+.bar button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:6px 14px;cursor:pointer;min-height:40px}
+main{max-width:860px;margin:12px auto 48px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:36px clamp(18px,5vw,48px) 44px}
+h1{font-size:clamp(28px,5vw,36px);line-height:1.25;margin:0 0 6px}
+h2{font-size:22px;margin:38px 0 12px;padding-top:18px;border-top:1px solid var(--line)}
+h3{font-size:18px;margin:26px 0 8px}
+.meta{color:var(--ink2);font-size:14px;margin:0 0 22px}
+p{margin:10px 0}
+ul,ol{padding-left:1.4em} li{margin:4px 0}
+a{color:var(--accent);text-underline-offset:3px}
+.tbl{overflow-x:auto;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--head);font-weight:700;white-space:nowrap}
+td:empty::after{content:'\00a0'}
+pre{background:var(--head);border-radius:10px;padding:14px 16px;overflow-x:auto;font-size:15px;line-height:1.6}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.93em}
+.formula{background:var(--tag);border-radius:10px;padding:12px 16px;font-weight:700;text-align:center}
+.name-box{max-width:460px} .name-box td{height:40px}
+.answer-line{border-bottom:1px solid var(--ink2);padding-bottom:28px}
+.checklist{list-style:none;padding-left:0} .checklist input{width:18px;height:18px;margin-right:8px;vertical-align:-3px}
+@media (max-width:600px){table{font-size:14px} th{white-space:normal} th,td{padding:6px 7px} main{border-radius:0;border-left:0;border-right:0}}
+footer{max-width:860px;margin:0 auto 40px;padding:0 20px;color:var(--ink2);font-size:13px}
+@media print{
+  :root{--bg:#fff;--paper:#fff;--ink:#000;--ink2:#333;--line:#999;--head:#eee;--tag:#f2f2f2}
+  .bar,footer{display:none} main{border:0;margin:0;padding:0;max-width:none}
+  h2{break-after:avoid} table,pre,.formula{break-inside:avoid} a{color:#000;text-decoration:none}
+}
+</style>
+</head>
+<body>
+<nav class="bar"><a href="../">← 과학 수업 도구</a><button type="button" onclick="window.print()">인쇄하기</button></nav>
+<main>
+<h1>마이크로비트 처음 시작하기</h1>
+<p class="meta">2026. 10. 3. · KJE</p>
+
+<h2>1. 마이크로비트란?</h2>
+<p>마이크로비트(micro:bit)는 약 4 cm × 5 cm 크기의 작은 컴퓨터예요. 블록을 끌어다 놓는 방식으로 누구나 쉽게 프로그램을 만들 수 있어요. 영국 BBC가 학생 코딩 교육용으로 만들었고, 지금은 비영리 단체인 마이크로비트 교육재단이 관리해요.</p>
+<p>지금 판매되는 모델은 <strong>V2</strong>(버전 2)예요. 뒷면에 스피커와 마이크가 있고, 앞면 금색 로고를 터치 버튼으로 쓸 수 있으면 V2예요. 이 자료는 V2를 기준으로 설명해요.</p>
+<p>마이크로비트로 할 수 있는 일은 다음과 같아요.</p>
+<ul>
+<li>LED 화면에 글자, 숫자, 그림 띄우기</li>
+<li>버튼 누르기, 흔들기, 기울이기 감지하기</li>
+<li>온도, 빛의 세기, 소리 크기 측정하기</li>
+<li>소리와 멜로디 재생하기</li>
+<li>다른 마이크로비트와 무선으로 메시지 주고받기</li>
+<li>모터, LED, 센서 같은 외부 부품 연결해 제어하기</li>
+</ul>
+<h2>2. 각 부분 살펴보기</h2>
+<p>마이크로비트를 앞뒤로 뒤집어 보며 아래 부품을 하나씩 찾아보세요. 센서 대부분은 뒷면에 있어요.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>부품</th>
+<th>위치</th>
+<th>하는 일</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LED 화면</td>
+<td>앞면 가운데</td>
+<td>빨간 LED 25개(5 × 5)로 글자와 그림을 표시해요. 주변 빛의 세기도 감지해요.</td>
+</tr>
+<tr>
+<td>버튼 A, B</td>
+<td>앞면 왼쪽, 오른쪽</td>
+<td>누르면 정해 둔 동작을 실행해요. 두 개를 함께 누를 수도 있어요.</td>
+</tr>
+<tr>
+<td>터치 로고</td>
+<td>앞면 위쪽 금색 로고</td>
+<td>손가락으로 만지면 버튼처럼 작동해요.</td>
+</tr>
+<tr>
+<td>핀(금속 띠)</td>
+<td>앞면 아래쪽 가장자리</td>
+<td>큰 구멍 0, 1, 2번 핀과 3V, GND로 외부 부품을 연결해요.</td>
+</tr>
+<tr>
+<td>마이크로 USB 포트</td>
+<td>뒷면 위쪽</td>
+<td>컴퓨터와 연결해 프로그램을 받고 전원을 얻어요.</td>
+</tr>
+<tr>
+<td>배터리 연결부</td>
+<td>뒷면 위쪽</td>
+<td>AAA 건전지 2개짜리 배터리 팩을 꽂아요.</td>
+</tr>
+<tr>
+<td>리셋 버튼</td>
+<td>뒷면 위쪽</td>
+<td>누르면 프로그램을 처음부터 다시 실행해요. 길게 누르면 전원이 꺼져요.</td>
+</tr>
+<tr>
+<td>스피커</td>
+<td>뒷면 가운데</td>
+<td>소리와 멜로디를 내요.</td>
+</tr>
+<tr>
+<td>마이크</td>
+<td>뒷면</td>
+<td>주변 소리의 크기를 감지해요. 켜지면 앞면 로고 옆 작은 LED가 켜져요.</td>
+</tr>
+<tr>
+<td>가속도·나침반 센서</td>
+<td>뒷면</td>
+<td>흔들기, 기울기, 방향(동서남북)을 감지해요.</td>
+</tr>
+<tr>
+<td>프로세서(두뇌)</td>
+<td>뒷면</td>
+<td>프로그램을 실행하고 온도를 재며, 무선 통신을 담당해요.</td>
+</tr>
+</tbody>
+</table></div>
+<p>온도는 프로세서 칩의 온도를 재는 것이라 실제 기온보다 조금 높게 나올 수 있어요.</p>
+<h2>3. 준비물과 연결</h2>
+<p>마이크로비트, USB 케이블, 인터넷이 되는 컴퓨터만 있으면 바로 시작할 수 있어요.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>준비물</th>
+<th>설명</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>마이크로비트 V2</td>
+<td>이 자료의 기준 모델이에요.</td>
+</tr>
+<tr>
+<td>마이크로 USB 케이블</td>
+<td>데이터 전송이 되는 케이블이어야 해요. 충전 전용 케이블은 인식되지 않아요.</td>
+</tr>
+<tr>
+<td>컴퓨터</td>
+<td>윈도우, 맥, 크롬북 모두 가능해요. 크롬이나 엣지 브라우저를 권장해요.</td>
+</tr>
+<tr>
+<td>배터리 팩(선택)</td>
+<td>AAA 건전지 2개용이에요. 컴퓨터 없이 들고 다니며 실행할 때 써요.</td>
+</tr>
+</tbody>
+</table></div>
+<p>연결 순서는 다음과 같아요.</p>
+<ol>
+<li>USB 케이블의 작은 쪽을 마이크로비트 뒷면 포트에, 큰 쪽을 컴퓨터에 꽂아요.</li>
+<li>뒷면 USB 옆 작은 LED가 켜지는지 확인해요.</li>
+<li>컴퓨터의 파일 탐색기(맥은 Finder)에 <strong>MICROBIT</strong>라는 드라이브가 보이면 연결 성공이에요.</li>
+</ol>
+<p>마이크로비트는 받은 프로그램을 기억해요. 전원을 껐다 켜도 마지막 프로그램이 다시 실행돼요.</p>
+<p>뒷면 부품이 드러나 있으니 금속 책상이나 물기 있는 곳에 두지 마세요. 합선으로 고장 날 수 있어요.</p>
+<h2>4. MakeCode 편집기 둘러보기</h2>
+<p>마이크로비트 프로그램은 웹 브라우저에서 <a href="https://makecode.microbit.org" target="_blank" rel="noopener noreferrer">MakeCode</a> 편집기로 만들어요. 설치나 회원가입 없이 바로 쓸 수 있고, 만든 프로젝트는 브라우저에 자동 저장돼요.</p>
+<p>처음 접속했다면 이렇게 시작하세요.</p>
+<ol>
+<li>오른쪽 위 톱니바퀴 → <strong>Language</strong> → <strong>한국어</strong>를 골라 메뉴를 한국어로 바꿔요.</li>
+<li><strong>새 프로젝트</strong>를 누르고 이름을 입력한 뒤 <strong>만들기</strong>를 눌러요.</li>
+</ol>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>화면 영역</th>
+<th>위치</th>
+<th>쓰임</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>시뮬레이터</td>
+<td>왼쪽</td>
+<td>가상 마이크로비트예요. 실제 기기 없이 코드 결과를 미리 볼 수 있어요.</td>
+</tr>
+<tr>
+<td>블록 메뉴</td>
+<td>가운데</td>
+<td>기본, 입력, 음악, LED, 무선통신, 반복, 논리, 변수, 계산 등 종류별로 블록이 모여 있어요.</td>
+</tr>
+<tr>
+<td>작업 공간</td>
+<td>오른쪽 넓은 곳</td>
+<td>블록을 끌어와 퍼즐처럼 조립하는 곳이에요.</td>
+</tr>
+<tr>
+<td>언어 전환 탭</td>
+<td>위쪽 가운데</td>
+<td>블록, JavaScript, Python 중 원하는 방식으로 볼 수 있어요.</td>
+</tr>
+<tr>
+<td>다운로드 버튼</td>
+<td>왼쪽 아래</td>
+<td>완성한 프로그램을 마이크로비트로 보내요.</td>
+</tr>
+</tbody>
+</table></div>
+<p>새 프로젝트에는 <strong>시작하면 실행</strong>(on start)과 <strong>무한반복 실행</strong>(forever) 블록이 기본으로 놓여 있어요. 앞의 것은 전원이 켜질 때 한 번, 뒤의 것은 계속 반복해서 실행돼요.</p>
+<p>필요 없는 블록은 블록 메뉴 쪽으로 끌어다 놓으면 지워져요. 블록 이름은 편집기 버전에 따라 조금 다를 수 있어서, 이 자료에는 영어 원래 이름을 괄호로 함께 적었어요.</p>
+<h2>5. 첫 번째 프로그램 만들기</h2>
+<p>첫 프로그램은 두근거리는 하트와 흐르는 글자예요. 블록 4개면 완성되고, 시뮬레이터로 바로 확인할 수 있어요.</p>
+<h3>예제 1. 두근거리는 하트</h3>
+<ol>
+<li>블록 메뉴에서 <strong>기본</strong>을 눌러요.</li>
+<li><strong>아이콘 출력</strong>(show icon) 블록을 끌어 <strong>무한반복 실행</strong> 안에 넣어요. 기본 모양이 큰 하트예요.</li>
+<li>같은 블록을 하나 더 끌어와 첫 블록 바로 아래에 붙여요.</li>
+<li>두 번째 블록의 하트 옆 화살표를 눌러 작은 하트로 바꿔요.</li>
+<li>시뮬레이터에서 하트가 커졌다 작아졌다 하는지 확인해요.</li>
+</ol>
+<pre><code>무한반복 실행
+    아이콘 출력 (큰 하트)
+    아이콘 출력 (작은 하트)
+</code></pre>
+<h3>예제 2. 이름 흐르게 하기</h3>
+<ol>
+<li><strong>기본</strong> → <strong>문자열 출력</strong>(show string) 블록을 <strong>시작하면 실행</strong> 안에 넣어요.</li>
+<li>"Hello!" 자리를 눌러 내 이름을 영어로 입력해요. 예: KIM</li>
+<li>시뮬레이터에서 글자가 오른쪽에서 왼쪽으로 지나가는지 확인해요.</li>
+</ol>
+<p>LED 화면은 5 × 5 칸이라 한글은 표시할 수 없어요. 영어 알파벳, 숫자, 일부 기호만 쓸 수 있어요.</p>
+<h3>직접 그려 보기</h3>
+<p><strong>기본</strong> 메뉴에서 5 × 5 칸이 그려진 블록(show leds)을 쓰면 나만의 그림을 만들 수 있어요. 칸을 클릭할 때마다 LED가 켜지고 꺼져요. 웃는 얼굴, 화살표, 이니셜을 그려 보세요.</p>
+<h2>6. 마이크로비트로 옮기기</h2>
+<p>크롬이나 엣지에서는 직접 연결 방식이 가장 편해요. 사파리 등 다른 브라우저에서는 파일 끌어놓기 방식을 쓰세요.</p>
+<h3>방법 A. 직접 연결(크롬·엣지)</h3>
+<ol>
+<li>마이크로비트를 USB로 연결한 상태에서 <strong>다운로드</strong> 버튼을 눌러요.</li>
+<li>처음 한 번은 기기 연결 안내 창이 떠요. 안내를 따라가다 목록에 나온 <strong>BBC micro:bit</strong>를 고르고 <strong>연결</strong>을 눌러요.</li>
+<li>뒷면 LED가 깜빡이다 멈추면 전송 완료예요. 프로그램이 바로 실행돼요.</li>
+</ol>
+<p>한 번 연결해 두면 그다음부터는 다운로드 버튼만 누르면 바로 전송돼요.</p>
+<h3>방법 B. 파일 끌어놓기</h3>
+<ol>
+<li><strong>다운로드</strong> 버튼을 누르면 <code>microbit-프로젝트이름.hex</code> 파일이 다운로드 폴더에 저장돼요.</li>
+<li>이 파일을 MICROBIT 드라이브로 끌어다 놓아요.</li>
+<li>뒷면 LED가 깜빡이다 멈추면 완료예요.</li>
+</ol>
+<p>전송이 끝나면 MICROBIT 드라이브가 잠깐 사라졌다 다시 나타나요. 드라이브 안에 hex 파일이 보이지 않아도 정상이에요. 맥에서 "디스크를 올바르게 추출하지 않았습니다" 경고가 떠도 무시해도 괜찮아요.</p>
+<h2>7. 버튼과 센서 써 보기</h2>
+<p>입력 블록을 쓰면 마이크로비트가 사람의 동작과 주변 환경에 반응해요. 아래 세 예제는 각각 블록 2~3개로 만들 수 있어요.</p>
+<h3>예제 3. 버튼으로 표정 바꾸기</h3>
+<ol>
+<li><strong>입력</strong> → <strong>A 누르면 실행</strong>(on button A pressed) 블록을 작업 공간에 놓아요.</li>
+<li>그 안에 <strong>아이콘 출력</strong> 블록을 넣고 웃는 얼굴을 골라요.</li>
+<li>같은 묶음을 하나 더 만들고, A를 B로, 웃는 얼굴을 슬픈 얼굴로 바꿔요.</li>
+</ol>
+<pre><code>A 누르면 실행
+    아이콘 출력 (웃는 얼굴)
+B 누르면 실행
+    아이콘 출력 (슬픈 얼굴)
+</code></pre>
+<h3>예제 4. 흔들면 굴러가는 주사위</h3>
+<ol>
+<li><strong>입력</strong> → <strong>흔들림 감지하면 실행</strong>(on shake) 블록을 놓아요.</li>
+<li>그 안에 <strong>기본</strong> → <strong>수 출력</strong>(show number) 블록을 넣어요.</li>
+<li>숫자 자리에 <strong>계산</strong> → <strong>랜덤</strong>(pick random) 블록을 끼우고 범위를 1부터 6까지로 바꿔요.</li>
+</ol>
+<pre><code>흔들림 감지하면 실행
+    수 출력 (랜덤 1 부터 6 까지)
+</code></pre>
+<p>시뮬레이터에서는 <strong>SHAKE</strong> 버튼을 눌러 흔들기를 흉내 낼 수 있어요.</p>
+<h3>예제 5. 버튼 온도계</h3>
+<ol>
+<li><strong>A 누르면 실행</strong> 블록 안에 <strong>수 출력</strong> 블록을 넣어요.</li>
+<li>숫자 자리에 <strong>입력</strong> → <strong>온도</strong>(temperature) 블록을 끼워요.</li>
+<li>A 버튼을 누를 때마다 현재 온도(°C)가 표시돼요. 손으로 칩을 잡고 있으면 숫자가 올라가는 것도 볼 수 있어요.</li>
+</ol>
+<h3>측정할 수 있는 값 정리</h3>
+<p>아래 블록은 모두 <strong>입력</strong> 메뉴에 있고, <strong>수 출력</strong> 블록 안에 끼워 값을 확인해요.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>측정 대상</th>
+<th>블록(영어 이름)</th>
+<th>값의 범위</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>온도</td>
+<td>temperature</td>
+<td>섭씨(°C) 정수</td>
+</tr>
+<tr>
+<td>빛의 세기</td>
+<td>light level</td>
+<td>0(어두움) ~ 255(밝음)</td>
+</tr>
+<tr>
+<td>소리 크기</td>
+<td>sound level</td>
+<td>0(조용함) ~ 255(시끄러움)</td>
+</tr>
+<tr>
+<td>방향</td>
+<td>compass heading</td>
+<td>0 ~ 359°(0 = 북쪽)</td>
+</tr>
+</tbody>
+</table></div>
+<p>값을 일정 시간마다 기록하면 온도 변화나 빛 세기 비교 같은 간단한 측정 실험이 돼요.</p>
+<h2>8. 자주 겪는 문제와 해결</h2>
+<p>문제 대부분은 케이블, 연결 방식, 전원에서 생겨요. 코드를 의심하기 전에 아래 표부터 확인하세요.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>증상</th>
+<th>원인</th>
+<th>해결</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MICROBIT 드라이브가 안 보여요</td>
+<td>충전 전용 케이블이거나 연결이 헐거워요</td>
+<td>다른 케이블이나 다른 USB 포트에 꽂아 보세요.</td>
+</tr>
+<tr>
+<td>직접 연결 목록에 기기가 없어요</td>
+<td>다른 브라우저 탭이 이미 연결을 쓰고 있어요</td>
+<td>MakeCode 탭을 하나만 남기고 케이블을 다시 꽂으세요.</td>
+</tr>
+<tr>
+<td>다운로드했는데 그대로예요</td>
+<td>hex 파일이 MICROBIT 드라이브로 옮겨지지 않았어요</td>
+<td>다운로드 폴더의 hex 파일을 MICROBIT 드라이브로 다시 끌어다 놓으세요.</td>
+</tr>
+<tr>
+<td>TILT TO FILL SCREEN 글자가 흘러가요</td>
+<td>나침반 블록을 처음 쓰면 보정이 필요해요</td>
+<td>마이크로비트를 이리저리 기울여 LED 25개를 모두 켜면 끝나요.</td>
+</tr>
+<tr>
+<td>슬픈 얼굴과 숫자가 번갈아 떠요</td>
+<td>프로그램 실행 중 오류가 났어요</td>
+<td>코드를 확인하고 다시 다운로드하세요. 숫자는 오류 종류를 뜻해요.</td>
+</tr>
+<tr>
+<td>화면이 꺼지고 반응이 없어요</td>
+<td>리셋 버튼을 길게 눌러 전원이 꺼졌거나 건전지가 닳았어요</td>
+<td>리셋 버튼을 한 번 누르거나 건전지를 바꾸세요.</td>
+</tr>
+<tr>
+<td>한글이 표시되지 않아요</td>
+<td>LED 화면은 한글을 지원하지 않아요</td>
+<td>영어나 숫자로 바꾸거나, 5 × 5 그림 블록으로 직접 그려요.</td>
+</tr>
+</tbody>
+</table></div>
+<h2>9. 다음 단계</h2>
+<p>기본 예제를 마쳤다면 아래 활동으로 넘어가 보세요.</p>
+<ul>
+<li><strong>무선 통신</strong>: <strong>무선통신</strong> 메뉴에서 그룹 번호를 같게 맞추면 마이크로비트끼리 숫자와 글자를 주고받을 수 있어요.</li>
+<li><strong>데이터 기록</strong>: V2는 측정값을 내부에 저장했다가 컴퓨터에서 표와 그래프로 볼 수 있어요. <strong>확장</strong> 메뉴에서 datalogger를 추가하세요.</li>
+<li><strong>외부 부품 연결</strong>: 악어 클립으로 0, 1, 2번 핀과 GND에 LED, 스피커, 센서를 연결해 보세요.</li>
+<li><strong>텍스트 코딩</strong>: 블록이 익숙해지면 상단 탭에서 JavaScript나 Python으로 바꿔 같은 코드를 글로 확인해 보세요.</li>
+</ul>
+<p>참고 사이트</p>
+<ul>
+<li><a href="https://makecode.microbit.org" target="_blank" rel="noopener noreferrer">MakeCode 편집기</a>: 블록 코딩, 단계별 튜토리얼</li>
+<li><a href="https://microbit.org" target="_blank" rel="noopener noreferrer">microbit.org</a>: 공식 사이트, 수업 자료와 프로젝트 예시</li>
+<li><a href="https://python.microbit.org" target="_blank" rel="noopener noreferrer">Python 편집기</a>: 파이썬으로 마이크로비트 프로그래밍</li>
+</ul>
+</main>
+<footer>KJE · 수업 자료</footer>
+</body>
+</html>
