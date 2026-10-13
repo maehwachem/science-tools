@@ -137,7 +137,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
         <button type="button" class="btn" id="boothBtn">같이 사진 찍기</button>
       </div>
       <p class="msg" id="msg" hidden></p>
-      <p class="hint">AR에서 찍으려면 휴대폰 화면 캡처를 쓰고, 셔터로 바로 저장하려면 ‘같이 사진 찍기’를 쓰세요. 사진은 이 휴대폰 안에서만 쓰고 어디로도 보내지 않아요.</p>
+      <p class="hint"><b>아이폰</b>: AR 화면 아래의 셔터 버튼을 누르면 사진, 길게 누르면 영상이 사진 앱에 저장돼요.<br><b>안드로이드</b>: AR 화면에서는 휴대폰 화면 캡처를 쓰고, 셔터로 바로 저장하려면 ‘같이 사진 찍기’를 쓰세요.<br>고른 사진은 이 휴대폰 안에서만 쓰고 어디로도 보내지 않아요.</p>
     </div>
   </div>
   <footer><span>KJE</span><a href="https://maehwachem.github.io/">maehwachem</a></footer>
@@ -152,10 +152,10 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <p class="camerr" id="camErr" hidden></p>
   <div class="bar top">
     <button type="button" class="ghost" id="boothClose">닫기</button>
-    <button type="button" class="ghost" id="camFlip">카메라 전환</button>
+    <span style="display:flex;gap:8px"><button type="button" class="ghost" id="lockBtn" aria-pressed="true" hidden>공간에 고정 켬</button><button type="button" class="ghost" id="camFlip">카메라 전환</button></span>
   </div>
   <div class="bar bottom">
-    <div class="bhint">한 손가락으로 옮기고, 두 손가락으로 크기와 기울기를 바꿔요</div>
+    <div class="bhint" id="bhint">한 손가락으로 옮기고, 두 손가락으로 크기와 기울기를 바꿔요</div>
     <label class="turn">돌리기<input type="range" id="turn" min="-180" max="180" value="0" aria-label="좌우로 돌리기"></label>
     <div class="btm-row">
       <div class="side"></div>
@@ -253,9 +253,40 @@ $('#arBtn').onclick=async()=>{await busy;try{await viewer.activateAR();}catch(e)
 viewer.addEventListener('ar-status',e=>{if(e.detail.status==='failed')msg('AR을 시작하지 못했어요. 바닥이 잘 보이게 천천히 비춰 보거나 ‘같이 사진 찍기’를 써 보세요.');});
 
 /* ---------- 같이 사진 찍기 ---------- */
-const P={x:0,y:0,size:0,rot:0};let stream=null,facing='environment';
-function placeMv(){const s=P.size;boothMv.style.width=s+'px';boothMv.style.height=s+'px';
-  boothMv.style.transform=`translate(${P.x-s/2}px,${P.y-s/2}px) rotate(${P.rot}deg)`;}
+const P={x:0,y:0,size:0,rot:0};let stream=null,facing='environment',g0=null;
+const D={x:0,y:0,rot:0,hide:false};   // 화면에 실제로 그려지는 자리 (고정을 켜면 센서로 계산)
+function placeMv(){const s=P.size;
+  if(LOCK.on&&LOCK.ok&&LOCK.d&&!g0&&facing==='environment')track();else{D.x=P.x;D.y=P.y;D.rot=P.rot;D.hide=false;}
+  boothMv.style.width=s+'px';boothMv.style.height=s+'px';boothMv.style.visibility=D.hide?'hidden':'visible';
+  boothMv.style.transform=`translate(${D.x-s/2}px,${D.y-s/2}px) rotate(${D.rot}deg)`;}
+
+/* 공간에 고정: 휴대폰 기울기 센서로, 휴대폰을 돌려도 같은 방향에 떠 있게 한다 (바닥 인식은 하지 않음) */
+const LOCK={on:true,ok:false,R:null,d:null,u:null};
+function rotM(a,b,g){const k=Math.PI/180,cA=Math.cos(a*k),sA=Math.sin(a*k),cB=Math.cos(b*k),sB=Math.sin(b*k),cG=Math.cos(g*k),sG=Math.sin(g*k);
+  return [cA*cG-sA*sB*sG,-cB*sA,cA*sG+cG*sA*sB, cG*sA+cA*sB*sG,cA*cB,sA*sG-cA*cG*sB, -cB*sG,sB,cB*cG];}   // 기기 → 세계 (W3C Z-X'-Y'')
+const mul=(R,v)=>[R[0]*v[0]+R[1]*v[1]+R[2]*v[2],R[3]*v[0]+R[4]*v[1]+R[5]*v[2],R[6]*v[0]+R[7]*v[1]+R[8]*v[2]];
+const mulT=(R,v)=>[R[0]*v[0]+R[3]*v[1]+R[6]*v[2],R[1]*v[0]+R[4]*v[1]+R[7]*v[2],R[2]*v[0]+R[5]*v[1]+R[8]*v[2]];
+const scrAng=()=>((screen.orientation&&screen.orientation.angle)||window.orientation||0)*Math.PI/180;
+const focal=()=>(Math.max(innerWidth,innerHeight)/2)/Math.tan(32*Math.PI/180);   // 뒤 카메라 긴 변 화각 약 64°
+function s2d(v){const t=scrAng(),c=Math.cos(t),s=Math.sin(t);return [v[0]*c-v[1]*s,v[0]*s+v[1]*c,v[2]];}
+function d2s(v){const t=scrAng(),c=Math.cos(t),s=Math.sin(t);return [v[0]*c+v[1]*s,-v[0]*s+v[1]*c,v[2]];}
+function lockNow(){if(!LOCK.R)return;const f=focal(),cx=innerWidth/2,cy=innerHeight/2,r=P.rot*Math.PI/180;
+  const v=s2d([(P.x-cx)/f,-(P.y-cy)/f,-1]),n=Math.hypot(...v);
+  LOCK.d=mul(LOCK.R,v.map(x=>x/n));LOCK.u=mul(LOCK.R,s2d([Math.sin(r),Math.cos(r),0]));}
+function track(){const f=focal(),cx=innerWidth/2,cy=innerHeight/2,v=d2s(mulT(LOCK.R,LOCK.d));
+  if(v[2]>-0.08){D.hide=true;return;}
+  const x=cx+f*v[0]/-v[2],y=cy-f*v[1]/-v[2],u=d2s(mulT(LOCK.R,LOCK.u)),rot=Math.atan2(u[0],u[1])*180/Math.PI;
+  const k=D.hide?1:0.4;D.hide=false;D.x+=(x-D.x)*k;D.y+=(y-D.y)*k;let dr=((rot-D.rot+540)%360)-180;D.rot+=dr*k;}
+addEventListener('deviceorientation',e=>{
+  if(e.alpha==null&&e.beta==null)return;
+  LOCK.R=rotM(e.alpha||0,e.beta||0,e.gamma||0);
+  if(!LOCK.ok){LOCK.ok=true;syncLock();}
+  if(!LOCK.d)lockNow();
+  if(!$('#booth').hidden)placeMv();
+});
+function syncLock(){const b=$('#lockBtn'),can=LOCK.ok&&facing==='environment';b.hidden=!can;b.setAttribute('aria-pressed',String(LOCK.on));b.textContent=LOCK.on?'공간에 고정 켬':'공간에 고정 끔';
+  $('#bhint').textContent=can&&LOCK.on?'휴대폰을 돌려도 그 자리에 떠 있어요. 손가락으로 옮기면 거기에 다시 고정돼요':'한 손가락으로 옮기고, 두 손가락으로 크기와 기울기를 바꿔요';}
+$('#lockBtn').onclick=()=>{if(LOCK.on){P.x=D.x;P.y=D.y;P.rot=D.rot;}LOCK.on=!LOCK.on;if(LOCK.on)lockNow();syncLock();placeMv();};
 async function startCam(){
   stopCam();$('#camErr').hidden=true;
   try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1920},height:{ideal:1080}},audio:false});
@@ -264,21 +295,22 @@ async function startCam(){
 }
 function stopCam(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}}
 $('#boothBtn').onclick=async()=>{
-  $('#booth').hidden=false;document.body.style.overflow='hidden';
+  try{if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==='function')await DeviceOrientationEvent.requestPermission();}catch(e){}   // 아이폰은 버튼을 누를 때 허락을 받아야 함
+  $('#booth').hidden=false;document.body.style.overflow='hidden';LOCK.d=null;
   P.size=Math.min(innerWidth,innerHeight)*0.7;P.x=innerWidth/2;P.y=innerHeight*0.55;P.rot=0;$('#turn').value=0;boothMv.cameraOrbit='0deg 82deg auto';
-  placeMv();await apply(boothMv);await startCam();
+  placeMv();lockNow();syncLock();await apply(boothMv);await startCam();
 };
 $('#boothClose').onclick=()=>{stopCam();$('#booth').hidden=true;document.body.style.overflow='';};
-$('#camFlip').onclick=()=>{facing=facing==='user'?'environment':'user';startCam();};
+$('#camFlip').onclick=()=>{P.x=D.x;P.y=D.y;P.rot=D.rot;facing=facing==='user'?'environment':'user';syncLock();lockNow();placeMv();startCam();};
 $('#turn').oninput=e=>{boothMv.cameraOrbit=`${e.target.value}deg 82deg auto`;};
-addEventListener('resize',()=>{if(!$('#booth').hidden){P.x=Math.min(P.x,innerWidth);P.y=Math.min(P.y,innerHeight);placeMv();}});
+addEventListener('resize',()=>{if(!$('#booth').hidden){P.x=Math.min(D.x,innerWidth);P.y=Math.min(D.y,innerHeight);P.rot=D.rot;lockNow();placeMv();}});
 
 /* 손가락: 하나는 옮기기, 둘은 크기·기울기 */
-const pts=new Map();let g0=null;
+const pts=new Map();
 const gest=$('#gesture');
-gest.addEventListener('pointerdown',e=>{gest.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});startG();});
+gest.addEventListener('pointerdown',e=>{gest.setPointerCapture(e.pointerId);if(!pts.size){P.x=D.x;P.y=D.y;P.rot=D.rot;}pts.set(e.pointerId,{x:e.clientX,y:e.clientY});startG();});
 gest.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});moveG();});
-['pointerup','pointercancel'].forEach(t=>gest.addEventListener(t,e=>{pts.delete(e.pointerId);startG();}));
+['pointerup','pointercancel'].forEach(t=>gest.addEventListener(t,e=>{pts.delete(e.pointerId);startG();if(!pts.size){lockNow();placeMv();}}));
 gest.addEventListener('wheel',e=>{e.preventDefault();P.size=Math.max(80,Math.min(innerWidth*2.5,P.size*(e.deltaY<0?1.08:0.93)));placeMv();},{passive:false});
 function startG(){const a=[...pts.values()];
   if(a.length===1)g0={n:1,x:a[0].x,y:a[0].y,px:P.x,py:P.y};
@@ -300,7 +332,7 @@ $('#shutter').onclick=async()=>{
   if(v.videoWidth){const k=Math.max(W/v.videoWidth,H/v.videoHeight),dw=v.videoWidth*k,dh=v.videoHeight*k;
     x.save();if(facing==='user'){x.translate(W,0);x.scale(-1,1);}x.drawImage(v,(W-dw)/2,(H-dh)/2,dw,dh);x.restore();}
   try{const b=await boothMv.toBlob({mimeType:'image/png',idealAspect:false});const img=await createImageBitmap(b);
-    x.save();x.translate(P.x*dpr,P.y*dpr);x.rotate(P.rot*Math.PI/180);x.drawImage(img,-P.size*dpr/2,-P.size*dpr/2,P.size*dpr,P.size*dpr);x.restore();}
+    if(!D.hide){x.save();x.translate(D.x*dpr,D.y*dpr);x.rotate(D.rot*Math.PI/180);x.drawImage(img,-P.size*dpr/2,-P.size*dpr/2,P.size*dpr,P.size*dpr);x.restore();}}
   catch(e){console.error(e);}
   const f=$('#flash');f.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>f.classList.remove('on')));
   lastBlob=await new Promise(r=>c.toBlob(r,'image/jpeg',0.92));
