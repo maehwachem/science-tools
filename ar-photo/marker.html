@@ -42,7 +42,19 @@ html,body{margin:0;height:100%;background:#000;color:#fff;font-family:var(--font
 .btn.primary{background:#d6265c;border-color:#d6265c;color:#fff}
 .note{font-size:13px;color:#8a7d78}
 .err{color:#b0262f;font-size:14px}
-#photoInput{display:none}
+#photoInput,#cardInput,#cardFileInput{display:none}
+.seg{display:flex;border:1px solid #e3d8cf;border-radius:12px;overflow:hidden;background:#fff}
+.seg button{flex:1;font:inherit;font-weight:600;border:0;background:none;color:#5f5450;padding:10px;min-height:44px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:#2a2220;color:#fff}
+.seg button:disabled{color:#c9bdb6;cursor:default}
+.panel{border:1px solid #eadfd6;border-radius:14px;background:#fff;padding:14px;display:flex;flex-direction:column;gap:10px}
+.panel h2{margin:0;font-size:17px}
+.prog{height:8px;border-radius:99px;background:#efe6de;overflow:hidden}.prog i{display:block;height:100%;width:0;background:#d6265c;transition:width .2s}
+.warn{font-size:13px;color:#9a5a00;background:#fff4e0;border-radius:8px;padding:8px 10px;margin:0}
+.good{font-size:13px;color:#1d6b46;background:#e7f6ee;border-radius:8px;padding:8px 10px;margin:0}
+.noimg{width:150px;aspect-ratio:5/7;border-radius:8px;border:1px dashed #cbbfb7;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;color:#8a7d78;padding:8px}
+details summary{cursor:pointer;font-weight:600;color:#3d3431}
+details[open] summary{margin-bottom:8px}
 
 dialog{border:0;border-radius:18px;padding:0;max-width:min(560px,calc(100vw - 32px));background:#fff;color:#222}
 dialog::backdrop{background:rgba(0,0,0,.6)}
@@ -58,17 +70,45 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
   <div class="in">
     <h1>카드로 하는 AR</h1>
     <p>AR 카드를 책상이나 바닥에 놓고 카메라로 비추면, 카드 위에 하트나 내 사진이 서요. 다가가면 커지고, 돌아가면 옆모습이 보여요. 셔터로 바로 사진을 저장할 수 있어요.</p>
+    <div class="seg" role="group" aria-label="쓸 카드">
+      <button type="button" id="useDefault" aria-pressed="true">기본 카드</button>
+      <button type="button" id="useMine" aria-pressed="false" disabled>내 카드</button>
+    </div>
     <div class="cardview">
-      <img src="card/ar-card.png" alt="AR 카드: 여러 색 도형 무늬 아래 'AR 포토 카드' 글자">
+      <img id="cardImg" src="card/ar-card.png" alt="AR 카드: 여러 색 도형 무늬 아래 'AR 포토 카드' 글자">
+      <div class="noimg" id="cardNoImg" hidden>그림 없이 불러온 카드예요</div>
       <div class="col">
-        <a class="btn" href="card/ar-card.png" download="AR-포토-카드.png">카드 그림 내려받기</a>
-        <p class="note">엽서 크기(가로 10 cm 안팎) 이상으로 인쇄하세요. 다른 기기 화면에 이 카드를 띄워 놓고 비춰도 돼요.</p>
+        <a class="btn" id="cardDl" href="card/ar-card.png" download="AR-포토-카드.png">카드 그림 내려받기</a>
+        <p class="note">엽서 크기(가로 10 cm 안팎) 이상으로 인쇄하세요. 다른 기기 화면에 카드를 띄워 놓고 비춰도 돼요.</p>
       </div>
     </div>
+
+    <div class="panel">
+      <h2>내 그림으로 카드 만들기</h2>
+      <p class="note">포스터, 교과서 그림, 학교 로고처럼 내가 고른 그림을 AR이 시작되는 카드로 쓸 수 있어요. 카드는 이 휴대폰에 저장되고, 어디로도 보내지 않아요.</p>
+      <p class="note">잘 잡히는 그림: 무늬와 모서리가 많고 색 대비가 뚜렷한 그림. 잘 안 잡히는 그림: 한 가지 색이 넓은 그림, 흐린 사진, 같은 무늬가 되풀이되는 그림.</p>
+      <button type="button" class="btn" id="makeCard">그림 고르기</button>
+      <input type="file" id="cardInput" accept="image/*">
+      <div id="makeBox" hidden><div class="prog"><i id="makeBar"></i></div><p class="note" id="makeMsg" style="margin-top:6px">카드 만드는 중…</p></div>
+      <p id="quality" hidden></p>
+      <details>
+        <summary>학생들과 같은 카드 쓰기</summary>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <p class="note">‘카드 파일 내보내기’로 받은 파일을 클래스룸 등으로 나눠 주면, 학생은 ‘카드 파일 불러오기’로 같은 카드를 바로 쓸 수 있어요. 학생 휴대폰에서 다시 만들 필요가 없어요.</p>
+          <div class="row">
+            <button type="button" class="btn" id="exportCard" disabled>카드 파일 내보내기</button>
+            <button type="button" class="btn" id="importCard">카드 파일 불러오기</button>
+          </div>
+          <input type="file" id="cardFileInput" accept=".json,application/json">
+          <button type="button" class="btn" id="deleteCard" disabled>내 카드 지우기</button>
+        </div>
+      </details>
+    </div>
+
     <ol>
-      <li>카드를 평평한 곳에 놓고, 글자가 내 쪽으로 오게 둬요.</li>
+      <li>카드를 평평한 곳에 놓고, 그림의 아래쪽이 내 쪽으로 오게 둬요.</li>
       <li>‘시작’을 누르고 카메라를 허용해요.</li>
-      <li>카드 전체가 화면에 들어오게 비추면 하트가 나타나요.</li>
+      <li>카드 전체가 화면에 들어오게 비추면 하트가 카드 가운데에 나타나요.</li>
     </ol>
     <button type="button" class="btn primary" id="go">시작</button>
     <p class="err" id="startErr" hidden></p>
@@ -105,6 +145,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 import * as THREE from 'three';
 import {GLTFLoader} from './vendor/three/loaders/GLTFLoader.js';
 import {MindARThree} from './vendor/mindar/mindar-image-three.prod.js';
+import {Compiler} from './vendor/mindar/mindar-image.prod.js';
 const $=s=>document.querySelector(s);
 
 let mindar=null,renderer,scene,camera,anchor,stage,heart=null,photo=null,mode='heart';
@@ -128,12 +169,83 @@ function makePhoto(url,aspect,cut){
   const p=new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat);p.position.y=h/2;grp.add(p);
   if(!cut){const f=new THREE.Mesh(new THREE.BoxGeometry(w+0.06,h+0.06,0.02),new THREE.MeshStandardMaterial({color:0xf4f1ea,roughness:.8}));f.position.set(0,h/2,-0.012);grp.add(f);}
   grp.rotation.x=Math.PI/2;return grp;}
-function show(){stage.clear();stage.add(makeShadow());const o=mode==='heart'?heart:photo;if(o)stage.add(o);stage.scale.setScalar(S.size);}
+function show(){stage.clear();stage.add(makeShadow());const o=mode==='heart'?heart:photo;if(o)stage.add(o);stage.scale.setScalar(S.size*base());}
+
+/* ---------- 카드: 기본 카드 / 내 카드 (IndexedDB에 한 장) ---------- */
+let mine=null,useMine=false,mineUrl=null;
+const base=()=>useMine&&mine&&mine.aspect<1?mine.aspect:1;   // 가로로 긴 카드는 짧은 쪽(세로)에 맞춰 크기를 줄임   // mine = {name, img: dataURL|'' , mind: ArrayBuffer, q}
+function db(){return new Promise((ok,no)=>{const r=indexedDB.open('ar-card',1);r.onupgradeneeded=()=>r.result.createObjectStore('c');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});}
+async function dbDo(mode,fn){const d=await db();return new Promise((ok,no)=>{const t=d.transaction('c',mode),q=fn(t.objectStore('c'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error);});}
+const saveMine=c=>dbDo('readwrite',s=>s.put(c,'mine'));
+const loadMine=()=>dbDo('readonly',s=>s.get('mine'));
+const dropMine=()=>dbDo('readwrite',s=>s.delete('mine'));
+function targetSrc(){if(useMine&&mine){if(mineUrl)URL.revokeObjectURL(mineUrl);mineUrl=URL.createObjectURL(new Blob([mine.mind]));return mineUrl;}return 'card/card.mind';}
+function qualityText(q){
+  if(q==null)return null;
+  if(q<8)return ['warn','무늬가 적어서 잘 안 잡힐 수 있어요. 무늬나 글자가 더 많은 그림을 써 보세요.'];
+  if(q<40)return ['warn','쓸 수는 있지만 조금 느리게 잡힐 수 있어요. 카드를 크게 인쇄하고 밝은 곳에서 비춰 보세요.'];
+  return ['good','무늬가 넉넉해서 잘 잡힐 거예요.'];}
+function renderCard(){
+  $('#useMine').disabled=!mine;$('#exportCard').disabled=!mine;$('#deleteCard').disabled=!mine;
+  if(!mine)useMine=false;
+  $('#useDefault').setAttribute('aria-pressed',String(!useMine));$('#useMine').setAttribute('aria-pressed',String(useMine));
+  const img=useMine?mine.img:'card/ar-card.png';
+  $('#cardImg').hidden=!img;$('#cardNoImg').hidden=!!img;$('#cardDl').hidden=!img;
+  if(img){$('#cardImg').src=img;$('#cardImg').alt=useMine?'내 카드 그림':"AR 카드: 여러 색 도형 무늬 아래 'AR 포토 카드' 글자";
+    $('#cardDl').href=img;$('#cardDl').download=useMine?'내-AR-카드.png':'AR-포토-카드.png';}
+  const qt=useMine&&qualityText(mine.q);$('#quality').hidden=!qt;if(qt){$('#quality').className=qt[0];$('#quality').textContent=qt[1];}
+}
+$('#useDefault').onclick=()=>{useMine=false;renderCard();};
+$('#useMine').onclick=()=>{if(mine){useMine=true;renderCard();}};
+loadMine().then(c=>{if(c){mine=c;useMine=true;}renderCard();}).catch(()=>{});
+
+$('#makeCard').onclick=()=>$('#cardInput').click();
+$('#cardInput').onchange=async e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;
+  const box=$('#makeBox'),bar=$('#makeBar'),msg=$('#makeMsg');
+  $('#makeCard').disabled=true;$('#go').disabled=true;box.hidden=false;bar.style.width='0%';msg.textContent='카드 만드는 중… 휴대폰에 따라 10초~1분쯤 걸려요.';
+  try{
+    const bmp=await createImageBitmap(f,{imageOrientation:'from-image'});
+    const k=Math.min(1,900/Math.max(bmp.width,bmp.height)),w=Math.round(bmp.width*k),h=Math.round(bmp.height*k);
+    if(Math.min(w,h)<200)throw new Error('small');
+    const cv=document.createElement('canvas');cv.width=w;cv.height=h;const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(bmp,0,0,w,h);
+    const url=cv.toDataURL('image/jpeg',0.9);
+    const im=new Image();im.src=url;await im.decode();
+    const comp=new Compiler();
+    const data=await comp.compileImageTargets([im],p=>{bar.style.width=Math.min(100,p).toFixed(0)+'%';});
+    const mind=await comp.exportData();
+    const q=(data[0].trackingData||[]).reduce((n,t)=>n+((t&&t.points)?t.points.length:0),0);   // 추적점 수: 기본 카드 93, 무늬 없는 그림 0
+    mine={name:(f.name||'내 카드').replace(/\.[^.]+$/,''),img:url,mind:mind.buffer.slice(mind.byteOffset,mind.byteOffset+mind.byteLength),q,aspect:h/w};
+    await saveMine(mine).catch(()=>{});
+    useMine=true;renderCard();bar.style.width='100%';msg.textContent='카드를 만들었어요. 그림을 인쇄하거나 다른 화면에 띄우고 ‘시작’을 누르세요.';
+  }catch(err){console.error(err);box.hidden=false;bar.style.width='0%';
+    msg.textContent=err&&err.message==='small'?'그림이 너무 작아요. 가로세로 200픽셀 이상인 그림을 골라 주세요.':'카드를 만들지 못했어요. 다른 그림으로 해 보거나, 컴퓨터의 크롬에서 만들어 ‘카드 파일’로 옮겨 보세요.';}
+  $('#makeCard').disabled=false;$('#go').disabled=false;
+};
+function b64(buf){const u=new Uint8Array(buf);let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s);}
+function unb64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer;}
+$('#exportCard').onclick=async()=>{
+  if(!mine)return;
+  const blob=new Blob([JSON.stringify({type:'ar-photo-card',v:1,name:mine.name,img:mine.img||'',q:mine.q,aspect:mine.aspect||1,mind:b64(mine.mind)})],{type:'application/json'});
+  const name='AR카드-'+(mine.name||'내카드').replace(/[\\/:*?"<>|\s]+/g,'_').slice(0,40)+'.json';
+  const file=new File([blob],name,{type:'application/json'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});return;}catch(e){if(e.name==='AbortError')return;}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.append(a);a.click();a.remove();
+};
+$('#importCard').onclick=()=>$('#cardFileInput').click();
+$('#cardFileInput').onchange=async e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;
+  try{const j=JSON.parse(await f.text());if(j.type!=='ar-photo-card'||!j.mind)throw 0;
+    mine={name:String(j.name||'내 카드').slice(0,60),img:/^data:image\/(png|jpeg|webp);base64,/.test(j.img||'')?j.img:'',mind:unb64(j.mind),q:typeof j.q==='number'?j.q:null,aspect:+j.aspect>0?+j.aspect:1};
+    await saveMine(mine).catch(()=>{});useMine=true;renderCard();$('#makeBox').hidden=false;$('#makeBar').style.width='100%';$('#makeMsg').textContent='카드 파일을 불러왔어요.';
+  }catch(err){$('#makeBox').hidden=false;$('#makeBar').style.width='0%';$('#makeMsg').textContent='AR 포토 카드 파일이 아니에요. ‘카드 파일 내보내기’로 받은 .json 파일을 골라 주세요.';}
+};
+$('#deleteCard').onclick=async()=>{await dropMine().catch(()=>{});mine=null;useMine=false;renderCard();$('#makeBox').hidden=true;};
 
 $('#go').onclick=async()=>{
   $('#go').disabled=true;$('#go').textContent='준비하는 중…';$('#startErr').hidden=true;
   try{
-    mindar=new MindARThree({container:$('#ar'),imageTargetSrc:'card/card.mind',uiLoading:'no',uiScanning:'no',uiError:'no',filterMinCF:0.0001,filterBeta:0.01,warmupTolerance:3,missTolerance:8});
+    mindar=new MindARThree({container:$('#ar'),imageTargetSrc:targetSrc(),uiLoading:'no',uiScanning:'no',uiError:'no',filterMinCF:0.0001,filterBeta:0.01,warmupTolerance:3,missTolerance:8});
     ({renderer,scene,camera}=mindar);
     renderer.outputColorSpace=THREE.SRGBColorSpace;
     scene.add(new THREE.HemisphereLight(0xffffff,0x887766,1.6));
@@ -162,7 +274,7 @@ $('#photoInput').onchange=async e=>{
   }catch(err){console.error(err);alert('이 사진을 열지 못했어요. JPG나 PNG로 골라 주세요.');}
   e.target.value='';
 };
-$('#size').oninput=e=>{S.size=+e.target.value;stage.scale.setScalar(S.size);};
+$('#size').oninput=e=>{S.size=+e.target.value;stage.scale.setScalar(S.size*base());};
 
 /* 찍기: 화면에 보이는 카메라 영상과 3D 그림을 한 장으로 */
 let lastBlob=null;
