@@ -198,6 +198,8 @@ let E={title:'',intro:'',layout:'ring',gap:1.0,items:[]};
 function db(){return new Promise((ok,no)=>{const r=indexedDB.open('ar-exhibit',1);r.onupgradeneeded=()=>r.result.createObjectStore('e');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error);});}
 async function dbDo(mode,fn){const d=await db();return new Promise((ok,no)=>{const t=d.transaction('e',mode),q=fn(t.objectStore('e'));t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error);});}
 const VIEW=new URLSearchParams(location.search).get('ex');
+const SHORT_HOSTS=['maehwachem.github.io','kjelab.kr','www.kjelab.kr'];
+const shareURL=v=>SHORT_HOSTS.includes(location.hostname)&&/^[a-z0-9-]{1,40}$/.test(v)?location.origin+'/ar/'+v:location.origin+location.pathname+'?ex='+encodeURIComponent(v);
 let saveT=0;function save(){if(VIEW!==null)return;clearTimeout(saveT);saveT=setTimeout(()=>dbDo('readwrite',s=>s.put(E,'cur')).catch(()=>{}),300);}
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 
@@ -240,7 +242,7 @@ $('#title').oninput=e=>{E.title=e.target.value;counts();save();scheduleBuild();}
 $('#intro').oninput=e=>{E.intro=e.target.value;counts();save();scheduleBuild();};
 document.querySelectorAll('[data-lay]').forEach(b=>b.onclick=()=>{E.layout=b.dataset.lay;changed();});
 $('#slug').oninput=e=>{const v=e.target.value.toLowerCase().replace(/[\s_]+/g,'-').replace(/[^a-z0-9-]/g,'');if(v!==e.target.value)e.target.value=v;E.slug=v;save();
-  $('#slugNote').textContent=v?`올린 뒤 링크: …/ar-photo/exhibit.html?ex=${v}`:'적으면 내보낸 파일 이름이 그대로 링크 이름이 돼요.';};
+  $('#slugNote').textContent=v?`올린 뒤 링크: ${SHORT_HOSTS.includes(location.hostname)?location.host:'kjelab.kr'}/ar/${v}`:'적으면 내보낸 파일 이름이 그대로 링크 이름이 돼요.';};
 $('#gap').oninput=e=>{E.gap=+e.target.value;$('#gapVal').textContent=E.gap.toFixed(1)+' m';save();scheduleBuild();};
 
 /* ---------- 전시물 편집 ---------- */
@@ -514,8 +516,9 @@ async function startXR(){
 }
 
 /* ---------- 공유 화면: QR·링크 ---------- */
+/* 공개 사이트에서는 짧은 주소(사이트주소/ar/이름)로 나눈다. 포트폴리오 사이트의 404.html이 원래 주소로 옮겨 준다. */
 function drawQR(){
-  const url=location.origin+location.pathname+'?ex='+encodeURIComponent(VIEW),cv=$('#qrCv'),x=cv.getContext('2d');
+  const url=shareURL(VIEW),cv=$('#qrCv'),x=cv.getContext('2d');
   const q=qrcode(0,'M');q.addData(url);q.make();const n=q.getModuleCount(),pad=4,cell=Math.floor(560/(n+pad*2)),size=cell*(n+pad*2),ox=(600-size)/2;
   x.fillStyle='#fff';x.fillRect(0,0,600,720);x.fillStyle='#000';
   for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))x.fillRect(ox+(c+pad)*cell,20+(r+pad)*cell,cell,cell);
@@ -524,7 +527,7 @@ function drawQR(){
 $('#qrBtn').onclick=()=>{drawQR();$('#qrDlg').showModal();};
 $('#qrClose').onclick=()=>$('#qrDlg').close();
 $('#qrSave').onclick=()=>$('#qrCv').toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=('QR-'+E.title).replace(/[\\/:*?"<>|\s]+/g,'_').slice(0,40)+'.png';document.body.append(a);a.click();a.remove();},'image/png');
-$('#copyBtn').onclick=async()=>{const url=location.origin+location.pathname+'?ex='+encodeURIComponent(VIEW);
+$('#copyBtn').onclick=async()=>{const url=shareURL(VIEW);
   try{await navigator.clipboard.writeText(url);$('#copyBtn').textContent='복사했어요';}catch(e){prompt('이 링크를 복사하세요',url);}
   setTimeout(()=>$('#copyBtn').textContent='링크 복사',2000);};
 
