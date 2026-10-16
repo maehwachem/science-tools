@@ -1484,15 +1484,6 @@ const SLIDES = [
     ]
   },
   {
-    ch: '해들리 순환', title: '공기는 왜 극까지 곧장 가지 않을까?', scene: 'why', why: true, solo: true, base: { ly: [] },
-    intro: '적도에서 상승한 공기가 상층에서 극 쪽으로 가는 동안 일어나는 일을 세 단계로 나누어 살펴보자.',
-    steps: [
-      { ly: ['y1'], t: '적도와 위도 30°의 두 지점은 같은 시간에 한 바퀴를 돌지만, 적도의 지점이 <b>더 긴 거리</b>를 이동한다. 그래서 적도의 지표와 그 위의 공기는 동쪽으로 더 빠르게 움직이고 있다.' },
-      { ly: ['y2', 'y2r'], rm: ['y1'], t: '적도에서 상승한 공기는 상층에서 북쪽으로 이동하면서도 빠른 동쪽 움직임을 유지하려 한다. 그래서 고위도로 갈수록 그곳의 지표보다 동쪽으로 앞서 나가, 지표에서 보면 경로가 <b>동쪽으로 휜다</b>.' },
-      { ly: ['y3'], rm: ['y2r'], t: '동쪽으로 휠수록 극 쪽으로 나아가는 흐름은 점차 약해지고, 이동하는 동안 공기는 열을 잃어 차가워진다. 적도에서는 공기가 계속 올라오므로, 위도 30° 부근 상층에서 <b>모인 공기가 아래로 내려오는 흐름</b>으로 이어진다.' }
-    ]
-  },
-  {
     ch: '해들리 순환', title: '적도에서 위도 30°까지', scene: 'sec', base: { ly: ['tp', 'bio'], bd: 'r1' },
     intro: '자전하는 지구에서는 반구마다 세 개의 순환이 생긴다. 북반구 단면에서 적도 쪽부터 차례로 살펴보자.',
     steps: [
@@ -1500,6 +1491,15 @@ const SLIDES = [
       { ly: ['pile', 'p30', 'dry'], t: '상층에서 극 쪽으로 이동하던 공기는 전향력을 받아 점점 동쪽으로 휘면서 극 쪽으로 나아가는 흐름이 약해지고, 이동하는 동안 냉각된다. 그래서 위도 30° 부근 상층에서 모인 공기가 하강하여 지표에 <b>아열대 고압대</b>가 만들어진다. 하강하는 공기 속에서는 구름이 잘 생기지 않아 건조하다.' },
       { ly: ['h'], rm: ['pile'], t: '하강한 공기는 지표를 따라 적도 쪽으로 돌아가 순환을 이룬다. 이 순환이 <b>해들리 순환</b>이다.' },
       { ly: ['wh'], t: '지표에서 적도 쪽으로 부는 바람은 전향력을 받아 휘어져, 북반구에서는 <b>북동 무역풍</b>, 남반구에서는 남동 무역풍이 된다.' }
+    ]
+  },
+  {
+    ch: '해들리 순환', title: '공기는 왜 극까지 곧장 가지 않을까?', scene: 'why', why: true, solo: true, base: { ly: [] },
+    intro: '앞에서 본 해들리 순환에서, 적도에서 상승한 공기가 왜 극까지 가지 않고 위도 30° 부근에서 내려오는지 세 단계로 나누어 살펴보자.',
+    steps: [
+      { ly: ['y1'], t: '적도와 위도 30°의 두 지점은 같은 시간에 한 바퀴를 돌지만, 적도의 지점이 <b>더 긴 거리</b>를 이동한다. 그래서 적도의 지표와 그 위의 공기는 동쪽으로 더 빠르게 움직이고 있다.' },
+      { ly: ['y2', 'y2r'], rm: ['y1'], t: '적도에서 상승한 공기는 상층에서 북쪽으로 이동하면서도 빠른 동쪽 움직임을 유지하려 한다. 그래서 고위도로 갈수록 그곳의 지표보다 동쪽으로 앞서 나가, 지표에서 보면 경로가 <b>동쪽으로 휜다</b>.' },
+      { ly: ['y3'], rm: ['y2r'], t: '동쪽으로 휠수록 극 쪽으로 나아가는 흐름은 점차 약해지고, 이동하는 동안 공기는 열을 잃어 차가워진다. 적도에서는 공기가 계속 올라오므로, 위도 30° 부근 상층에서 <b>모인 공기가 아래로 내려오는 흐름</b>으로 이어진다.' }
     ]
   },
   {
@@ -1798,7 +1798,7 @@ function renderWhyCtl(sl) {
   WY.stage = -1; WY.pause = false;
   const c = h('div', 'wctl', WHY_B.map((b, i) => `<button type="button" data-k="${i + 1}">${b}</button>`).join(''));
   const c2 = h('div', 'wctl sub', '<button type="button" id="wRe">↺ 다시 보기</button><button type="button" id="wPa" aria-pressed="false">❚❚ 일시 정지</button>');
-  const go = h('button', 'go wgo', '이제 옆에서 전체 순환을 살펴보자 →'); go.type = 'button';
+  const go = h('button', 'go wgo', '다음: 극에서 위도 60°까지 →'); go.type = 'button';
   inner.appendChild(c); inner.appendChild(c2); inner.appendChild(go);
   c.querySelectorAll('button').forEach(b => b.onclick = () => { const k = +b.dataset.k; if (cur.k === k) { WY.t = 0; WY.pause = false; whyPause(); return; } cur.k = k; show(false); });
   $('#wRe').onclick = () => { WY.t = 0; WY.pause = false; whyPause(); };
