@@ -494,6 +494,9 @@ body.saveerr #toast{ bottom:calc(env(safe-area-inset-bottom, 0px) + 120px); }
 .fb-l.fix li::before{ content:'!'; position:absolute; left:7px; color:var(--warn); font-weight:700; }
 .fb-note{ margin:6px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
 .fb-k{ font-weight:700; } .fb-k.good{ color:var(--good); } .fb-k.fix{ color:var(--warn); }
+/* 중간 저장 · 다음에 이어서 하기 */
+.msbtns{ display:flex; flex-wrap:wrap; gap:8px; }
+.msbtns button{ min-height:44px; }
 #fbprint{ display:none; }
 @media print{
   body.fbprinting > *:not(#fbprint){ display:none !important; }
@@ -1301,7 +1304,7 @@ function viewTitle(){
         <p class="intro">소금물을 부으면 켜지는 비상 랜턴이 어둡다는 신고가 들어왔어요. 실험 재료가 없어도 화면 속 시험대에서 전극판을 올리고 집게를 물려 전압을 재요. 선생님이 2차 과정을 고르면 소금물 셀의 단락 전류나 다니엘 전지까지 이어서 재요. 조별로 함께 하거나 혼자 할 수 있고, 연습 모드에서는 다음에 할 일을 알려 줘요.</p>` : `<h1>배터리<br>시험팀</h1>
         <p class="sub">금속의 반응성부터 화학 전지까지</p><p style="margin:6px 0 0;font-size:13px;font-weight:700;letter-spacing:.04em;opacity:.72">제작 · KJE</p>
         <p class="intro">소금물을 부으면 켜지는 비상 랜턴이 어둡다는 신고가 들어왔어요. 1차 시험에서는 라벨이 섞인 전극판 네 장의 정체를 전압으로 밝히고, 2차 시험에서는 더 좋은 셀을 설계해요.</p>`}
-        <div class="title-actions"><button type="button" class="${slots.length ? 'secondary' : 'primary'}" data-act="new">새 시험 시작</button></div>
+        <div class="title-actions"><button type="button" class="${slots.length ? 'secondary' : 'primary'}" data-act="new">새 시험 시작</button><label class="secondary filebtn">저장 파일로 이어 하기<input type="file" id="resumeimp" accept=".json,application/json" hidden></label></div>
         ${list}
         <div class="title-foot"><p class="sync-note who">${esc(syncText())}</p><button type="button" class="linkbtn" data-act="tgate">교사 화면</button><a class="linkbtn" href="${PRIVACY_URL}" target="_blank" rel="noopener">개인정보 처리방침</a></div>
       </div>
@@ -1317,6 +1320,7 @@ function viewHeader(){
     <button type="button" class="home" data-act="home" aria-label="처음 화면으로">${VIRTUAL ? '배터리 가상 시험동' : '배터리 시험팀'}</button>
     <div class="caseid"><span class="no" id="caseno">${esc(caseNo())}</span><span class="place">${CASE.place}</span></div>
     <div class="clock">${st ? `<span class="clock-l">${p2 ? '2차 ' : ''}${en ? '소요 시간' : '경과'}</span>` : ''}<span id="timer">${st ? fmt((en || Date.now()) - st) : (p2 ? '2차 시험 전' : '시험 전')}</span></div>
+    <div class="msbtns"><button type="button" class="secondary sm" data-ms="save">중간 저장</button><button type="button" class="secondary sm" data-ms="pause">다음에 이어서 하기</button></div>
   </header>${viewSteps()}`;
 }
 function viewSteps(){
@@ -2630,6 +2634,7 @@ function flagCard(f, ph){
 function flagsOf(ph){ return ph === 2 ? (S.r2 && S.r2.flags) || [] : S.flags; }
 function modalHTML(){
   const m = ui.modal;
+  { const x = msModal(m); if(x) return x; }
   if(m.type === 'flags'){
     const ph = m.ph, open = flagsOf(ph).filter(f => f.st === 'open');
     return `<div class="modal-in">
@@ -3365,6 +3370,97 @@ document.addEventListener('input', e => {
   const st = document.getElementById('fb-state');
   if(st) st.textContent = f.sent ? (cloud.db ? '학생 성적서에 보이는 중 · 고치면 바로 반영돼요' : '보냄 · 이 기기 성적서에만 보여요') : '작성 중 · 저장됨';
   ui.pendingRender = true;   /* 칸을 떠나면 보내기 버튼 상태 등을 다시 그림 */
+});
+
+/* ═════════ 중간 저장 · 다음에 이어서 하기 ═════════
+   - 중간 저장: 지금까지의 기록을 결과 파일(JSON)로 받음. 어느 단계에서든 가능. 교사 화면 '결과 파일 불러오기'에도 그대로 쓰임
+   - 다음에 이어서 하기: 이 기기에 저장(수합 중이면 선생님 화면에도 보냄)하고 처음 화면으로. 목록에서 다시 엶
+   - 저장 파일로 이어 하기: 받아 둔 파일을 다른 기기에서도 불러와 멈춘 단계부터 이어 함 */
+const msFileName = d => `${VIRTUAL ? '배터리가상시험동' : '배터리시험팀'}_${(teamLabel(d) || '반조미정').replace(/\s+/g, '_')}_${(() => { const t = new Date(); return `${t.getMonth() + 1}월${t.getDate()}일_${String(t.getHours()).padStart(2, '0')}${String(t.getMinutes()).padStart(2, '0')}`; })()}.json`;
+const msHasTeam = () => !!(S && (S.team.cls || S.team.grp || memberIdx().length));
+async function msSaveFile(){
+  if(!S) return false;
+  if(!msHasTeam()){ showToast('반·조를 먼저 적어야 저장할 수 있어요.'); return false; }
+  save(); pushNow();
+  const text = JSON.stringify({ kind:FILE_KIND, v:1, data:S });
+  if(canSave()){
+    const r = await saveFile(msFileName(S), text, 'application/json');
+    if(r === 'ok'){ showToast('중간 저장 파일을 받았어요. 잘 보관해 두세요.'); return true; }
+    if(r === 'declined') return false;
+  }
+  /* 파일로 받을 수 없는 화면: 내용을 보여 주고 복사하게 함 */
+  ui.modal = { type:'msjson', text }; renderModal();
+  return false;
+}
+function msPauseAsk(){
+  if(!S) return;
+  if(!msHasTeam()){ ui.view = 'title'; ui.modal = null; render(); window.scrollTo(0, 0); return; }
+  ui.modal = { type:'mspause' }; renderModal();
+}
+function msLeave(){
+  save(); pushNow();
+  const sent = cloud.state === 'on';
+  ui.view = 'title'; ui.modal = null; render(); window.scrollTo(0, 0);
+  showToast(`저장했어요. 처음 화면 목록에서 ‘이어서 하기’로 다시 열어요.${sent ? ' 선생님 화면에도 보냈어요.' : ''}`);
+}
+/* 받아 둔 파일 읽기 */
+async function msResumeFile(file){
+  let o = null;
+  try{ o = JSON.parse(await file.text()); }catch(e){ showToast('저장 파일을 읽지 못했어요.'); return; }
+  const raw = o && (o.kind === 'battery-lab-team' || o.kind === 'battery-vlab-team') ? o.data : o;
+  if(raw && raw.team && raw.pv && isVirtualRec(raw) !== VIRTUAL){ showToast(`${VIRTUAL ? '배터리 시험팀(실제 실험)' : '배터리 가상 시험동'}의 저장 파일이에요. 그 앱에서 불러와요.`); return; }
+  let d = null; try{ d = upgrade(raw); }catch(e){}
+  if(!d){ showToast('이 앱의 저장 파일이 아니에요.'); return; }
+  const local = loadSlot(d.id);
+  if(local && (local.updated || 0) > (d.updated || 0)){ ui.modal = { type:'msnewer', file:d, local }; renderModal(); return; }
+  msOpen(d);
+}
+function msOpen(d){
+  try{ localStorage.setItem(PREFIX + d.id, JSON.stringify(d)); }catch(e){ showToast('이 기기에 저장할 수 없어요. 저장 공간을 확인해 주세요.'); return; }
+  openSlot(d.id);
+  queuePush();
+  showToast(`${teamLabel(d) || '저장된'} 기록을 불러왔어요. ${stageName(d.stage, d.track)} 단계부터 이어 해요.`);
+}
+function msModal(m){
+  if(m.type === 'mspause') return `<div class="modal-in">
+      <h2 id="mt">다음에 이어서 하기</h2>
+      <p class="mlead">지금까지의 기록은 이 기기에 저장돼요. 다음에 처음 화면 목록에서 ‘이어서 하기’를 누르면 이 단계부터 다시 시작해요.${cloud.state === 'on' ? ' 선생님 화면에도 함께 보내요.' : ''}</p>
+      <p class="who" style="margin:0">다른 태블릿에서 이어 하거나 이 기기를 못 쓰게 될 수도 있다면 중간 저장 파일도 받아 두세요.</p>
+      <div class="mfoot"><button type="button" class="ghost" data-act="close">계속하기</button><button type="button" class="secondary" data-ms="leavefile">파일도 받고 나가기</button><button type="button" class="primary" data-ms="leave">저장하고 나가기</button></div>
+    </div>`;
+  if(m.type === 'msjson') return `<div class="modal-in">
+      <h2 id="mt">중간 저장 내용</h2>
+      <p class="mlead">이 화면에서는 파일로 받을 수 없어서 내용을 보여 드려요. 전부 복사해서 메모장 등에 붙여 넣고, 이름 끝을 .json으로 저장해 두세요.</p>
+      <textarea class="csvbox" id="msbox" readonly style="font-family:var(--num);font-size:12px;min-height:200px">${esc(m.text)}</textarea>
+      <div class="mfoot"><button type="button" class="ghost" data-act="close">닫기</button><button type="button" class="primary" data-ms="copy">복사</button></div>
+    </div>`;
+  if(m.type === 'msnewer') return `<div class="modal-in">
+      <h2 id="mt">이 기기의 기록이 더 최근이에요</h2>
+      <p class="mlead">${esc(teamLabel(m.local) || '이')} 기록이 이 기기에도 있어요. 이 기기 것은 ${esc(whenStr(m.local.updated))}(${esc(stageName(m.local.stage, m.local.track))} 단계), 파일 것은 ${esc(whenStr(m.file.updated))}(${esc(stageName(m.file.stage, m.file.track))} 단계)에 저장됐어요.</p>
+      <div class="mfoot"><button type="button" class="ghost" data-act="close">취소</button><button type="button" class="secondary" data-ms="usefile">파일 것으로 이어 하기</button><button type="button" class="primary" data-ms="uselocal">이 기기 것으로 이어 하기</button></div>
+    </div>`;
+  return null;
+}
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-ms]');
+  if(!el || el.disabled) return;
+  switch(el.dataset.ms){
+    case 'save': msSaveFile(); break;
+    case 'pause': msPauseAsk(); break;
+    case 'leave': msLeave(); break;
+    case 'leavefile': (async () => { await msSaveFile(); if(ui.modal && ui.modal.type === 'msjson') return; msLeave(); })(); break;
+    case 'copy': {
+      const box = document.getElementById('msbox');
+      const fallback = () => { if(box){ box.focus(); box.select(); } showToast('선택된 내용을 복사하세요.'); };
+      try{ navigator.clipboard.writeText(box ? box.value : '').then(() => showToast('복사했어요.'), fallback); }catch(err){ fallback(); }
+      break;
+    }
+    case 'usefile': { const d = ui.modal && ui.modal.file; ui.modal = null; if(d){ d.updated = Date.now(); msOpen(d); } break; }
+    case 'uselocal': { const d = ui.modal && ui.modal.local; ui.modal = null; if(d) openSlot(d.id); break; }
+  }
+});
+document.addEventListener('change', e => {
+  if(e.target && e.target.id === 'resumeimp' && e.target.files && e.target.files[0]){ msResumeFile(e.target.files[0]); e.target.value = ''; }
 });
 
 /* ───────── 렌더 & 이동 ───────── */
