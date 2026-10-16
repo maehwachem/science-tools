@@ -494,6 +494,15 @@ body.saveerr #toast{ bottom:calc(env(safe-area-inset-bottom, 0px) + 120px); }
 .fb-l.fix li::before{ content:'!'; position:absolute; left:7px; color:var(--warn); font-weight:700; }
 .fb-note{ margin:6px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
 .fb-k{ font-weight:700; } .fb-k.good{ color:var(--good); } .fb-k.fix{ color:var(--warn); }
+/* 사용 방법 */
+.gd-banner{ background:var(--sheet); border:2px solid var(--acc); border-radius:10px; padding:12px 16px; margin:16px 0 4px; max-width:620px; }
+.gd-banner p{ margin:0 0 10px; }
+.gd-banner-act{ display:flex; flex-wrap:wrap; gap:8px; }
+.gd-toc{ display:flex; flex-wrap:wrap; gap:6px 14px; margin:4px 0 8px; }
+.gd-toc a{ color:var(--ink2); text-underline-offset:3px; }
+.gd-list{ padding-left:22px; margin:0 0 10px; max-width:72ch; }
+.gd-list li{ margin:6px 0; line-height:1.6; }
+.gd .sec{ scroll-margin-top:16px; }
 /* 중간 저장 · 다음에 이어서 하기 */
 .msbtns{ display:flex; flex-wrap:wrap; gap:8px; }
 .msbtns button{ min-height:44px; }
@@ -1305,8 +1314,9 @@ function viewTitle(){
         <p class="sub">금속의 반응성부터 화학 전지까지</p><p style="margin:6px 0 0;font-size:13px;font-weight:700;letter-spacing:.04em;opacity:.72">제작 · KJE</p>
         <p class="intro">소금물을 부으면 켜지는 비상 랜턴이 어둡다는 신고가 들어왔어요. 1차 시험에서는 라벨이 섞인 전극판 네 장의 정체를 전압으로 밝히고, 2차 시험에서는 더 좋은 셀을 설계해요.</p>`}
         <div class="title-actions"><button type="button" class="${slots.length ? 'secondary' : 'primary'}" data-act="new">새 시험 시작</button><label class="secondary filebtn">저장 파일로 이어 하기<input type="file" id="resumeimp" accept=".json,application/json" hidden></label></div>
+        ${gdBanner()}
         ${list}
-        ${(!TS.pin && !cloud.db) ? `<p class="sync-note" style="flex-basis:100%"><strong>선생님 안내</strong> · 이 기기에는 아직 교사 PIN이 없어요. 학생에게 나눠 주기 전에 아래 <strong>교사 화면</strong>을 눌러 PIN을 정해 두세요.</p>` : ''}<div class="title-foot"><p class="sync-note who">${esc(syncText())}</p><button type="button" class="linkbtn" data-act="tgate">교사 화면</button><a class="linkbtn" href="${PRIVACY_URL}" target="_blank" rel="noopener">개인정보 처리방침</a></div>
+        ${(!TS.pin && !cloud.db) ? `<p class="sync-note" style="flex-basis:100%"><strong>선생님 안내</strong> · 이 기기에는 아직 교사 PIN이 없어요. 학생에게 나눠 주기 전에 아래 <strong>교사 화면</strong>을 눌러 PIN을 정해 두세요.</p>` : ''}<div class="title-foot"><p class="sync-note who">${esc(syncText())}</p><button type="button" class="linkbtn" data-gd="open">사용 방법</button><button type="button" class="linkbtn" data-act="tgate">교사 화면</button><a class="linkbtn" href="${PRIVACY_URL}" target="_blank" rel="noopener">개인정보 처리방침</a></div>
       </div>
       <div>${monitorHTML()}</div>
     </div>
@@ -4065,7 +4075,7 @@ function tHeader(){
     <button type="button" class="home" data-act="thome" aria-label="처음 화면으로">${VIRTUAL ? '배터리 가상 시험동' : '배터리 시험팀'}</button>
     <span class="tmode">교사 화면</span>
     <p class="tsync" id="tsync">${esc(tSyncText())}</p>
-    <button type="button" class="ghost sm" data-act="thome">처음 화면으로</button>
+    <button type="button" class="ghost sm" data-gd="open">사용 방법</button><button type="button" class="ghost sm" data-act="thome">처음 화면으로</button>
   </header>`;
 }
 function viewTeacher(){
@@ -4547,6 +4557,98 @@ document.addEventListener('change', e => {
   if(e.target && e.target.id === 'resumeimp' && e.target.files && e.target.files[0]){ msResumeFile(e.target.files[0]); e.target.value = ''; }
 });
 
+/* ═════════ 사용 방법 (처음 사용자 안내) ═════════
+   처음 연 기기에는 처음 화면에 '처음이신가요?' 카드가 뜨고, '사용 방법'은 언제든 처음 화면·교사 화면에서 다시 열 수 있음 */
+const GD_KEY = VIRTUAL ? 'battery-vlab-guide-seen' : 'battery-lab-guide-seen';
+const gdSeen = () => { try{ return !!localStorage.getItem(GD_KEY); }catch(e){ return true; } };
+const gdMark = () => { try{ localStorage.setItem(GD_KEY, String(Date.now())); }catch(e){} };
+function gdBanner(){
+  if(gdSeen()) return '';
+  return `<div class="gd-banner" role="note">
+    <p><b>처음이신가요?</b> 학생은 시험을 시작하고 저장하는 방법을, 선생님은 교사 화면 준비와 피드백 주는 방법을 먼저 보세요. 3분이면 됩니다.</p>
+    <div class="gd-banner-act"><button type="button" class="primary sm" data-gd="open">사용 방법 보기</button><button type="button" class="ghost sm" data-gd="dismiss">다음에 보기</button></div>
+  </div>`;
+}
+const gdStep = (t, d) => `<li><b>${t}</b>${d || ''}</li>`;
+function gdView(){
+  const name = VIRTUAL ? '배터리 가상 시험동' : '배터리 시험팀';
+  const tabs = VIRTUAL ? '<b>모드와 과정</b> 탭에서 연습·평가 모드(학생이 고름·연습만·평가만)와 2차 과정을 정합니다.'
+    : '<b>전극판 정답</b> 탭에서 실험실에 놓은 전극판 A~D가 실제로 어떤 금속인지 고르고, <b>2차 과정</b> 탭에서 1차 뒤에 이어 할 과정을 정합니다.';
+  return `<header class="top">
+      <button type="button" class="home" data-gd="close" aria-label="돌아가기">${name}</button>
+      <span class="tmode">사용 방법</span>
+      <button type="button" class="ghost sm" data-gd="close" style="margin-left:auto">돌아가기</button>
+    </header>
+    <main><section class="narrow gd">
+      <h1 class="st">사용 방법</h1>
+      <p class="instr">${VIRTUAL ? '재료 없이 화면 속 시험대에서 전극판의 정체를 밝히는 배터리 시험이에요.' : '실험실에서 금속판과 멀티미터로 재고, 기록은 이 앱에 남기는 배터리 시험이에요.'} 설치나 가입 없이 이 기기의 브라우저에서 돌아갑니다.</p>
+      <nav class="gd-toc" aria-label="목차"><a href="#gd-s" data-gd="toc" data-to="gd-s">학생: 시험하기</a><a href="#gd-save" data-gd="toc" data-to="gd-save">저장·이어 하기</a><a href="#gd-t" data-gd="toc" data-to="gd-t">선생님: 준비</a><a href="#gd-fb" data-gd="toc" data-to="gd-fb">선생님: 확인·피드백</a><a href="#gd-where" data-gd="toc" data-to="gd-where">기록은 어디에</a><a href="#gd-help" data-gd="toc" data-to="gd-help">막힐 때</a></nav>
+
+      <h2 class="sec" id="gd-s">학생: 시험하기</h2>
+      <ol class="gd-list">
+        ${gdStep('새 시험 시작', '을 누릅니다.')}
+        ${gdStep('참여 방식', `을 고릅니다. <b>조별</b>은 4~5명이 한 기기로 역할을 나눠 하고, <b>개별</b>은 혼자 모든 역할을 맡습니다${VIRTUAL ? '' : '(결석생 보충 실험 등)'}.`)}
+        ${VIRTUAL ? gdStep('모드', '를 고릅니다. <b>연습</b>은 다음 할 일과 도움말이 나오고, <b>평가</b>는 안내 없이 실제 실험과 같은 조건이에요. 선생님이 정해 두었으면 고를 수 없어요.') : ''}
+        ${gdStep('반·조(개별은 번호)와 이름', '을 적습니다. 선생님이 정한 방식이 있으면 이름 대신 별칭이나 번호를 써요.')}
+        ${gdStep('역할 정하기', '(조별만): 셀 개발 책임자, 전기화학 분석원, 시험 기록 담당, 배터리 안전 담당을 나눕니다.')}
+        ${gdStep('위쪽 단계를 따라', ' 의뢰 확인 → 준비 → 관찰·측정 → 판단 순서로 진행합니다. 기록끼리 어긋나면 앱이 그 자리에서 알려 주니, 다시 재거나 까닭을 적어요.')}
+        ${gdStep('서명과 성적서', ': 전압 규격 판정에서 서명하면 1차 성적서가 만들어집니다. 선생님이 2차 과정을 정했으면 이어서 합니다.')}
+      </ol>
+      ${VIRTUAL ? '' : '<p class="who">혼자 하든 함께 하든 보안경·장갑을 쓰고, 빨간 집게와 검은 집게가 서로 닿지 않게 해요.</p>'}
+
+      <h2 class="sec" id="gd-save">저장·이어 하기</h2>
+      <ul class="gd-list">
+        ${gdStep('자동 저장', ': 적을 때마다 이 기기에 저장됩니다. 처음 화면 목록의 <b>이어서 하기</b>로 다시 열어요.')}
+        ${gdStep('다음에 이어서 하기', '(실험 화면 위쪽): 수업이 끝날 때 누르면 저장하고 처음 화면으로 나갑니다.')}
+        ${gdStep('중간 저장', '(실험 화면 위쪽): 지금까지의 기록을 파일(.json)로 받습니다. 기기가 꺼지거나 다른 태블릿에서 이어 할 때를 위한 비상용이에요.')}
+        ${gdStep('저장 파일로 이어 하기', '(처음 화면): 받아 둔 파일을 다른 기기에서 열면 멈춘 단계부터 이어집니다.')}
+      </ul>
+
+      <h2 class="sec" id="gd-t">선생님: 처음 준비 (기기마다 한 번)</h2>
+      <ol class="gd-list">
+        ${gdStep('교사 화면', '(처음 화면 아래)을 누르고 숫자 4~6자리 <b>교사 PIN</b>을 정합니다. 학생이 우연히 들어오지 않게 막는 용도이고, 학생이 쓸 기기마다 정해 둡니다.')}
+        <li>${tabs}</li>
+        ${gdStep('피드백 문구', ' 탭에서 서술 피드백에 눌러 붙일 지적사항 목록을 고칩니다(선택).')}
+      </ol>
+      <p class="who">기기마다 PIN과 설정을 넣기 번거로우면 온라인 <b>배터리 수업방</b>(참여코드·QR로 들어오는 판)을 쓰세요.</p>
+
+      <h2 class="sec" id="gd-fb">선생님: 기록 확인과 피드백</h2>
+      <ol class="gd-list">
+        ${gdStep('진행 현황', ' 탭에서 조 카드를 누르면 그 조의 기록과 성적서가 보입니다.')}
+        ${gdStep('서술 피드백', '(조 상세 맨 아래): 칸마다 잘한 점(✓)·고칠 점(!)을 눌러 붙이고, 모자란 말은 <b>덧붙일 말</b>에 씁니다.')}
+        ${gdStep('학생에게 보내기', '를 누르면 그 조 성적서 맨 위에 <b>선생님 피드백</b>이 나타납니다. 작성 중일 때는 학생에게 보이지 않고, <b>학생 화면에서 내리기</b>로 다시 숨길 수 있어요.')}
+        ${gdStep('피드백지 인쇄·파일 저장', '으로 조별 피드백지를 나눠 주고, 진행 현황의 <b>CSV로 저장</b>으로 전체 기록을 표로 받습니다.')}
+      </ol>
+
+      <h2 class="sec" id="gd-where">기록은 어디에 남나요?</h2>
+      <ul class="gd-list">
+        ${cloud.db ? '<li>지금은 <b>실시간 수합</b>이 켜져 있어서, 기록이 이 기기에 저장되면서 선생님 화면으로도 바로 보내집니다.</li>' : '<li>기록은 <b>이 기기의 브라우저</b>에만 저장되고 서버로 보내지 않습니다. 그래서 교사 화면에도 이 기기에서 한 기록만 보여요.</li>'}
+        <li>다른 태블릿의 기록을 한 화면에 모으려면, 학생이 <b>중간 저장</b>${VIRTUAL ? '' : '이나 성적서의 <b>결과 파일 저장</b>'}으로 받은 파일을 교사 화면 아래 <b>결과 파일 불러오기</b>로 엽니다.</li>
+        <li>공용 기기라면 수업이 끝난 뒤 처음 화면 목록에서 <b>지우기</b>로 기록을 정리하세요. 브라우저의 방문 기록·사이트 데이터를 지우면 저장된 기록도 함께 지워집니다.</li>
+      </ul>
+
+      <h2 class="sec" id="gd-help">막힐 때</h2>
+      <ul class="gd-list">
+        <li><b>다음 버튼이 안 눌려요</b>: 버튼 바로 옆에 아직 빠진 것을 알려 줍니다. 그 칸을 채우면 눌려요.</li>
+        <li><b>기록끼리 어긋난다는 창이 떠요</b>: 다시 재서 고치거나, 다시 확인한 내용을 적고 기록을 그대로 둘 수 있어요. 둘 다 성적서의 재확인 이력에 남습니다.</li>
+        <li><b>예전 기록이 안 보여요</b>: 다른 기기·다른 브라우저·시크릿 창에서는 보이지 않아요. 처음 쓴 기기로 열거나, 저장 파일로 이어 하세요.</li>
+        <li><b>교사 PIN을 잊었어요</b>: 이 기기에서 PIN만 따로 지울 수는 없어요. 브라우저의 이 사이트 데이터를 지우면 PIN을 새로 정할 수 있지만 이 기기의 기록도 함께 지워지니, 먼저 중간 저장 파일을 받아 두세요.</li>
+      </ul>
+      <div class="actions" style="justify-content:flex-start"><button type="button" class="primary" data-gd="close">돌아가기</button></div>
+      <p class="who" style="margin-top:14px">만든이 KJE</p>
+    </section></main>`;
+}
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-gd]');
+  if(!el) return;
+  switch(el.dataset.gd){
+    case 'toc': { e.preventDefault(); const t = document.getElementById(el.dataset.to); if(t) t.scrollIntoView({ block:'start', behavior: reduceMotion ? 'auto' : 'smooth' }); break; }
+    case 'open': gdMark(); ui.gdBack = ui.view === 'guide' ? (ui.gdBack || 'title') : ui.view; ui.view = 'guide'; ui.modal = null; render(); window.scrollTo(0, 0); break;
+    case 'close': ui.view = ui.gdBack === 'teacher' ? 'teacher' : 'title'; render(); window.scrollTo(0, 0); break;
+    case 'dismiss': gdMark(); render(); break;
+  }
+});
+
 /* ───────── 렌더 & 이동 ───────── */
 const VIEWS = { team:viewTeam, roles:viewRoles, case:viewCase, check:viewCheck, look:viewLook, pairs:viewPairs, order:viewOrder, judge:viewJudge, al:viewAl, series:viewSeries, reply:viewReply, report:viewReport };
 const m2 = () => S && S.track && STAGES2[S.track] ? STAGES2[S.track] : null;
@@ -4577,6 +4679,7 @@ function complete(st){
 }
 function render(){
   const app = $('#app');
+  if(ui.view === 'guide'){ app.innerHTML = gdView(); renderModal(); return; }
   if(ui.view === 'teacher'){ app.innerHTML = viewTeacher(); renderModal(); return; }
   if(ui.view !== 'game' || !S){ app.innerHTML = viewTitle(); renderModal(); return; }
   fbSubStudent();
