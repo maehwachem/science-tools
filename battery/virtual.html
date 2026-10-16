@@ -503,6 +503,11 @@ body.saveerr #toast{ bottom:calc(env(safe-area-inset-bottom, 0px) + 120px); }
 .gd-list{ padding-left:22px; margin:0 0 10px; max-width:72ch; }
 .gd-list li{ margin:6px 0; line-height:1.6; }
 .gd .sec{ scroll-margin-top:16px; }
+.gd-try{ background:var(--sheet); border:1.5px solid var(--line); border-radius:10px; padding:10px 14px; margin:8px 0 12px; max-width:72ch; }
+.gd-try summary{ cursor:pointer; font-weight:700; min-height:32px; }
+.gd-t{ border-collapse:collapse; margin:8px 0; font-size:15px; }
+.gd-t th, .gd-t td{ border:1px solid var(--line); padding:5px 10px; text-align:center; }
+.gd-t th{ background:var(--sheet2); }
 /* 중간 저장 · 다음에 이어서 하기 */
 .msbtns{ display:flex; flex-wrap:wrap; gap:8px; }
 .msbtns button{ min-height:44px; }
@@ -4570,6 +4575,23 @@ function gdBanner(){
   </div>`;
 }
 const gdStep = (t, d) => `<li><b>${t}</b>${d || ''}</li>`;
+/* 실제 실험판만: 준비물, 진행 순서, 재료 없이 둘러보는 예시 값 */
+function gdReal(){
+  const look = [['A','은백색','붙지 않음'],['B','붉은빛','붙지 않음'],['C','은백색','붙지 않음'],['D','회색','붙음']];
+  const pv = [['A–B','0.75','있음','A'],['A–C','0.85','없음','C'],['A–D','0.30','있음','A'],['B–C','1.60','없음','C'],['B–D','0.45','없음','D'],['C–D','1.15','있음','C']];
+  const tb = (h, rows) => `<table class="gd-t"><thead><tr>${h.map(x => `<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(x => `<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  return `<h2 class="sec" id="gd-real">준비물과 진행 순서</h2>
+      <ul class="gd-list">
+        <li><b>조마다 준비물</b>: 크기가 같은 전극판 A~D(마그네슘·아연·철·구리를 라벨을 가려 한 장씩), 알루미늄판 E, 멀티미터(직류 전압), 빨강·검정 집게 전선, 소금물에 적신 거름종이 6장 이상, 자석, 사포, 보안경·장갑, 직렬 미션에 쓸 멜로디 부품</li>
+        <li><b>진행 순서</b>: 팀 편성 → 역할 배정 → 시험 의뢰 → 시험 준비 → 겉모습·자석 → 전압 측정(6짝) → 전압 사다리 → 금속 식별 → 긴급 무전(알루미늄판 E, 사포질 전후) → 직렬 미션 → 전압 규격 판정·서명 → 1차 성적서</li>
+        <li><b>전압 측정</b>: 짝마다 멀티미터에 보이는 숫자, 숫자 앞의 − 표시, (−)극이 된 판을 적어요. − 가 보이면 빨간 집게를 문 판이 (−)극이에요.</li>
+      </ul>
+      <details class="gd-try"><summary>재료 없이 둘러보기 (예시 값)</summary>
+        <p class="who" style="margin:8px 0">교사 화면 <b>전극판 정답</b>에서 A 아연, B 구리, C 마그네슘, D 철을 고른 뒤 아래 값을 넣어 보세요. 전압 사다리는 C → A → D → B가 되고, 1.3 V 규격을 넘는 짝은 B–C뿐이에요. 그다음 단계는 화면 안내를 따라 비슷한 값을 넣으면 됩니다.</p>
+        ${tb(['판','색','자석'], look)}
+        ${tb(['짝','멀티미터 숫자','− 표시','(−)극'], pv)}
+      </details>`;
+}
 function gdView(){
   const name = VIRTUAL ? '배터리 가상 시험동' : '배터리 시험팀';
   const tabs = VIRTUAL ? '<b>모드와 과정</b> 탭에서 연습·평가 모드(학생이 고름·연습만·평가만)와 2차 과정을 정합니다.'
@@ -4582,7 +4604,7 @@ function gdView(){
     <main><section class="narrow gd">
       <h1 class="st">사용 방법</h1>
       <p class="instr">${VIRTUAL ? '재료 없이 화면 속 시험대에서 전극판의 정체를 밝히는 배터리 시험이에요.' : '실험실에서 금속판과 멀티미터로 재고, 기록은 이 앱에 남기는 배터리 시험이에요.'} 설치나 가입 없이 이 기기의 브라우저에서 돌아갑니다.</p>
-      <nav class="gd-toc" aria-label="목차"><a href="#gd-s" data-gd="toc" data-to="gd-s">학생: 시험하기</a><a href="#gd-save" data-gd="toc" data-to="gd-save">저장·이어 하기</a><a href="#gd-t" data-gd="toc" data-to="gd-t">선생님: 준비</a><a href="#gd-fb" data-gd="toc" data-to="gd-fb">선생님: 확인·피드백</a><a href="#gd-where" data-gd="toc" data-to="gd-where">기록은 어디에</a><a href="#gd-help" data-gd="toc" data-to="gd-help">막힐 때</a></nav>
+      <nav class="gd-toc" aria-label="목차"><a href="#gd-s" data-gd="toc" data-to="gd-s">학생: 시험하기</a>${VIRTUAL ? '' : '<a href="#gd-real" data-gd="toc" data-to="gd-real">준비물·진행 순서</a>'}<a href="#gd-save" data-gd="toc" data-to="gd-save">저장·이어 하기</a><a href="#gd-t" data-gd="toc" data-to="gd-t">선생님: 준비</a><a href="#gd-fb" data-gd="toc" data-to="gd-fb">선생님: 확인·피드백</a><a href="#gd-where" data-gd="toc" data-to="gd-where">기록은 어디에</a><a href="#gd-help" data-gd="toc" data-to="gd-help">막힐 때</a></nav>
 
       <h2 class="sec" id="gd-s">학생: 시험하기</h2>
       <ol class="gd-list">
@@ -4595,6 +4617,7 @@ function gdView(){
         ${gdStep('서명과 성적서', ': 전압 규격 판정에서 서명하면 1차 성적서가 만들어집니다. 선생님이 2차 과정을 정했으면 이어서 합니다.')}
       </ol>
       ${VIRTUAL ? '' : '<p class="who">혼자 하든 함께 하든 보안경·장갑을 쓰고, 빨간 집게와 검은 집게가 서로 닿지 않게 해요.</p>'}
+      ${VIRTUAL ? '' : gdReal()}
 
       <h2 class="sec" id="gd-save">저장·이어 하기</h2>
       <ul class="gd-list">
