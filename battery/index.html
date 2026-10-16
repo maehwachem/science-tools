@@ -472,12 +472,41 @@ body.saveerr #toast{ bottom:calc(env(safe-area-inset-bottom, 0px) + 120px); }
 .tsave{ display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:4px 16px; max-width:760px; background:var(--sheet); border:1.5px solid var(--line); border-left:5px solid var(--good); border-radius:4px 10px 10px 4px; padding:10px 14px; margin:4px 0 14px; }
 .tsave b{ font-weight:700; }
 .tsave-s{ color:var(--good); font-weight:600; font-size:15px; }
+/* 서술 피드백 */
+.fb-ed{ background:var(--sheet); border:1.5px solid var(--line); border-radius:10px; padding:14px 16px; margin:12px 0; max-width:900px; }
+.fb-ed h3, .fb-q h3{ margin:0 0 8px; font-size:19px; }
+.fb-ans{ background:var(--sheet2); border-left:4px solid var(--line); border-radius:4px; padding:8px 12px; margin:0 0 10px; white-space:pre-wrap; overflow-wrap:anywhere; }
+.fb-ans i{ color:var(--ink2); }
+.fb-chips{ display:flex; flex-wrap:wrap; gap:6px; margin:0 0 8px; }
+.fb-chip{ min-height:40px; padding:6px 12px; border-radius:20px; border:1.5px solid var(--line); background:var(--field); color:var(--ink); font-size:15px; text-align:left; cursor:pointer; }
+.fb-chip.good{ border-color:color-mix(in srgb, var(--good) 45%, var(--line)); }
+.fb-chip.fix{ border-color:color-mix(in srgb, var(--warn) 45%, var(--line)); }
+.fb-chip.good[aria-pressed="true"]{ background:var(--good); border-color:var(--good); color:var(--sheet); font-weight:600; }
+.fb-chip.fix[aria-pressed="true"]{ background:var(--warn); border-color:var(--warn); color:var(--sheet); font-weight:600; }
+.fb-ed textarea, .fb-wrap > .f textarea{ min-height:70px; }
+.fb-wrap > .f, .fb-wrap > .tsave{ max-width:900px; }
+.fb-stu{ background:var(--sheet); border:2px solid var(--acc); border-radius:10px; padding:4px 16px 12px; margin:0 0 24px; }
+.fb-stu .sec{ margin-top:12px; }
+.fb-q{ border-top:1px dashed var(--line); padding:10px 0 4px; }
+.fb-l{ list-style:none; padding:0; margin:4px 0; }
+.fb-l li{ position:relative; padding-left:24px; margin:3px 0; }
+.fb-l.good li::before{ content:'✓'; position:absolute; left:2px; color:var(--good); font-weight:700; }
+.fb-l.fix li::before{ content:'!'; position:absolute; left:7px; color:var(--warn); font-weight:700; }
+.fb-note{ margin:6px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
+.fb-k{ font-weight:700; } .fb-k.good{ color:var(--good); } .fb-k.fix{ color:var(--warn); }
+#fbprint{ display:none; }
+@media print{
+  body.fbprinting > *:not(#fbprint){ display:none !important; }
+  body.fbprinting #fbprint{ display:block; }
+  body.fbprinting{ background:#fff !important; }
+}
 </style>
 
 <div id="app"></div>
 <div id="savebar" role="alert" hidden></div>
 <div id="modal-root"></div>
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="fbprint"></div>
 
 <script>
 (() => {
@@ -1780,6 +1809,7 @@ function viewReport(){
       <h1 class="st">1차 셀 시험 성적서</h1>
       ${signed ? `<div class="seal"><span class="stamp ok">시험 완료</span><span class="sig">${S.solo ? '시험자' : '셀 개발 책임자'} ${esc(who('chief', 1))}</span></div>` : ''}
     </div>
+    ${fbStudentBlock()}
     ${report1Body()}
     ${!S.track && !mod ? `<p class="who" style="margin-top:18px">${tr && !mod ? `선생님이 고른 2차 과정(${TRACKS[tr]})은 아직 이 버전에 없어요.` : '2차 시험은 선생님이 과정을 정하면 열려요. 지금은 1차 시험까지 해요.'}</p>` : ''}
     <p class="sync-note who">${esc(syncText())}</p>
@@ -2140,6 +2170,7 @@ function makeTrack(T){
     return `<section class="report">
       ${signed ? '' : `<div class="banner">기록이 바뀌어 서명이 취소됐어요. ${esc(T.replyLabel)}에서 다시 서명하세요.<button type="button" class="secondary" data-act="go" data-stage="reply2">${esc(T.replyLabel)}으로 가기</button></div>`}
       <div class="rep-head"><h1 class="st">종합 셀 시험 성적서</h1>${signed ? `<div class="seal"><span class="stamp ok">시험 완료</span><span class="sig">${S.solo ? '시험자' : '셀 개발 책임자'} ${esc(who('chief', 2))}</span></div>` : ''}</div>
+      ${fbStudentBlock()}
       <h2 class="sec" style="font-size:32px">2차 시험: ${esc(T.title)} (${esc(T.name)})</h2>
       ${mod.reportBody()}
       <h2 class="sec" style="font-size:32px;margin-top:44px">1차 시험: 전극판 식별</h2>
@@ -2806,7 +2837,7 @@ async function exportTeam(){
 }
 
 /* ───────── 교사 화면: 상태 ───────── */
-function tFresh(){ return { v:1, key:{}, imported:{}, pin:null, track:null, e0:false, vmode:'' }; }
+function tFresh(){ return { v:1, key:{}, imported:{}, pin:null, track:null, e0:false, vmode:'', fb:{}, fbBank:null }; }
 function tLoad(){ try{ const d = JSON.parse(localStorage.getItem(TKEY) || 'null'); if(d && d.v === 1) return Object.assign(tFresh(), d); }catch(e){} return tFresh(); }
 function tSave(){ try{ localStorage.setItem(TKEY, JSON.stringify(TS)); }catch(e){} }
 let TS = tLoad();
@@ -2917,6 +2948,7 @@ function buildCSV(list){
   const head = ['반', VIRTUAL ? '조·번호' : '조', ...(VIRTUAL ? ['방식', '모드'] : []), '조원','진행 단계','1차 서명', ...PK.map(k => `${pairName(k)} 값`), ...PK.map(k => `${pairName(k)} (−)극`), '전압 사다리', ...PL.map(p => `${p}판 식별`), '정답 일치', 'E–구리', '사포질 뒤', 'E 까닭', '직렬 조합', '직렬 예상', '직렬 측정', '멜로디', '전압 규격 적합 조합', '불량 원인 추정', '재발 방지 대책', '재확인 뒤 기록 유지', '피드백 뒤 다시 고른 횟수', '피드백 뒤 다시 고름(단계별)', '2차 과정'];
   m2keys.forEach(t => (STAGES2[t].csvHead || []).forEach(h => head.push(`[${TRACKS[t]}] ${h}`)));
   if(VIRTUAL && VX.csvHead) VX.csvHead.forEach(h => head.push(`[실험대] ${h}`));
+  fbCsvHead().forEach(h => head.push(h));
   const rows = list.map(d => withTeam(d, () => {
     const m = metrics(), a = S.al, s = S.ser;
     const row = [S.team.cls, S.team.grp, ...(VIRTUAL ? [S.solo ? '개별' : '조별', S.exam ? '평가' : '연습'] : []), memberIdx().map(nm).join(' '), stageName(S.stage), S.reply.signed ? 'O' : '',
@@ -2929,6 +2961,7 @@ function buildCSV(list){
       PK.filter(k => S.reply.spec[k] === 'ok').map(pairName).join(' '), S.reply.cause, S.reply.plan, m.kept, triesTotal(S), triesText(S), S.track ? TRACKS[S.track] : ''];
     m2keys.forEach(t => (STAGES2[t].csvRow ? STAGES2[t].csvRow(S.track === t) : []).forEach(v => row.push(v)));
     if(VIRTUAL && VX.csvRow) VX.csvRow().forEach(v => row.push(v));
+    fbCsvRow(S.id).forEach(v => row.push(v));
     return row;
   }));
   return '﻿' + [head, ...rows].map(r => r.map(csvCell).join(',')).join('\r\n');
@@ -2959,9 +2992,10 @@ function viewTeacher(){
   const tab = ui.tTab;
   const tabBtn = (id, label) => `<button type="button" role="tab" class="ttab" data-act="ttab" data-v="${id}" aria-selected="${tab === id}">${label}</button>`;
   const chips = `<div class="opts tcls" role="group" aria-label="반 고르기"><button type="button" class="opt" data-act="tcls" data-v="" aria-pressed="${ui.tCls == null}">전체</button>${classes.map(c => `<button type="button" class="opt" data-act="tcls" data-v="${c}" aria-pressed="${ui.tCls === c}">${c}반</button>`).join('')}</div>`;
-  const body = tab === 'key' && !VIRTUAL ? tKeyView() : tab === 'course' ? tCourseView() : tLiveView(shown);
+  fbSubTeacher();
+  const body = tab === 'key' && !VIRTUAL ? tKeyView() : tab === 'course' ? tCourseView() : tab === 'fb' ? fbBankView() : tLiveView(shown);
   return tHeader() + `<main>
-    <div class="ttabs" role="tablist">${tabBtn('live', '진행 현황')}${VIRTUAL ? '' : tabBtn('key', '전극판 정답')}${tabBtn('course', VIRTUAL ? '모드와 과정' : '2차 과정')}</div>
+    <div class="ttabs" role="tablist">${tabBtn('live', '진행 현황')}${VIRTUAL ? '' : tabBtn('key', '전극판 정답')}${tabBtn('course', VIRTUAL ? '모드와 과정' : '2차 과정')}${tabBtn('fb', '피드백 문구')}</div>
     ${tab === 'live' && classes.length > 1 ? chips : ''}
     ${body}
     <div class="ttools">
@@ -2974,7 +3008,7 @@ function tLiveView(list){
   if(!list.length) return `<div class="tempty"><p class="instr">아직 들어온 시험 기록이 없어요.</p><p class="who">${cloud.db ? '학생 태블릿에서 팀 편성을 마치면 여기에 바로 나타나요.' : '이 기기에서 한 시험과 불러온 결과 파일이 여기에 나타나요.'}</p></div>`;
   const k = teamKey, cnt = {};
   list.forEach(d => { cnt[k(d)] = (cnt[k(d)] || 0) + 1; });
-  return `<div class="gtools" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:12px"><span class="progress">${list.length}개 ${VIRTUAL ? '기록' : '조'}</span><button type="button" class="secondary sm" data-act="csv">CSV로 저장</button></div>
+  return `<div class="gtools" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:12px"><span class="progress">${list.length}개 ${VIRTUAL ? '기록' : '조'}</span><button type="button" class="secondary sm" data-act="csv">CSV로 저장</button><button type="button" class="secondary sm" data-fb="printall">피드백지 인쇄</button><button type="button" class="ghost sm" data-fb="htmlall">피드백지 파일 저장</button></div>
   ${VIRTUAL && VX.slipPanel ? VX.slipPanel(list) : ''}
   <div class="tcards">${list.map(d => withTeam(d, () => {
     const m = metrics(), all = stagesOf(S).length, pct = Math.round(Math.max(0, S.furthest) / (all - 1) * 100);
@@ -2985,7 +3019,7 @@ function tLiveView(list){
       <span class="tc-names">${memberIdx().map(i => esc(nm(i))).join(', ')}</span>
       <span>지금 <b>${esc(stageName(S.stage))}</b></span>
       <span class="bar" aria-hidden="true"><i style="width:${pct}%"></i></span>
-      <span class="pills">${VIRTUAL ? `<span class="pill">${S.solo ? '개별' : '조별'}</span><span class="pill${S.exam ? ' warn' : ''}">${S.exam ? '평가' : '연습'}</span>` : ''}<span class="pill ${p1[0]}">${p1[1]}</span>${p2 ? `<span class="pill ${p2[0]}">${p2[1]}</span>` : ''}${m.correct != null ? `<span class="pill">식별 ${m.correct}/${keyedN()} 일치</span>` : ''}${m.kept ? `<span class="pill warn">재확인 뒤 기록 유지 ${m.kept}건</span>` : ''}${cnt[k(d)] > 1 ? `<span class="pill warn">같은 반·조 기록 ${cnt[k(d)]}개</span>` : ''}</span>
+      <span class="pills">${VIRTUAL ? `<span class="pill">${S.solo ? '개별' : '조별'}</span><span class="pill${S.exam ? ' warn' : ''}">${S.exam ? '평가' : '연습'}</span>` : ''}<span class="pill ${p1[0]}">${p1[1]}</span>${p2 ? `<span class="pill ${p2[0]}">${p2[1]}</span>` : ''}${m.correct != null ? `<span class="pill">식별 ${m.correct}/${keyedN()} 일치</span>` : ''}${m.kept ? `<span class="pill warn">재확인 뒤 기록 유지 ${m.kept}건</span>` : ''}${cnt[k(d)] > 1 ? `<span class="pill warn">같은 반·조 기록 ${cnt[k(d)]}개</span>` : ''}${fbPill(S.id)}</span>
     </button>`;
   })).join('')}</div>`;
 }
@@ -3033,6 +3067,7 @@ function viewTeamDetail(d){
     ${report1Body({ key:true })}
     ${VIRTUAL && VX.teacherBlock ? VX.teacherBlock() : ''}
     ${m2 && m2.started() ? `<h2 class="sec" style="font-size:32px;margin-top:40px">2차 시험 (${TRACKS[S.track]})</h2>${m2.reportBody()}${VIRTUAL && VX.teacherBlock2 ? VX.teacherBlock2() : ''}` : ''}
+    ${fbEditor()}
   </section></main>`;
   });
 }
@@ -3041,6 +3076,296 @@ function softRender(){
   if(a && a !== document.body && a.matches && a.matches('input, textarea, select')){ ui.pendingRender = true; refreshSync(); return; }
   render();
 }
+
+/* ═════════ 서술 피드백 (교사 → 학생) ═════════
+   교사가 조별 서술 답안에 자주 쓰는 지적사항을 눌러 붙이고, 모자란 말은 한 줄 더 씀.
+   - 저장: 이 기기(TS.fb) + 수합이 켜져 있으면 db 'feedback/<기록 id>'
+   - 학생: '보내기'를 한 피드백만 성적서 화면에 보임 (수합 연결 시 실시간, 같은 기기면 바로)
+   - 출력: 조별 피드백지 인쇄, 또는 HTML 파일로 저장
+   학생 이름은 피드백 문서에 넣지 않음 (기록 id와 반·조만) */
+const FB_FIELDS = [
+  { key:'cause', label:'불량 원인 추정', get:d => d.reply && d.reply.cause },
+  { key:'plan', label:'재발 방지 대책', get:d => d.reply && d.reply.plan }
+];
+/* 2차 서술 칸은 과정 정의(STAGES2[track].def.texts)에서 가져옴 */
+function fbFieldsOf(d){
+  const out = FB_FIELDS.map(f => ({ key:f.key, label:f.label, text:(f.get(d) || '').trim() }));
+  const tr = d && d.track, mod = tr && STAGES2[tr];
+  if(mod && mod.def && d.r2 && d.r2.texts){
+    for(const t of mod.def.texts) out.push({ key:`${tr}.${t.id}`, label:`[2차 ${TRACKS[tr]}] ${t.label}`, text:(d.r2.texts[t.id] || '').trim() });
+  }
+  return out;
+}
+const FB_ALL_KEYS = () => {
+  const keys = FB_FIELDS.map(f => ({ key:f.key, label:f.label }));
+  for(const tr in STAGES2){ const def = STAGES2[tr].def; if(def && def.texts) def.texts.forEach(t => keys.push({ key:`${tr}.${t.id}`, label:`[2차 ${TRACKS[tr]}] ${t.label}` })); }
+  return keys;
+};
+/* 기본 지적사항 (교사 화면 '피드백 문구' 탭에서 고칠 수 있음) */
+const FB_DEFAULT = {
+  good:['측정값을 근거로 잘 들었어요.', '결과와 결론이 잘 이어져요.', '과학 용어를 정확히 썼어요.'],
+  fix:['측정값(숫자) 근거가 없어요.', '근거와 결론이 이어지지 않아요.', '우리 조 기록과 맞지 않는 내용이 있어요.', '단위가 빠졌어요.', '과학 용어가 부정확해요.', '너무 일반적이에요. 이번 시험에 맞게 구체적으로 써 봐요.'],
+  spec:{
+    'cause':['어느 판이 바뀌었는지 특정하지 않았어요.', '‘불빛이 어둡다’와 전압을 연결하지 않았어요.'],
+    'plan':['실제로 할 수 있는 검사 방법이 아니에요.', '이번에 쓴 방법(자석, 짝 전압)을 활용하지 않았어요.'],
+    'int.concl':['전압과 전류를 구분하지 않았어요.', '예상과 다른 결과를 언급하지 않았어요.'],
+    'int.design':['좋은 점만 쓰고 어려운 점이 없어요.'],
+    'chem.bridge':['염다리를 걸기 전후 측정값을 비교하지 않았어요.'],
+    'chem.conc':['측정 오차를 생각하지 않았어요.'],
+    'chem.design':['좋은 점만 쓰고 어려운 점이 없어요.']
+  }
+};
+function fbBank(){
+  const b = TS.fbBank;
+  if(!b) return FB_DEFAULT;
+  return { good:b.good || FB_DEFAULT.good, fix:b.fix || FB_DEFAULT.fix, spec:Object.assign({}, FB_DEFAULT.spec, b.spec || {}) };
+}
+const fbc = { cloud:new Map(), sub:null, subErr:false, stu:null, stuId:null, stuSub:null, timers:{} };
+const fbFresh = id => ({ v:1, id, items:{}, note:'', sent:false, sentAt:null, at:0 });
+/* 이 기기 것과 수합된 것 중 최근 것 */
+function fbGet(id){
+  if(!TS.fb) TS.fb = {};
+  const a = TS.fb[id], b = fbc.cloud.get(id);
+  if(a && b) return (b.at || 0) > (a.at || 0) ? b : a;
+  return a || b || null;
+}
+function fbEdit(id){
+  const cur = fbGet(id);
+  const d = cur ? JSON.parse(JSON.stringify(cur)) : fbFresh(id);
+  if(!TS.fb) TS.fb = {};
+  TS.fb[id] = d;
+  return d;
+}
+const fbItem = (f, key) => f.items[key] || (f.items[key] = { good:[], fix:[], note:'' });
+const fbHas = f => !!f && (!!(f.note || '').trim() || Object.values(f.items || {}).some(x => x.good.length || x.fix.length || (x.note || '').trim()));
+function fbCommit(id, f, o = {}){
+  f.at = Date.now(); TS.fb[id] = f; tSave();
+  if(!cloud.db) return;
+  clearTimeout(fbc.timers[id]);
+  fbc.timers[id] = setTimeout(async () => {
+    try{ await cloud.db.doc('feedback/' + id).set(JSON.parse(JSON.stringify(TS.fb[id]))); fbc.cloud.set(id, TS.fb[id]); if(o.toast) showToast(o.toast); }
+    catch(e){ showToast('피드백을 수합 공간에 저장하지 못했어요. 이 기기에는 저장됐어요.'); }
+  }, o.now ? 0 : 700);
+}
+/* 교사: 피드백 전체 구독 */
+function fbSubTeacher(){
+  if(!cloud.db || fbc.sub) return;
+  try{
+    fbc.sub = cloud.db.collection('feedback').onSnapshot(snap => {
+      const m = new Map();
+      for(const doc of snap.docs){ const b = doc.data(); if(b && b.id) m.set(b.id, b); }
+      fbc.cloud = m; fbc.subErr = false;
+      if(ui.view === 'teacher') softRender();
+    }, () => { fbc.sub = null; fbc.subErr = true; });
+  }catch(e){ fbc.subErr = true; }
+}
+/* 학생: 자기 기록의 피드백만 구독 */
+function fbSubStudent(){
+  const id = S && ui.view === 'game' ? S.id : null;
+  if(!cloud.db || id === fbc.stuId) return;
+  if(fbc.stuSub){ try{ fbc.stuSub(); }catch(e){} fbc.stuSub = null; }
+  fbc.stuId = id; fbc.stu = null;
+  if(!id) return;
+  try{
+    fbc.stuSub = cloud.db.doc('feedback/' + id).onSnapshot(snap => {
+      const before = fbc.stu && fbc.stu.at;
+      fbc.stu = snap.exists ? (snap.data() || null) : null;
+      if((fbc.stu && fbc.stu.at) !== before && S && (S.stage === 'report' || S.stage === 'final')) softRender();
+    }, () => {});
+  }catch(e){}
+}
+/* 학생 화면에 보일 피드백: 수합으로 받은 것, 또는 같은 기기에서 교사가 보낸 것 */
+function fbForStudent(id){
+  const a = TS.fb && TS.fb[id], b = fbc.stuId === id ? fbc.stu : null;
+  const f = a && b ? ((b.at || 0) > (a.at || 0) ? b : a) : (a || b);
+  return f && f.sent ? f : null;
+}
+
+/* ── 공통 그리기: 피드백 내용 (학생 화면·피드백지) ── */
+function fbBody(d, f, o = {}){
+  const fields = fbFieldsOf(d).filter(x => { const it = f.items[x.key]; return it && (it.good.length || it.fix.length || (it.note || '').trim()); });
+  const rows = fields.map(x => {
+    const it = f.items[x.key];
+    return `<div class="fb-q">
+      <h3>${esc(x.label)}</h3>
+      ${o.answers ? `<p class="fb-ans">${x.text ? esc(x.text) : '<i>작성하지 않음</i>'}</p>` : ''}
+      ${it.good.length ? `<ul class="fb-l good">${it.good.map(s => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}
+      ${it.fix.length ? `<ul class="fb-l fix">${it.fix.map(s => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}
+      ${(it.note || '').trim() ? `<p class="fb-note">${esc(it.note.trim())}</p>` : ''}
+    </div>`;
+  }).join('');
+  return `${rows}${(f.note || '').trim() ? `<div class="fb-q"><h3>선생님 한마디</h3><p class="fb-note">${esc(f.note.trim())}</p></div>` : ''}`;
+}
+/* 학생 성적서에 붙는 칸 */
+function fbStudentBlock(){
+  if(!S) return '';
+  const f = fbForStudent(S.id);
+  if(!f || !fbHas(f)) return '';
+  return `<section class="fb-stu" aria-labelledby="fb-stu-h">
+    <h2 class="sec" id="fb-stu-h">선생님 피드백</h2>
+    <p class="who">잘한 점은 <span class="fb-k good">✓</span>, 고칠 점은 <span class="fb-k fix">!</span>로 표시했어요.${f.sentAt ? ` (${esc(whenStr(f.sentAt))})` : ''}</p>
+    ${fbBody(S, f)}
+  </section>`;
+}
+
+/* ── 교사: 조 상세 화면 아래 피드백 작성 ── */
+function fbEditor(){
+  const id = S.id, f = fbGet(id) || fbFresh(id), bank = fbBank();
+  const fields = fbFieldsOf(S);
+  const chip = (key, kind, s) => {
+    const it = f.items[key], on = !!it && it[kind].includes(s);
+    return `<button type="button" class="fb-chip ${kind}" data-fb="pick" data-id="${esc(id)}" data-key="${esc(key)}" data-kind="${kind}" data-s="${esc(s)}" aria-pressed="${on}">${kind === 'good' ? '✓' : '!'} ${esc(s)}</button>`;
+  };
+  const block = x => {
+    const it = f.items[x.key] || { good:[], fix:[], note:'' };
+    const fixes = [...(bank.spec[x.key] || []), ...bank.fix];
+    /* 목록에서 지운 문구라도 이미 붙인 것은 보이게 */
+    const extraG = it.good.filter(s => !bank.good.includes(s)), extraF = it.fix.filter(s => !fixes.includes(s));
+    return `<div class="fb-ed">
+      <h3>${esc(x.label)}</h3>
+      <p class="fb-ans">${x.text ? esc(x.text) : '<i>아직 쓰지 않았어요.</i>'}</p>
+      <div class="fb-chips" role="group" aria-label="${esc(x.label)} 잘한 점">${[...bank.good, ...extraG].map(s => chip(x.key, 'good', s)).join('')}</div>
+      <div class="fb-chips" role="group" aria-label="${esc(x.label)} 고칠 점">${[...fixes, ...extraF].map(s => chip(x.key, 'fix', s)).join('')}</div>
+      <label class="f"><span>덧붙일 말</span><textarea class="fb-ta" data-fbin="note" data-id="${esc(id)}" data-key="${esc(x.key)}" placeholder="예: 아연–구리 전압 0.5 V를 함께 쓰면 더 설득력 있어요.">${esc(it.note || '')}</textarea></label>
+    </div>`;
+  };
+  const has = fbHas(f);
+  const state = !has ? '아직 쓴 피드백이 없어요.'
+    : f.sent ? (cloud.db ? `학생 성적서에 보이는 중 · 고치면 바로 반영돼요 (${clockOf(f.at)})` : `보냄 · 실시간 수합이 꺼져 있어 이 기기 성적서에만 보여요. 피드백지로 출력해 나눠 주세요.`)
+    : `작성 중 · 이 기기${cloud.db ? '와 수합 공간' : ''}에 저장됨 (${clockOf(f.at)}) · 아직 학생에게 보이지 않아요`;
+  return `<section class="fb-wrap" id="fb-ed">
+    <h2 class="sec" style="font-size:32px;margin-top:44px">서술 피드백</h2>
+    <p class="who">자주 쓰는 말은 눌러서 붙이고, 모자란 말은 ‘덧붙일 말’에 써요. 문구 목록은 ‘피드백 문구’ 탭에서 바꿀 수 있어요.</p>
+    ${fields.map(block).join('')}
+    <label class="f" style="margin-top:18px"><span>조 전체에 한마디 (선택)</span><textarea class="fb-ta" data-fbin="all" data-id="${esc(id)}" placeholder="예: 측정을 꼼꼼히 다시 확인한 점이 좋았어요.">${esc(f.note || '')}</textarea></label>
+    <div class="tsave" role="status" style="margin-top:14px"><span id="fb-state">${esc(state)}</span></div>
+    <div class="actions" style="justify-content:flex-start">
+      ${f.sent ? `<button type="button" class="secondary" data-fb="unsend" data-id="${esc(id)}">학생 화면에서 내리기</button>` : `<button type="button" class="primary" data-fb="send" data-id="${esc(id)}" ${has ? '' : 'disabled'}>학생에게 보내기</button>`}
+      <button type="button" class="secondary" data-fb="print" data-id="${esc(id)}" ${has ? '' : 'disabled'}>피드백지 인쇄</button>
+      <button type="button" class="ghost" data-fb="html" data-id="${esc(id)}" ${has ? '' : 'disabled'}>피드백지 파일 저장</button>
+    </div>
+  </section>`;
+}
+/* 진행 현황 카드에 붙는 표시 */
+function fbPill(id){
+  const f = fbGet(id);
+  if(!fbHas(f)) return '';
+  return f.sent ? '<span class="pill done">피드백 보냄</span>' : '<span class="pill">피드백 작성 중</span>';
+}
+/* 교사: 피드백 문구 편집 탭 */
+function fbBankView(){
+  const b = fbBank();
+  const area = (k, label, list, hint) => `<label class="f" style="margin-top:14px"><span>${esc(label)}</span><textarea class="fb-ta" data-fbin="bank" data-k="${esc(k)}" placeholder="${esc(hint || '한 줄에 하나씩')}">${esc(list.join('\n'))}</textarea></label>`;
+  return `<section class="narrow">
+    <p class="instr">조 상세 화면에서 눌러 붙이는 문구예요. 한 줄에 하나씩 써요. 고치면 이 기기에 바로 저장돼요.</p>
+    <p class="who">이미 조에 붙인 문구는 여기서 지워도 그 조의 피드백에는 그대로 남아요.</p>
+    <h2 class="sec">모든 칸에 쓰는 문구</h2>
+    ${area('good', '잘한 점 (✓)', b.good)}
+    ${area('fix', '고칠 점 (!)', b.fix)}
+    <h2 class="sec">칸마다 따로 쓰는 고칠 점</h2>
+    ${FB_ALL_KEYS().map(x => area('spec:' + x.key, x.label, b.spec[x.key] || [])).join('')}
+    <div class="actions" style="justify-content:flex-start"><button type="button" class="ghost" data-fb="bankreset">기본 문구로 되돌리기</button></div>
+    ${doneBtn('저장하고 처음 화면으로')}
+  </section>`;
+}
+
+/* ── 피드백지 (인쇄·파일) ── */
+function fbSheetsHTML(list){
+  return list.map(d => {
+    const f = fbGet(d.id);
+    return withTeam(d, () => `<article class="fb-sheet">
+      <header class="fb-sh-h"><div><b>${VIRTUAL ? '배터리 가상 시험동' : '배터리 시험팀'}</b> · 서술 피드백</div><div class="fb-sh-t">${esc(teamLabel(d))}</div></header>
+      <p class="fb-sh-m">${esc(memberIdx().map(i => nm(i)).filter(Boolean).join(', '))}${f && f.sentAt ? ` · ${esc(whenStr(f.sentAt))}` : ''}</p>
+      <p class="fb-sh-k"><span class="fb-k good">✓</span> 잘한 점 <span class="fb-k fix">!</span> 고칠 점</p>
+      ${fbBody(d, f, { answers:true })}
+      <footer class="fb-sh-f">KJE</footer>
+    </article>`);
+  }).join('');
+}
+const FB_PRINT_CSS = `
+.fb-sheet{ font-family:var(--body, sans-serif); color:#111; background:#fff; padding:18mm 16mm; box-sizing:border-box; break-after:page; page-break-after:always; }
+.fb-sheet:last-child{ break-after:auto; page-break-after:auto; }
+.fb-sh-h{ display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid #111; padding-bottom:6px; font-size:15px; }
+.fb-sh-t{ font-size:24px; font-weight:700; }
+.fb-sh-m{ color:#444; margin:6px 0 2px; font-size:14px; }
+.fb-sh-k{ color:#444; margin:0 0 10px; font-size:13px; }
+.fb-sheet .fb-q{ border:1px solid #bbb; border-radius:6px; padding:10px 12px; margin:10px 0; break-inside:avoid; page-break-inside:avoid; }
+.fb-sheet .fb-q h3{ margin:0 0 6px; font-size:16px; }
+.fb-sheet .fb-ans{ background:#f3f3f3; border-left:3px solid #999; padding:6px 10px; margin:0 0 8px; font-size:14px; white-space:pre-wrap; }
+.fb-sheet .fb-l{ margin:4px 0; padding-left:0; list-style:none; font-size:15px; }
+.fb-sheet .fb-l li{ margin:2px 0; padding-left:22px; position:relative; }
+.fb-sheet .fb-l.good li::before{ content:'✓'; position:absolute; left:2px; color:#1d7a46; font-weight:700; }
+.fb-sheet .fb-l.fix li::before{ content:'!'; position:absolute; left:6px; color:#a25f00; font-weight:700; }
+.fb-sheet .fb-note{ margin:6px 0 0; font-size:15px; white-space:pre-wrap; }
+.fb-sheet .fb-k{ font-weight:700; } .fb-sheet .fb-k.good{ color:#1d7a46; } .fb-sheet .fb-k.fix{ color:#a25f00; }
+.fb-sh-f{ margin-top:14px; text-align:right; color:#888; font-size:12px; }`;
+function fbPrint(list){
+  list = list.filter(d => fbHas(fbGet(d.id)));
+  if(!list.length){ showToast('출력할 피드백이 없어요.'); return; }
+  const box = document.getElementById('fbprint');
+  box.innerHTML = `<style>${FB_PRINT_CSS}</style>${fbSheetsHTML(list)}`;
+  document.body.classList.add('fbprinting');
+  const done = () => { document.body.classList.remove('fbprinting'); box.innerHTML = ''; window.removeEventListener('afterprint', done); };
+  window.addEventListener('afterprint', done);
+  try{ window.print(); }catch(e){ done(); fbSaveHTML(list); return; }
+  setTimeout(() => { if(document.body.classList.contains('fbprinting')) done(); }, 60000);
+}
+async function fbSaveHTML(list){
+  list = list.filter(d => fbHas(fbGet(d.id)));
+  if(!list.length){ showToast('저장할 피드백이 없어요.'); return; }
+  const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>서술 피드백지</title><style>body{margin:0;background:#ddd}@media screen{.fb-sheet{max-width:210mm;margin:12px auto;box-shadow:0 1px 4px rgba(0,0,0,.2)}}@page{size:A4;margin:0}${FB_PRINT_CSS}</style></head><body>${fbSheetsHTML(list)}</body></html>`;
+  const name = `${VIRTUAL ? '배터리가상시험동' : '배터리시험팀'}_피드백지${list.length === 1 ? '_' + (teamLabel(list[0]) || '').replace(/\s+/g, '_') : ui.tCls ? '_' + ui.tCls + '반' : ''}.html`;
+  const r = await saveFile(name, html, 'text/html');
+  if(r === 'ok') showToast('피드백지 파일을 저장했어요. 열어서 인쇄하거나 PDF로 저장하세요.');
+  else if(r === 'fail') showToast('피드백지 파일을 저장하지 못했어요.');
+}
+
+/* ── CSV ── */
+function fbCsvHead(){ return [...FB_ALL_KEYS().map(x => `[피드백] ${x.label}`), '[피드백] 한마디', '[피드백] 학생에게 보냄']; }
+function fbCsvRow(id){
+  const f = fbGet(id);
+  const txt = it => it ? [...it.good.map(s => '✓' + s), ...it.fix.map(s => '!' + s), ...((it.note || '').trim() ? [it.note.trim()] : [])].join(' / ') : '';
+  return [...FB_ALL_KEYS().map(x => txt(f && f.items[x.key])), f ? (f.note || '').trim() : '', f && f.sent ? 'O' : ''];
+}
+
+/* ── 이벤트 ── */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-fb]');
+  if(!el || el.disabled) return;
+  const a = el.dataset.fb, id = el.dataset.id;
+  switch(a){
+    case 'pick': {
+      const f = fbEdit(id), it = fbItem(f, el.dataset.key), arr = it[el.dataset.kind], s = el.dataset.s;
+      const i = arr.indexOf(s); if(i >= 0) arr.splice(i, 1); else arr.push(s);
+      fbCommit(id, f); render(); break;
+    }
+    case 'send': { const f = fbEdit(id); f.sent = true; f.sentAt = Date.now(); fbCommit(id, f, { now:true, toast:'학생 성적서 화면에 보냈어요.' }); if(!cloud.db) showToast('보냈어요. 실시간 수합이 꺼져 있어서 이 기기 성적서에만 보여요. 피드백지로 출력해 나눠 주세요.'); render(); break; }
+    case 'unsend': { const f = fbEdit(id); f.sent = false; fbCommit(id, f, { now:true, toast:'학생 화면에서 내렸어요.' }); render(); break; }
+    case 'print': { const d = allTeams().find(x => x.id === id); if(d) fbPrint([d]); break; }
+    case 'html': { const d = allTeams().find(x => x.id === id); if(d) fbSaveHTML([d]); break; }
+    case 'printall': fbPrint(allTeams().filter(d => ui.tCls == null || String(d.team.cls) === ui.tCls)); break;
+    case 'htmlall': fbSaveHTML(allTeams().filter(d => ui.tCls == null || String(d.team.cls) === ui.tCls)); break;
+    case 'bankreset': TS.fbBank = null; tSave(); render(); showToast('기본 문구로 되돌렸어요.'); break;
+  }
+});
+document.addEventListener('input', e => {
+  const el = e.target, k = el.dataset && el.dataset.fbin;
+  if(!k || ui.view !== 'teacher') return;
+  if(k === 'bank'){
+    const lines = el.value.split('\n').map(s => s.trim()).filter(Boolean), b = fbBank();
+    const nb = { good:b.good.slice(), fix:b.fix.slice(), spec:Object.assign({}, b.spec) };
+    const which = el.dataset.k;
+    if(which === 'good' || which === 'fix') nb[which] = lines; else nb.spec[which.slice(5)] = lines;
+    TS.fbBank = nb; tSave(); return;
+  }
+  const id = el.dataset.id, f = fbEdit(id);
+  if(k === 'note') fbItem(f, el.dataset.key).note = el.value;
+  else if(k === 'all') f.note = el.value;
+  fbCommit(id, f);
+  const st = document.getElementById('fb-state');
+  if(st) st.textContent = f.sent ? (cloud.db ? '학생 성적서에 보이는 중 · 고치면 바로 반영돼요' : '보냄 · 이 기기 성적서에만 보여요') : '작성 중 · 저장됨';
+  ui.pendingRender = true;   /* 칸을 떠나면 보내기 버튼 상태 등을 다시 그림 */
+});
 
 /* ───────── 렌더 & 이동 ───────── */
 const VIEWS = { team:viewTeam, roles:viewRoles, case:viewCase, check:viewCheck, look:viewLook, pairs:viewPairs, order:viewOrder, judge:viewJudge, al:viewAl, series:viewSeries, reply:viewReply, report:viewReport };
@@ -3074,6 +3399,7 @@ function render(){
   const app = $('#app');
   if(ui.view === 'teacher'){ app.innerHTML = viewTeacher(); renderModal(); return; }
   if(ui.view !== 'game' || !S){ app.innerHTML = viewTitle(); renderModal(); return; }
+  fbSubStudent();
   const m = m2(), fn = VIEWS[S.stage] || (m && m.views[S.stage]), pre = prereq(S.stage);
   app.innerHTML = viewHeader() + `<main>${pre ? `<section class="narrow"><h1 class="st">${esc(stageName(S.stage))}</h1><div class="banner">${esc(pre.msg)}<button type="button" class="secondary" data-act="go" data-stage="${pre.st}">${esc(pre.label)}</button></div></section>` : fn()}</main>`;
   ui.stamp = null;
@@ -3280,6 +3606,7 @@ document.addEventListener('click', e => {
     case 'tvmode': setCourse(courseTrack(), courseE0(), v || ''); break;
     case 'tdone': (async () => {
       if(ui.tTab === 'key'){ tSave(); showToast('전극판 정답을 이 기기에 저장했어요.'); }
+      else if(ui.tTab === 'fb'){ tSave(); showToast('피드백 문구를 이 기기에 저장했어요.'); }
       else showToast('설정을 ' + SAVE_MSG[await setCourse(courseTrack(), courseE0(), courseVmode(), { quiet:true })]);
       ui.view = 'title'; ui.tDetail = null; ui.teacherOk = false; render(); window.scrollTo(0, 0);
     })(); break;
