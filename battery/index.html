@@ -1340,7 +1340,12 @@ function viewSteps(){
 
 /* ───────── 화면: 준비 ───────── */
 function modeBlock(){
-  if(!VIRTUAL) return '';
+  if(!VIRTUAL){   /* 실제 실험: 조별이 기본, 결석생 보충 실험 등은 개별로 */
+    const lock = !!S.startAt;
+    const ob = (v, on, t, d) => `<button type="button" class="opt optd" data-act="rsolo" data-v="${v}" aria-pressed="${on}" ${lock ? 'disabled' : ''}><b>${t}</b><small>${d}</small></button>`;
+    return `<fieldset style="margin:14px 0 6px"><legend>참여 방식</legend><div class="opts">${ob(0, !S.solo, '조별', '4~5명이 역할을 나눠 함께')}${ob(1, S.solo, '개별', '결석생 보충 실험 등, 혼자 모든 역할을 맡아')}</div>
+      ${lock ? '<p class="who" style="margin:8px 0 0">시험을 시작한 뒤에는 바꿀 수 없어요.</p>' : (S.solo ? '<p class="who" style="margin:8px 0 0">혼자 하더라도 보안경·장갑 착용과 집게끼리 닿지 않게 하는 안전 수칙은 그대로 지켜요. 선생님이 곁에서 확인해 주세요.</p>' : '')}</fieldset>`;
+  }
   applyVmode();
   const lock = !!S.startAt, fixed = courseVmode();
   const ob = (act, v, on, t, d, dis) => `<button type="button" class="opt optd" data-act="${act}" data-v="${v}" aria-pressed="${on}" ${dis ? 'disabled' : ''}><b>${t}</b><small>${d}</small></button>`;
@@ -3024,7 +3029,7 @@ function tLiveView(list){
       <span class="tc-names">${memberIdx().map(i => esc(nm(i))).join(', ')}</span>
       <span>지금 <b>${esc(stageName(S.stage))}</b></span>
       <span class="bar" aria-hidden="true"><i style="width:${pct}%"></i></span>
-      <span class="pills">${VIRTUAL ? `<span class="pill">${S.solo ? '개별' : '조별'}</span><span class="pill${S.exam ? ' warn' : ''}">${S.exam ? '평가' : '연습'}</span>` : ''}<span class="pill ${p1[0]}">${p1[1]}</span>${p2 ? `<span class="pill ${p2[0]}">${p2[1]}</span>` : ''}${m.correct != null ? `<span class="pill">식별 ${m.correct}/${keyedN()} 일치</span>` : ''}${m.kept ? `<span class="pill warn">재확인 뒤 기록 유지 ${m.kept}건</span>` : ''}${cnt[k(d)] > 1 ? `<span class="pill warn">같은 반·조 기록 ${cnt[k(d)]}개</span>` : ''}${fbPill(S.id)}</span>
+      <span class="pills">${VIRTUAL ? `<span class="pill">${S.solo ? '개별' : '조별'}</span><span class="pill${S.exam ? ' warn' : ''}">${S.exam ? '평가' : '연습'}</span>` : S.solo ? '<span class="pill">개별</span>' : ''}<span class="pill ${p1[0]}">${p1[1]}</span>${p2 ? `<span class="pill ${p2[0]}">${p2[1]}</span>` : ''}${m.correct != null ? `<span class="pill">식별 ${m.correct}/${keyedN()} 일치</span>` : ''}${m.kept ? `<span class="pill warn">재확인 뒤 기록 유지 ${m.kept}건</span>` : ''}${cnt[k(d)] > 1 ? `<span class="pill warn">같은 반·조 기록 ${cnt[k(d)]}개</span>` : ''}${fbPill(S.id)}</span>
     </button>`;
   })).join('')}</div>`;
 }
@@ -3697,6 +3702,13 @@ document.addEventListener('click', e => {
       ui.modal = { type:'tdel', id:el.dataset.id, label: teamLabel(d) || '이' }; renderModal(); break;
     }
     case 'tdel': deleteTeam(el.dataset.id); break;
+    case 'rsolo': {   /* 실제 실험의 조별·개별 고르기 (가상은 VX.act의 vsolo) */
+      if(!S || S.startAt) break;
+      S.solo = v === '1';
+      S.team.grp = ''; S.team.m = S.solo ? [S.team.m[0] || '', '', '', '', ''] : S.team.m;
+      for(const r in S.roles) S.roles[r] = null;
+      save(); render(); break;
+    }
     case 'tkey': TS.key[p] = TS.key[p] === v ? null : v; tSave(); render(); break;
     case 'tcourse': setCourse(v || null, courseE0()); break;
     case 'tvmode': setCourse(courseTrack(), courseE0(), v || ''); break;
