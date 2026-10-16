@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>엘니뇨 인터랙티브 학습 자료</title>
+<title>엘니뇨 인터랙티브 학습 자료 · KJE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -127,6 +127,7 @@ nav{flex:none;display:flex;align-items:center;gap:14px;height:70px}
 .cover .org{color:var(--muted)}
 .go{margin:8px 0 14px;padding:14px 28px;border-radius:999px;border:0;background:var(--warm);color:#fff;font-weight:700;font-size:17px;cursor:pointer;min-height:48px}
 .small{font-size:14px;color:var(--muted)}
+.by{font-weight:700;letter-spacing:.04em;color:var(--muted);margin:-4px 0 10px!important}
 /* lab */
 .seg{display:flex;gap:8px;margin:14px 0 16px;flex-wrap:wrap}
 .seg button{flex:1 1 0;min-width:84px;min-height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font-weight:700;cursor:pointer}
@@ -1269,7 +1270,7 @@ function renderCover() {
     '<p class="lead">적도 부근 동태평양의 표층 수온이 평년보다 높은 상태가 몇 달 이상 지속되는 현상</p>' +
     '<p class="org">스페인어로 ‘남자아이’, 곧 아기 예수를 뜻한다. 크리스마스 무렵 페루 앞바다의 수온이 올라가는 현상을 어부들이 이렇게 부른 데서 이름이 붙었다.</p>' +
     '<button class="go" type="button" id="goBtn">시작하기</button>' +
-    '<p class="small">화면을 누르면 다음 내용이 나온다. 좌우로 밀거나 키보드의 ←, → 키(발표용 리모컨 포함)로도 넘길 수 있다.</p></div>';
+    '<p class="by">제작 · KJE</p><p class="small">화면을 누르면 다음 내용이 나온다. 좌우로 밀거나 키보드의 ←, → 키(발표용 리모컨 포함)로도 넘길 수 있다.</p></div>';
   $('#goBtn').onclick = () => next();
 }
 function renderTable() {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>대기 대순환 인터랙티브 학습 자료</title>
+<title>대기 대순환 인터랙티브 학습 자료 · KJE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -133,6 +133,14 @@ nav{flex:none;display:flex;align-items:center;gap:14px;height:70px}
 .cover .org{color:var(--muted)}
 .go{margin:8px 0 14px;padding:14px 28px;border-radius:999px;border:0;background:var(--warm);color:#fff;font-weight:700;font-size:17px;cursor:pointer;min-height:48px}
 .small{font-size:14px;color:var(--muted)}
+.by{font-weight:700;letter-spacing:.04em;color:var(--muted);margin:-4px 0 10px!important}
+#cap.solo .st{font-size:clamp(18px,1.45vw,22px);line-height:1.6;color:var(--ink)}
+.wctl{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.wctl button{flex:1 1 auto;min-height:44px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font-weight:700;cursor:pointer}
+.wctl button.sel{background:var(--btn);color:var(--btnInk);border-color:var(--btn)}
+.wctl.sub button{flex:0 1 auto;font-weight:600}
+.wgo{display:none;margin-top:10px}
+.wgo.on{display:inline-block}
 /* lab */
 .seg{display:flex;gap:8px;margin:14px 0 16px;flex-wrap:wrap}
 .seg button{flex:1 1 0;min-width:84px;min-height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font-weight:700;cursor:pointer}
@@ -325,7 +333,8 @@ const gDisk = el('g', { id: 'disk', class: 'scene' }, svg);
 const gSec = el('g', { id: 'sec', class: 'scene' }, svg);
 const gGraph = el('g', { id: 'graph', class: 'scene' }, svg);
 const gMini = el('g', { id: 'mini', class: 'scene' }, svg);
-const SCN = { globe: gGlobe, disk: gDisk, sec: gSec, graph: gGraph, mini: gMini };
+const gWhy = el('g', { id: 'why', class: 'scene' }, svg);
+const SCN = { globe: gGlobe, disk: gDisk, sec: gSec, graph: gGraph, mini: gMini, why: gWhy };
 let T = 0;
 const SC = { r: { cur: 1, tgt: 1 }, foc: null, lon0: 18 };
 const ARROW = 'M19,0L6,-10L6,-4.5L-19,-4.5L-19,4.5L6,4.5L6,10Z';
@@ -1085,7 +1094,7 @@ function buildSec() {
   // pile ring
   const lp = lyr('pile', g);
   S.pile = el('circle', { cx: 348, cy: 122, r: 34, fill: 'none', stroke: '#e0a019', 'stroke-width': 4, 'stroke-dasharray': '12 8' }, lp);
-  tx(lp, 360, 182, '동쪽으로 휘어 쌓임', 'ts', 17);
+  tx(lp, 360, 182, '동쪽으로 휘며 모임', 'ts', 17);
 
   // surface wind labels
   [['w1s', 500, '← 북풍 (북 → 남)'], ['wh', 234, '← 북동 무역풍'], ['wf', 500, '편서풍 →'], ['wp', 765, '← 극동풍']].forEach(q => {
@@ -1214,6 +1223,202 @@ function buildMini() {
   ink(g, 500, 524, '※ 화살표는 공기의 이동 방향이다.', 17).setAttribute('fill', '#444');
 }
 
+/* ================= why: 공기는 왜 극까지 곧장 가지 않을까 ================= */
+// 왼쪽: 북극 위에서 내려다본 북반구 (위도 간격을 같게 그림). θ가 커지는 쪽이 동쪽(시계 반대 방향).
+const WY = { cx: 280, cy: 300, R: 180, t: 0, stage: -1, pause: false, P1: 14, ROT: 12, P2: 8, MV: 6.5 };
+const WR = lat => WY.R * (90 - lat) / 90;
+const WP = (r, th) => [WY.cx + r * Math.sin(th * D2R), WY.cy + r * Math.cos(th * D2R)];
+const W = {};
+function arcD(r, a0, a1) {
+  let d = ''; const n = Math.max(2, Math.ceil(Math.abs(a1 - a0) / 3));
+  for (let i = 0; i <= n; i++) { const p = WP(r, mix(a0, a1, i / n)); d += (i ? 'L' : 'M') + f1(p[0]) + ',' + f1(p[1]); }
+  return d;
+}
+const WCr = u => WR(0) - (WR(0) - WR(28)) * (1 - (1 - u) * (1 - u));
+const WC = u => WP(WCr(u), 42 * u * u);
+// 옆에서 본 모습(단면) 좌표
+const XS = lat => 612 + lat * (948 - 612) / 60, YG = 404, YT = 186;
+const WLOOP = [[XS(3), YG], [XS(3), YT], [XS(30), YT], [XS(30), YG]];
+function wVel(info, s) {
+  let i = 0; s = ((s % info.L) + info.L) % info.L;
+  while (i < info.seg.length - 1 && s > info.seg[i]) { s -= info.seg[i]; i++; }
+  const f = clamp(s / info.seg[i]);
+  return [1, mix(1, .4, f), mix(.5, .85, f), mix(.9, 1, f)][i];
+}
+function buildWhy() {
+  const g = gWhy, cx = WY.cx, cy = WY.cy, R = WY.R;
+  rad('whyF', [[0, '#3f8ccc'], [.7, '#22609c'], [1, '#143f6e']]);
+  mkAh('ahS', '#c9d3dc'); mkAh('ahO', '#ff9a3c');
+  el('rect', { x: 0, y: 0, width: 1000, height: 560, fill: 'url(#spaceG)' }, g);
+  const ink = (p, x, y, s, sz, an) => tx(p, x, y, s, 'tw', sz, an);
+
+  const pol = W.pol = el('g', { style: 'transition:opacity .6s ease' }, g);
+  W.ttl = ink(pol, cx, 42, '', 20);
+  W.sub = ink(pol, cx, 66, '', 15); W.sub.setAttribute('opacity', .85);
+  // 지구 (자전하는 부분)
+  W.rot = el('g', null, pol);
+  el('circle', { cx, cy, r: R, fill: 'url(#whyF)', stroke: '#8fc3ea', 'stroke-width': 3 }, W.rot);
+  for (let i = 0; i < 12; i++) {
+    const p = WP(R, i * 30);
+    el('line', { x1: cx, y1: cy, x2: f1(p[0]), y2: f1(p[1]), stroke: '#bcd7ee', 'stroke-width': i ? 1.1 : 2.6, opacity: i ? .45 : .9 }, W.rot);
+  }
+  [30, 60].forEach(l => el('circle', { cx, cy, r: WR(l), fill: 'none', stroke: '#e8f2fb', 'stroke-width': 1.6, 'stroke-dasharray': '6 6', opacity: .7 }, pol));
+  el('circle', { cx, cy, r: 4, fill: '#e8f2fb' }, pol);
+  [[0, '적도', R + 16], [30, '30°N', WR(30) + 16], [60, '60°N', WR(60) + 16]].forEach(q => {
+    const p = WP(q[2], 222); ink(pol, f1(p[0]), f1(p[1]), q[1], 14);
+  });
+  ink(pol, cx + 10, cy - 10, '북극', 14, 'start');
+
+  // 1단계: 자전, 같은 경도의 두 지점
+  const L1 = lyr('y1', pol);
+  [[40, 78], [220, 258]].forEach(q => el('path', { d: arcD(R + 18, q[0], q[1]), fill: 'none', stroke: '#ffd166', 'stroke-width': 3.5, 'marker-end': 'url(#ahY)' }, L1));
+  ink(L1, cx, cy + R + 44, '자전 방향: 서 → 동 (북극 위에서 보면 시계 반대 방향)', 15);
+  W.trA = el('path', { fill: 'none', stroke: '#ffd166', 'stroke-width': 7, 'stroke-linecap': 'round', opacity: .9 }, L1);
+  W.trB = el('path', { fill: 'none', stroke: '#ffffff', 'stroke-width': 6, 'stroke-linecap': 'round', 'stroke-dasharray': '1 11', opacity: .95 }, L1);
+  const P1 = el('g', null, L1);
+  W.pA = el('circle', { r: 11, fill: '#ffd166', stroke: '#3a2a00', 'stroke-width': 2.5 }, P1);
+  W.pB = el('rect', { x: -9, y: -9, width: 18, height: 18, fill: '#ffffff', stroke: '#123f70', 'stroke-width': 2.5 }, P1);
+  W.lA = ink(L1, 0, 0, '적도 지점 ●', 15);
+  W.lB = ink(L1, 0, 0, '30°N 지점 ■', 15);
+  W.done = ink(L1, 576, 462, '✓ 두 지점 모두 같은 시간에 한 바퀴를 돌았다', 17, 'start'); W.done.setAttribute('fill', '#ffe08a');
+  // 오른쪽: 이동 거리 막대
+  const B = 380, rx = 576;
+  ink(L1, rx, 120, '같은 시간 동안 이동한 거리', 20, 'start');
+  ink(L1, rx, 168, '● 적도 지점', 16, 'start');
+  el('rect', { x: rx, y: 178, width: B, height: 22, rx: 6, fill: 'rgba(255,255,255,.12)' }, L1);
+  W.bA = el('rect', { x: rx, y: 178, width: 0, height: 22, rx: 6, fill: '#ffd166' }, L1);
+  ink(L1, rx, 240, '■ 30°N 지점', 16, 'start');
+  el('rect', { x: rx, y: 250, width: B * WR(30) / R, height: 22, rx: 6, fill: 'rgba(255,255,255,.12)' }, L1);
+  W.bB = el('rect', { x: rx, y: 250, width: 0, height: 22, rx: 6, fill: '#ffffff', stroke: '#123f70', 'stroke-width': 1.5 }, L1);
+  W.bAx = B; W.bBx = B * WR(30) / R;
+  ink(L1, rx, 326, '하루 동안 이동하는 거리 (자전 속력)', 16, 'start');
+  ink(L1, rx, 354, '적도: 약 40,000 km (약 1,670 km/h)', 16, 'start');
+  ink(L1, rx, 380, '30°N: 약 34,700 km (약 1,450 km/h)', 16, 'start');
+  ink(L1, rx, 416, '※ 그림은 위도 간격을 같게 그려 두 원의 차이가 실제보다 크다.', 13, 'start').setAttribute('opacity', .8);
+
+  // 2단계: 동쪽으로 휘는 공기 (지표와 함께 돌며 본 모습)
+  const L2 = lyr('y2', pol);
+  { const a = WP(R, 0), b = WP(WR(62), 0);
+    el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: '#c9d3dc', 'stroke-width': 3, 'stroke-dasharray': '8 8', 'marker-end': 'url(#ahS)' }, L2);
+    const t = ink(L2, cx - 12, f1(WP(WR(40), 0)[1]), '지표 기준 곧장 북쪽', 15, 'end'); t.setAttribute('fill', '#dfe6ec'); }
+  let cd = '';
+  for (let i = 0; i <= 40; i++) { const p = WC(i / 40); cd += (i ? 'L' : 'M') + f1(p[0]) + ',' + f1(p[1]); }
+  el('path', { d: cd, fill: 'none', stroke: '#ff9a3c', 'stroke-width': 7, 'stroke-linecap': 'round', 'marker-end': 'url(#ahO)' }, L2);
+  W.pg = el('circle', { r: 10, fill: 'none', stroke: '#dfe6ec', 'stroke-width': 2.5, 'stroke-dasharray': '4 3' }, L2);
+  W.pc = el('circle', { r: 11, fill: '#ffd166', stroke: '#3a2a00', 'stroke-width': 2.5 }, L2);
+  ink(L2, cx + 26, cy + 18, '동쪽으로 휘는 실제 경로', 16, 'start');
+  { const t = ink(L2, cx + 26, cy + 42, '자전의 효과로 휘어짐: 전향력', 15, 'start'); t.setAttribute('fill', '#ffd8a8'); }
+  // 방위 표시
+  const cpx = cx - 150, cpy = cy + R - 6;
+  el('line', { x1: cpx, y1: cpy, x2: cpx, y2: cpy - 46, stroke: '#7fe0a8', 'stroke-width': 3, 'marker-end': 'url(#ahG)' }, L2);
+  el('line', { x1: cpx, y1: cpy, x2: cpx + 46, y2: cpy, stroke: '#7fe0a8', 'stroke-width': 3, 'marker-end': 'url(#ahG)' }, L2);
+  ink(L2, cpx, cpy - 56, '북 (극 쪽)', 14).setAttribute('fill', '#bff3d4');
+  ink(L2, cpx + 62, cpy + 5, '동', 14).setAttribute('fill', '#bff3d4');
+  // 오른쪽 범례 (3단계에서는 숨김)
+  const R2 = lyr('y2r', g);
+  ink(R2, rx, 120, '경로 읽는 법', 20, 'start');
+  el('line', { x1: rx, y1: 166, x2: rx + 64, y2: 166, stroke: '#c9d3dc', 'stroke-width': 3, 'stroke-dasharray': '8 8', 'marker-end': 'url(#ahS)' }, R2);
+  ink(R2, rx + 82, 171, '지표를 기준으로 곧장 북쪽으로 가는 경로', 15, 'start');
+  el('line', { x1: rx, y1: 210, x2: rx + 60, y2: 210, stroke: '#ff9a3c', 'stroke-width': 7, 'stroke-linecap': 'round', 'marker-end': 'url(#ahO)' }, R2);
+  ink(R2, rx + 82, 215, '실제 경로: 동쪽(진행 방향의 오른쪽)으로 휨', 15, 'start');
+  el('circle', { cx: rx + 14, cy: 254, r: 10, fill: 'none', stroke: '#dfe6ec', 'stroke-width': 2.5, 'stroke-dasharray': '4 3' }, R2);
+  el('circle', { cx: rx + 46, cy: 254, r: 11, fill: '#ffd166', stroke: '#3a2a00', 'stroke-width': 2.5 }, R2);
+  ink(R2, rx + 82, 259, '곧장 갔다면 있을 곳 / 실제 공기', 15, 'start');
+  el('rect', { x: rx - 10, y: 296, width: 410, height: 104, rx: 12, fill: 'rgba(4,16,30,.6)', stroke: 'rgba(255,209,102,.55)', 'stroke-width': 1.5 }, R2);
+  ink(R2, rx + 4, 330, '적도에서 온 공기는 빠른 동쪽 움직임을 지닌 채', 16, 'start');
+  ink(R2, rx + 4, 356, '북쪽으로 간다. 고위도로 갈수록 그곳 지표보다', 16, 'start');
+  ink(R2, rx + 4, 382, '동쪽으로 앞서 나가 경로가 휘어 보인다.', 16, 'start');
+
+  // 3단계: 옆에서 본 모습 (남북·높이 단면)
+  const L3 = lyr('y3', g);
+  el('rect', { x: 562, y: 82, width: 418, height: 388, rx: 14, fill: 'url(#skyS)' }, L3);
+  el('path', { d: `M562,${YG + 6}H980V456Q980,470 966,470H576Q562,470 562,456Z`, fill: '#5d8f45' }, L3);
+  el('line', { x1: 562, y1: 150, x2: 980, y2: 158, stroke: '#ffffff', 'stroke-width': 2, 'stroke-dasharray': '8 6', opacity: .8 }, L3);
+  tx(L3, 976, 144, '대류권 계면', 'ts', 13, 'end');
+  tx(L3, 770, 112, '옆에서 본 모습 (남북 단면)', 'ts', 18);
+  // 축
+  el('line', { x1: 578, y1: YG, x2: 578, y2: 200, stroke: '#0d2945', 'stroke-width': 2.5, 'marker-end': 'url(#ahK)' }, L3);
+  tx(L3, 584, 222, '높이', 'ts', 14, 'start');
+  [[0, '0° 적도'], [30, '30°N'], [60, '60°N']].forEach(q => {
+    el('line', { x1: XS(q[0]), y1: YG + 8, x2: XS(q[0]), y2: YG + 18, stroke: '#ffffff', 'stroke-width': 2.5 }, L3);
+    tx(L3, XS(q[0]), 438, q[1], 'tw', 14, q[0] === 60 ? 'end' : 'middle').setAttribute('x', q[0] === 60 ? XS(60) + 14 : XS(q[0]));
+  });
+  tx(L3, 970, 462, '북쪽(극 쪽) →', 'tw', 13, 'end');
+  // 흐름 안내선과 모이는 곳
+  el('path', { d: rrPath(WLOOP, 26), fill: 'none', stroke: '#d4502c', 'stroke-width': 2.2, 'stroke-dasharray': '3 8', opacity: .7 }, L3);
+  el('path', { d: `M${XS(30)},${YG}H${XS(46)}`, fill: 'none', stroke: '#d4502c', 'stroke-width': 2.2, 'stroke-dasharray': '3 8', opacity: .5 }, L3);
+  W.glow = el('ellipse', { cx: XS(27), cy: YT + 10, rx: 46, ry: 26, fill: '#ffd166', opacity: .25 }, L3);
+  W.lp = { info: loopInfo(WLOOP), ps: [] };
+  { // 같은 시간 간격으로 입자 배치 → 느린 곳에 촘촘히 모인다
+    const info = W.lp.info, n = 26; let s = 0, tt = 0; const ds = 1, times = [];
+    while (s < info.L) { tt += ds / wVel(info, s); s += ds; times.push([tt, s]); }
+    const Tl = tt;
+    for (let i = 0; i < n; i++) {
+      const want = Tl * i / n; let k = 0; while (k < times.length - 1 && times[k][0] < want) k++;
+      W.lp.ps.push({ el: el('path', { d: TRI, fill: '#d4502c' }, L3), s: times[k][1] });
+    }
+  }
+  W.br = [0, 1, 2, 3].map(i => ({ el: el('path', { d: TRI, fill: '#d4502c' }, L3), u: i / 4 }));
+  tx(L3, XS(3) + 14, 300, '계속 올라옴', 'ts', 14, 'start');
+  tx(L3, XS(15), YT - 18, '극 쪽 흐름이 점차 약해짐 →', 'ts', 14);
+  tx(L3, XS(30) + 12, 236, '상층에서 모인 공기', 'ts', 14, 'start');
+  tx(L3, XS(30) + 12, 318, '아래로 내려옴', 'ts', 14, 'start');
+  tx(L3, XS(16), YG - 12, '← 적도 쪽으로', 'ts', 14);
+  tx(L3, XS(31) + 6, YG - 12, '퍼져 나감 →', 'ts', 14, 'start');
+  tx(L3, 771, 494, '※ 남북·위아래 움직임만 나타냈다. 동쪽으로 휘는 움직임은 왼쪽 그림.', 'tw', 13).setAttribute('opacity', .9);
+
+  const mn = tx(g, 978, 546, '※ 대기 흐름을 단순화한 모형', 'tw', 13, 'end'); mn.setAttribute('opacity', .8);
+}
+function drawWhy(dt) {
+  const cx = WY.cx, cy = WY.cy, R = WY.R;
+  const st = LAYERS.has('y3') ? 3 : LAYERS.has('y2') ? 2 : LAYERS.has('y1') ? 1 : 0;
+  if (st !== WY.stage) {
+    WY.stage = st; WY.t = 0;
+    W.pol.style.opacity = st === 3 ? .35 : 1;
+    W.ttl.textContent = st >= 2 ? '지표와 함께 돌며 본 상층의 공기' : '북극 위에서 내려다본 북반구';
+    W.sub.textContent = st === 1 ? '같은 경도에 있는 적도와 30°N의 두 지점' : st >= 2 ? '적도에서 상승한 공기가 북쪽으로 출발' : '';
+  }
+  if (!WY.pause) WY.t += dt * MOT;
+  const t = WY.t;
+  let phi = 0;
+  if (st === 1) {
+    const c = t % WY.P1;
+    phi = Math.min(c, WY.ROT) / WY.ROT * 360;
+    W.trA.setAttribute('d', phi > .5 ? arcD(R, 0, phi) : '');
+    W.trB.setAttribute('d', phi > .5 ? arcD(WR(30), 0, phi) : '');
+    const a = WP(R, phi), b = WP(WR(30), phi), la = WP(R + 30, phi), lb = WP(WR(30) - 30, phi);
+    W.pA.setAttribute('cx', f1(a[0])); W.pA.setAttribute('cy', f1(a[1]));
+    W.pB.setAttribute('transform', `translate(${f1(b[0])},${f1(b[1])}) rotate(${f1(-phi)})`);
+    W.lA.setAttribute('x', f1(la[0])); W.lA.setAttribute('y', f1(la[1] + 5));
+    W.lB.setAttribute('x', f1(lb[0])); W.lB.setAttribute('y', f1(lb[1] + 5));
+    W.bA.setAttribute('width', f1(W.bAx * phi / 360));
+    W.bB.setAttribute('width', f1(W.bBx * phi / 360));
+    W.done.setAttribute('opacity', c > WY.ROT ? 1 : 0);
+  }
+  W.rot.setAttribute('transform', `rotate(${f1(-phi)} ${cx} ${cy})`);
+  if (st >= 2) {
+    const c = t % WY.P2, u = Math.min(c / WY.MV, 1);
+    const op = clamp((WY.P2 - c) / .6) * clamp(c / .3);
+    const p = WC(u), q = WP(WCr(u), 0);
+    W.pc.setAttribute('cx', f1(p[0])); W.pc.setAttribute('cy', f1(p[1])); W.pc.setAttribute('opacity', f1(op * 10) / 10);
+    W.pg.setAttribute('cx', f1(q[0])); W.pg.setAttribute('cy', f1(q[1])); W.pg.setAttribute('opacity', f1(op * 10) / 10);
+  }
+  if (st === 3) {
+    const info = W.lp.info, run = WY.pause ? 0 : dt * MOT;
+    W.lp.ps.forEach(p => {
+      p.s = (p.s + 34 * wVel(info, p.s) * run) % info.L;
+      const q = loopPt(info, p.s / info.L);
+      p.el.setAttribute('transform', `translate(${f1(q.x)},${f1(q.y)}) rotate(${f1(q.ang)}) scale(1.35)`);
+    });
+    W.br.forEach(b => {
+      b.u = (b.u + run / 6) % 1;
+      b.el.setAttribute('transform', `translate(${f1(mix(XS(30), XS(46), b.u))},${YG}) scale(1.35)`);
+      b.el.setAttribute('opacity', f1((1 - b.u) * 10) / 10);
+    });
+    W.glow.setAttribute('opacity', f1((.2 + .1 * Math.sin(t * 2)) * 100) / 100);
+  }
+}
+
 /* ================= slide data ================= */
 const SEC3 = ['tp', 'bio', 'cEq', 'pEq', 'p30', 'dry', 'h', 'wh'];
 const SLIDES = [
@@ -1265,7 +1470,7 @@ const SLIDES = [
       { set: { dm: 'in' }, t: '이번에는 가장자리(저위도)에서 가운데(고위도)를 향해 공을 굴려 보자. 원판 밖에서 보면 공은 가운데로 가지 않고 옆으로 비껴간다. 가장자리는 빠르게 돌고 있어서, 공도 처음부터 그 빠르기로 옆으로 함께 움직이기 때문이다.' },
       { ly: ['deast'], t: '원판 위에서 보면 공은 이번에도 진행 방향의 오른쪽, 곧 동쪽으로 휜다. 가운데(고위도)로 갈수록 원판이 도는 속력이 느려지므로, 공이 원판보다 동쪽으로 앞서 나가기 때문이다.' },
       { ly: ['dvec'], t: '이때도 전향력은 운동 방향의 오른쪽 직각으로 작용한다. 북반구에서는 바람이 고위도로 가든 저위도로 가든 진행 방향의 오른쪽으로 휜다.' },
-      { t: '적도에서 상승해 상층에서 고위도로 가던 공기가 동쪽으로 휘어, 위도 30° 부근에서 더 나아가지 못하고 쌓이는 것도 이 때문이다.' }
+      { t: '적도에서 상승해 상층에서 고위도로 가던 공기가 동쪽으로 휘는 것도 이 때문이다. 이 휘어짐이 위도 30° 부근의 하강과 어떻게 이어지는지는 뒤에서 살펴본다.' }
     ]
   },
   {
@@ -1279,11 +1484,20 @@ const SLIDES = [
     ]
   },
   {
+    ch: '해들리 순환', title: '공기는 왜 극까지 곧장 가지 않을까?', scene: 'why', why: true, solo: true, base: { ly: [] },
+    intro: '적도에서 상승한 공기가 상층에서 극 쪽으로 가는 동안 일어나는 일을 세 단계로 나누어 살펴보자.',
+    steps: [
+      { ly: ['y1'], t: '적도와 위도 30°의 두 지점은 같은 시간에 한 바퀴를 돌지만, 적도의 지점이 <b>더 긴 거리</b>를 이동한다. 그래서 적도의 지표와 그 위의 공기는 동쪽으로 더 빠르게 움직이고 있다.' },
+      { ly: ['y2', 'y2r'], rm: ['y1'], t: '적도에서 상승한 공기는 상층에서 북쪽으로 이동하면서도 빠른 동쪽 움직임을 유지하려 한다. 그래서 고위도로 갈수록 그곳의 지표보다 동쪽으로 앞서 나가, 지표에서 보면 경로가 <b>동쪽으로 휜다</b>.' },
+      { ly: ['y3'], rm: ['y2r'], t: '동쪽으로 휠수록 극 쪽으로 나아가는 흐름은 점차 약해지고, 이동하는 동안 공기는 열을 잃어 차가워진다. 적도에서는 공기가 계속 올라오므로, 위도 30° 부근 상층에서 <b>모인 공기가 아래로 내려오는 흐름</b>으로 이어진다.' }
+    ]
+  },
+  {
     ch: '해들리 순환', title: '적도에서 위도 30°까지', scene: 'sec', base: { ly: ['tp', 'bio'], bd: 'r1' },
     intro: '자전하는 지구에서는 반구마다 세 개의 순환이 생긴다. 북반구 단면에서 적도 쪽부터 차례로 살펴보자.',
     steps: [
       { ly: ['cEq', 'pEq'], t: '적도에서 가열된 공기가 상승하여 지표에 <b>적도 저압대</b>가 만들어진다. 상승하는 공기 속에서 구름이 잘 생겨 비가 많이 내린다.' },
-      { ly: ['pile', 'p30', 'dry'], t: '상층에서 극 쪽으로 이동하던 공기는 냉각되고, 전향력을 받아 점점 동쪽으로 휘어 고위도로 더 나아가지 못한다. 그래서 위도 30° 부근에서 하강하여 지표에 <b>아열대 고압대</b>가 만들어진다. 하강하는 공기 속에서는 구름이 잘 생기지 않아 건조하다.' },
+      { ly: ['pile', 'p30', 'dry'], t: '상층에서 극 쪽으로 이동하던 공기는 전향력을 받아 점점 동쪽으로 휘면서 극 쪽으로 나아가는 흐름이 약해지고, 이동하는 동안 냉각된다. 그래서 위도 30° 부근 상층에서 모인 공기가 하강하여 지표에 <b>아열대 고압대</b>가 만들어진다. 하강하는 공기 속에서는 구름이 잘 생기지 않아 건조하다.' },
       { ly: ['h'], rm: ['pile'], t: '하강한 공기는 지표를 따라 적도 쪽으로 돌아가 순환을 이룬다. 이 순환이 <b>해들리 순환</b>이다.' },
       { ly: ['wh'], t: '지표에서 적도 쪽으로 부는 바람은 전향력을 받아 휘어져, 북반구에서는 <b>북동 무역풍</b>, 남반구에서는 남동 무역풍이 된다.' }
     ]
@@ -1374,7 +1588,7 @@ const QUIZ = [
   {
     q: '북반구에서 북쪽으로 이동하는 공기는 전향력 때문에 어느 쪽으로 휘어지는가?',
     o: ['동쪽 (진행 방향의 오른쪽)', '서쪽 (진행 방향의 왼쪽)', '휘어지지 않는다'], a: 0,
-    ex: '북반구에서는 전향력이 진행 방향의 오른쪽 직각으로 작용한다. 북쪽으로 가는 공기의 오른쪽은 동쪽이다. 그래서 상층에서 극 쪽으로 가던 공기가 동쪽으로 휘어 위도 30° 부근에 쌓인다.',
+    ex: '북반구에서는 전향력이 진행 방향의 오른쪽 직각으로 작용한다. 북쪽으로 가는 공기의 오른쪽은 동쪽이다. 그래서 상층에서 극 쪽으로 가던 공기는 동쪽으로 휘면서 극 쪽으로 나아가는 흐름이 약해진다.',
     scene: 'globe', ly: ['lat'], lyA: ['cor'], set: { r: 1 }
   },
   {
@@ -1523,7 +1737,7 @@ function setLayers(set) {
   });
   LAYERS = new Set(set);
 }
-function drawNow() { lastLon = null; if (curScene === 'sec') drawSec(0); else if (curScene === 'globe') drawGlobe(0); else if (curScene === 'disk') drawDisk(); }
+function drawNow() { lastLon = null; if (curScene === 'sec') drawSec(0); else if (curScene === 'globe') drawGlobe(0); else if (curScene === 'disk') drawDisk(); else if (curScene === 'why') drawWhy(0); }
 function applyState(st) {
   const changed = setScene(st.scene);
   SC.r.tgt = st.set && st.set.r != null ? st.set.r : 1;
@@ -1576,12 +1790,36 @@ function renderCaption(sl) {
   inner.appendChild(h('p', 'intro', sl.intro));
   if (sl.table) return renderTable();
   sl.steps.forEach(s => inner.appendChild(h('p', 'st', s.t)));
+  cap.classList.toggle('solo', !!sl.solo);
+  if (sl.why) renderWhyCtl(sl);
+}
+const WHY_B = ['① 지구의 자전', '② 동쪽으로 휘는 공기', '③ 모여 내려오는 공기'];
+function renderWhyCtl(sl) {
+  WY.stage = -1; WY.pause = false;
+  const c = h('div', 'wctl', WHY_B.map((b, i) => `<button type="button" data-k="${i + 1}">${b}</button>`).join(''));
+  const c2 = h('div', 'wctl sub', '<button type="button" id="wRe">↺ 다시 보기</button><button type="button" id="wPa" aria-pressed="false">❚❚ 일시 정지</button>');
+  const go = h('button', 'go wgo', '이제 옆에서 전체 순환을 살펴보자 →'); go.type = 'button';
+  inner.appendChild(c); inner.appendChild(c2); inner.appendChild(go);
+  c.querySelectorAll('button').forEach(b => b.onclick = () => { const k = +b.dataset.k; if (cur.k === k) { WY.t = 0; WY.pause = false; whyPause(); return; } cur.k = k; show(false); });
+  $('#wRe').onclick = () => { WY.t = 0; WY.pause = false; whyPause(); };
+  $('#wPa').onclick = () => { WY.pause = !WY.pause; whyPause(); };
+  go.onclick = () => next();
+}
+function whyPause() {
+  const b = $('#wPa'); if (!b) return;
+  b.textContent = WY.pause ? '▶ 계속 재생' : '❚❚ 일시 정지';
+  b.setAttribute('aria-pressed', WY.pause ? 'true' : 'false');
 }
 function updateSteps(sl, k) {
   if (sl.table) { inner.querySelectorAll('[data-c]').forEach(n => n.classList.toggle('on', +n.dataset.c <= k)); return; }
   let now = null;
+  if (sl.why) {
+    inner.querySelectorAll('.wctl button[data-k]').forEach(b => b.classList.toggle('sel', +b.dataset.k === k));
+    const g = inner.querySelector('.wgo'); if (g) g.classList.toggle('on', k === sl.steps.length);
+    WY.pause = false; whyPause();
+  }
   inner.querySelectorAll('.st').forEach((p, i) => {
-    p.classList.toggle('on', i < k);
+    p.classList.toggle('on', sl.solo ? i === k - 1 : i < k);
     p.classList.toggle('now', i === k - 1);
     if (i === k - 1) now = p;
   });
@@ -1592,7 +1830,7 @@ function renderCover() {
     '<p class="lead">위도에 따른 에너지 불균형 때문에 지구 전체 규모로 일어나는 대기의 순환</p>' +
     '<p class="org">위도 20°~30° 부근에는 사하라, 아라비아, 오스트레일리아 사막 같은 큰 사막이 띠처럼 늘어서 있고, 적도 부근에는 열대 우림이 펼쳐져 있다. 이런 배치가 생기는 까닭을 대기의 순환에서 찾아보자.</p>' +
     '<button class="go" type="button" id="goBtn">시작하기</button>' +
-    '<p class="small">화면을 누르면 다음 내용이 나온다. 좌우로 밀거나 키보드의 ←, → 키(발표용 리모컨 포함)로도 넘길 수 있다.</p></div>';
+    '<p class="by">제작 · KJE</p><p class="small">화면을 누르면 다음 내용이 나온다. 좌우로 밀거나 키보드의 ←, → 키(발표용 리모컨 포함)로도 넘길 수 있다.</p></div>';
   $('#goBtn').onclick = () => next();
 }
 function renderTable() {
@@ -1830,13 +2068,13 @@ function frame(now) {
   dt = Math.min(dt, .05);
   T += dt * MOT;
   SC.r.cur += (SC.r.tgt - SC.r.cur) * (1 - Math.exp(-dt * 1.6));
-  if (curScene === 'sec') drawSec(dt); else if (curScene === 'globe') drawGlobe(dt); else if (curScene === 'disk') drawDisk();
+  if (curScene === 'sec') drawSec(dt); else if (curScene === 'globe') drawGlobe(dt); else if (curScene === 'disk') drawDisk(); else if (curScene === 'why') drawWhy(dt);
   updateBadge();
   sndUpdate();
   requestAnimationFrame(frame);
 }
 
-buildGlobe(); buildDisk(); buildSec(); buildGraph(); buildMini();
+buildGlobe(); buildDisk(); buildSec(); buildGraph(); buildMini(); buildWhy();
 show(true);
 requestAnimationFrame(frame);
 </script>
