@@ -1,7 +1,9 @@
 <!doctype html><html lang="ko"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body><title>배터리 시험팀 · KJE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link id="lab-fonts" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" media="print">
+<script>document.getElementById('lab-fonts').addEventListener('load', function(){ this.media = 'all'; });</script>
+
 <style>
 /* 레이아웃: 배터리 회사 셀 시험동. 밝은 알루미늄 회색 바닥 위에 시험 기록지(흰 판)와 노란 멀티미터, 구리색 버튼.
    왼쪽은 실험 장치 그림(멀티미터 액정이 입력한 값을 그대로 보여 줌), 오른쪽은 기록 패널. */
@@ -2909,10 +2911,16 @@ function metrics(){
   const m2 = S.track && STAGES2[S.track];
   return {
     judged: PL.filter(ok).length,
+    identificationStarted: PL.some(p => S.judge[p].metal || S.judge[p].hold || S.judge[p].cand?.length),
     correct: hasKey() ? PL.filter(p => keyFor(p) && idOf(p) === keyFor(p)).length : null,
     kept: S.flags.filter(f => f.st === 'kept').length + (m2 && S.r2 && S.r2.flags ? S.r2.flags.filter(f => f.st === 'kept').length : 0),
     s1: S.reply.signed, s2: m2 ? m2.signed() : false, p2: m2 ? m2.started() : false
   };
+}
+function identificationStatus(m){
+  if(!m.identificationStarted) return '식별 전';
+  if(m.judged < PL.length) return `식별 중 (${m.judged}/${PL.length}판 확정)`;
+  return m.correct == null ? '식별 완료' : `식별 ${m.correct}/${keyedN()} 일치`;
 }
 async function hashPin(p){
   const txt = 'battery-lab:' + p;
@@ -2985,7 +2993,7 @@ function buildCSV(list){
       ...PK.map(k => readingText(S.pv[k])), ...PK.map(k => S.pv[k].neg || ''),
       orderOk() ? S.order.join(' ') : ordNA() ? `확정 불가: ${S.ordx.plan.trim()}` : '',
       ...PL.map(p => idOf(p) ? mname(idOf(p)) : S.judge[p].ok && S.judge[p].hold ? `보류(${candText(p)})` : ''),
-      m.correct == null ? '' : `${m.correct}/${keyedN()}`,
+      !m.identificationStarted || m.judged < PL.length ? identificationStatus(m) : m.correct == null ? '' : `${m.correct}/${keyedN()}`,
       vOk(a.v1) ? r2f(vnum(a.v1)) : '', a.sand && vOk(a.v2) ? r2f(vnum(a.v2)) : '', EXPL[a.exp] || '',
       s.pick == null ? '' : SOPTS[s.pick].map(q => q.join('–')).join(' + '), s.pick == null ? '' : s.calc[s.pick], vOk(s.v, 6) ? r2f(vnum(s.v)) : '', s.ring == null ? '' : s.ring ? '울림' : '안 울림',
       PK.filter(k => S.reply.spec[k] === 'ok').map(pairName).join(' '), S.reply.cause, S.reply.plan, m.kept, triesTotal(S), triesText(S), S.track ? TRACKS[S.track] : ''];
@@ -3049,7 +3057,7 @@ function tLiveView(list){
       <span class="tc-names">${memberIdx().map(i => esc(nm(i))).join(', ')}</span>
       <span>지금 <b>${esc(stageName(S.stage))}</b></span>
       <span class="bar" aria-hidden="true"><i style="width:${pct}%"></i></span>
-      <span class="pills">${VIRTUAL ? `<span class="pill">${S.solo ? '개별' : '조별'}</span><span class="pill${S.exam ? ' warn' : ''}">${S.exam ? '평가' : '연습'}</span>` : S.solo ? '<span class="pill">개별</span>' : ''}<span class="pill ${p1[0]}">${p1[1]}</span>${p2 ? `<span class="pill ${p2[0]}">${p2[1]}</span>` : ''}${m.correct != null ? `<span class="pill">식별 ${m.correct}/${keyedN()} 일치</span>` : ''}${m.kept ? `<span class="pill warn">재확인 뒤 기록 유지 ${m.kept}건</span>` : ''}${cnt[k(d)] > 1 ? `<span class="pill warn">같은 반·조 기록 ${cnt[k(d)]}개</span>` : ''}${fbPill(S.id)}</span>
+      <span class="pills">${VIRTUAL ? `<span class="pill">${S.solo ? '개별' : '조별'}</span><span class="pill${S.exam ? ' warn' : ''}">${S.exam ? '평가' : '연습'}</span>` : S.solo ? '<span class="pill">개별</span>' : ''}<span class="pill ${p1[0]}">${p1[1]}</span>${p2 ? `<span class="pill ${p2[0]}">${p2[1]}</span>` : ''}<span class="pill">${identificationStatus(m)}</span>${m.kept ? `<span class="pill warn">재확인 뒤 기록 유지 ${m.kept}건</span>` : ''}${cnt[k(d)] > 1 ? `<span class="pill warn">같은 반·조 기록 ${cnt[k(d)]}개</span>` : ''}${fbPill(S.id)}</span>
     </button>`;
   })).join('')}</div>`;
 }
@@ -3102,6 +3110,8 @@ function viewTeamDetail(d){
   });
 }
 function softRender(){
+  // Keep the clicked button alive while leaving a feedback input.
+  if(ui.pointerDown){ ui.pendingRender = true; return; }
   const a = document.activeElement;
   if(a && a !== document.body && a.matches && a.matches('input, textarea, select')){ ui.pendingRender = true; refreshSync(); return; }
   render();
@@ -3150,12 +3160,13 @@ function fbBank(){
   if(!b) return FB_DEFAULT;
   return { good:b.good || FB_DEFAULT.good, fix:b.fix || FB_DEFAULT.fix, spec:Object.assign({}, FB_DEFAULT.spec, b.spec || {}) };
 }
-const fbc = { cloud:new Map(), sub:null, subErr:false, stu:null, stuId:null, stuSub:null, timers:{} };
+const fbc = { cloud:new Map(), sub:null, subErr:false, stu:null, stuId:null, stuSub:null, timers:{}, pending:new Map(), writes:new Map(), errors:new Map(), actions:new Set() };
 const fbFresh = id => ({ v:1, id, items:{}, note:'', sent:false, sentAt:null, at:0 });
 /* 이 기기 것과 수합된 것 중 최근 것 */
 function fbGet(id){
   if(!TS.fb) TS.fb = {};
   const a = TS.fb[id], b = fbc.cloud.get(id);
+  if(a && fbc.pending.has(id)) return a;
   if(a && b) return (b.at || 0) > (a.at || 0) ? b : a;
   return a || b || null;
 }
@@ -3170,12 +3181,60 @@ const fbItem = (f, key) => f.items[key] || (f.items[key] = { good:[], fix:[], no
 const fbHas = f => !!f && (!!(f.note || '').trim() || Object.values(f.items || {}).some(x => x.good.length || x.fix.length || (x.note || '').trim()));
 function fbCommit(id, f, o = {}){
   f.at = Date.now(); TS.fb[id] = f; tSave();
-  if(!cloud.db) return;
+  if(!cloud.db) return Promise.resolve(f);
   clearTimeout(fbc.timers[id]);
-  fbc.timers[id] = setTimeout(async () => {
-    try{ await cloud.db.doc('feedback/' + id).set(JSON.parse(JSON.stringify(TS.fb[id]))); fbc.cloud.set(id, TS.fb[id]); if(o.toast) showToast(o.toast); }
-    catch(e){ showToast('피드백을 수합 공간에 저장하지 못했어요. 이 기기에는 저장됐어요.'); }
-  }, o.now ? 0 : 700);
+  fbc.pending.set(id, JSON.parse(JSON.stringify(f))); fbc.errors.delete(id);
+  if(o.now) return fbFlush(id);
+  fbc.timers[id] = setTimeout(() => { fbFlush(id).catch(() => showToast('피드백 저장을 확인하지 못했어요. 서술 피드백의 다시 저장하기를 눌러 주세요.')); }, 700);
+}
+function fbFlush(id){
+  clearTimeout(fbc.timers[id]);
+  if(fbc.writes.has(id)) return fbc.writes.get(id);
+  if(!fbc.pending.has(id)) return Promise.resolve();
+  // Serialize writes per group. An older draft can never arrive after send
+  // and turn the newly published feedback back into a draft.
+  const writing = (async () => {
+    while(fbc.pending.has(id)){
+      const draft = fbc.pending.get(id);
+      const reply = await cloud.db.doc('feedback/' + id).set(draft);
+      // The standalone host's set() may return no document.
+      const saved = reply && reply.id === id ? reply : draft;
+      fbc.cloud.set(id, saved);
+      if(fbc.pending.get(id) === draft){ fbc.pending.delete(id); TS.fb[id] = saved; tSave(); }
+      fbc.errors.delete(id);
+    }
+  })().catch(error => { fbc.errors.set(id, error); throw error; }).finally(() => {
+    fbc.writes.delete(id); fbUpdateState(id); if(ui.view === 'teacher') softRender();
+  });
+  fbc.writes.set(id, writing);
+  return writing;
+}
+function fbState(id, f = fbGet(id)){
+  if(fbc.errors.has(id)) return '저장 완료를 확인하지 못했어요. 다시 저장하기를 눌러 주세요.';
+  if(fbc.pending.has(id) || fbc.writes.has(id)) return f?.sent ? '학생에게 보내는 중…' : fbc.actions.has(id) ? '학생 화면에서 내리는 중…' : '작성한 피드백을 저장하는 중…';
+  if(!fbHas(f)) return '아직 쓴 피드백이 없어요.';
+  if(!cloud.db) return f.sent ? '이 기기의 학생 성적서에 표시돼요. 다른 기기로 자동 전달되지는 않아요.' : `초안 저장됨 (${clockOf(f.at)}) · 아직 학생에게 보이지 않아요`;
+  return f.sent ? `학생에게 보냈어요 · 학생 성적서에 표시돼요 (${clockOf(f.at)})` : `초안 저장됨 (${clockOf(f.at)}) · 아직 학생에게 보이지 않아요`;
+}
+function fbUpdateState(id){
+  const state = document.getElementById('fb-state');
+  if(state && ui.tDetail === id) state.textContent = fbState(id);
+}
+async function fbPublish(id, sent){
+  if(fbc.actions.has(id)) return;
+  fbc.actions.add(id);
+  const f = fbEdit(id); f.sent = sent; if(sent) f.sentAt = Date.now();
+  const writing = fbCommit(id, f, { now:true }); render();
+  try { await writing; showToast(sent ? (cloud.db ? '학생 성적서 화면에 보냈어요.' : '이 기기의 학생 성적서에 표시했어요.') : '학생 화면에서 내렸어요.'); }
+  catch { showToast('저장 완료를 확인하지 못했어요. 다시 저장하기를 눌러 주세요.'); }
+  finally { fbc.actions.delete(id); softRender(); }
+}
+async function fbRetry(id){
+  if(fbc.actions.has(id)) return;
+  fbc.actions.add(id); fbc.errors.delete(id); const writing = fbFlush(id); render();
+  try { await writing; showToast(fbGet(id)?.sent ? '학생 성적서 화면에 보냈어요.' : '피드백을 저장했어요.'); }
+  catch { showToast('저장 완료를 확인하지 못했어요. 연결을 확인하고 다시 저장해 주세요.'); }
+  finally { fbc.actions.delete(id); softRender(); }
 }
 /* 교사: 피드백 전체 구독 */
 function fbSubTeacher(){
@@ -3191,7 +3250,7 @@ function fbSubTeacher(){
 }
 /* 학생: 자기 기록의 피드백만 구독 */
 function fbSubStudent(){
-  const id = S && ui.view === 'game' ? S.id : null;
+  const id = S && ui.view === 'game' && ['report', 'final'].includes(S.stage) ? S.id : null;
   if(!cloud.db || id === fbc.stuId) return;
   if(fbc.stuSub){ try{ fbc.stuSub(); }catch(e){} fbc.stuSub = null; }
   fbc.stuId = id; fbc.stu = null;
@@ -3260,9 +3319,7 @@ function fbEditor(){
     </div>`;
   };
   const has = fbHas(f);
-  const state = !has ? '아직 쓴 피드백이 없어요.'
-    : f.sent ? (cloud.db ? `학생 성적서에 보이는 중 · 고치면 바로 반영돼요 (${clockOf(f.at)})` : `보냄 · 실시간 수합이 꺼져 있어 이 기기 성적서에만 보여요. 피드백지로 출력해 나눠 주세요.`)
-    : `작성 중 · 이 기기${cloud.db ? '와 수합 공간' : ''}에 저장됨 (${clockOf(f.at)}) · 아직 학생에게 보이지 않아요`;
+  const state = fbState(id, f), sending = fbc.actions.has(id);
   return `<section class="fb-wrap" id="fb-ed">
     <h2 class="sec" style="font-size:32px;margin-top:44px">서술 피드백</h2>
     <p class="who">자주 쓰는 말은 눌러서 붙이고, 모자란 말은 ‘덧붙일 말’에 써요. 문구 목록은 ‘피드백 문구’ 탭에서 바꿀 수 있어요.</p>
@@ -3270,7 +3327,7 @@ function fbEditor(){
     <label class="f" style="margin-top:18px"><span>조 전체에 한마디 (선택)</span><textarea class="fb-ta" data-fbin="all" data-id="${esc(id)}" placeholder="예: 측정을 꼼꼼히 다시 확인한 점이 좋았어요.">${esc(f.note || '')}</textarea></label>
     <div class="tsave" role="status" style="margin-top:14px"><span id="fb-state">${esc(state)}</span></div>
     <div class="actions" style="justify-content:flex-start">
-      ${f.sent ? `<button type="button" class="secondary" data-fb="unsend" data-id="${esc(id)}">학생 화면에서 내리기</button>` : `<button type="button" class="primary" data-fb="send" data-id="${esc(id)}" ${has ? '' : 'disabled'}>학생에게 보내기</button>`}
+      ${fbc.errors.has(id) ? `<button type="button" class="primary" data-fb="retry" data-id="${esc(id)}">다시 저장하기</button>` : `<button type="button" id="fb-publish" class="${f.sent ? 'secondary' : 'primary'}" data-fb="${f.sent ? 'unsend' : 'send'}" data-id="${esc(id)}" ${!has || sending ? 'disabled' : ''}>${sending ? '처리 중…' : f.sent ? '학생 화면에서 내리기' : '학생에게 보내기'}</button>`}
       <button type="button" class="secondary" data-fb="print" data-id="${esc(id)}" ${has ? '' : 'disabled'}>피드백지 인쇄</button>
       <button type="button" class="ghost" data-fb="html" data-id="${esc(id)}" ${has ? '' : 'disabled'}>피드백지 파일 저장</button>
     </div>
@@ -3280,6 +3337,8 @@ function fbEditor(){
 function fbPill(id){
   const f = fbGet(id);
   if(!fbHas(f)) return '';
+  if(fbc.errors.has(id)) return '<span class="pill warn">피드백 저장 확인 필요</span>';
+  if(fbc.pending.has(id) || fbc.writes.has(id)) return '<span class="pill">피드백 저장 중</span>';
   return f.sent ? '<span class="pill done">피드백 보냄</span>' : '<span class="pill">피드백 작성 중</span>';
 }
 /* 교사: 피드백 문구 편집 탭 */
@@ -3369,8 +3428,9 @@ document.addEventListener('click', e => {
       const i = arr.indexOf(s); if(i >= 0) arr.splice(i, 1); else arr.push(s);
       fbCommit(id, f); render(); break;
     }
-    case 'send': { const f = fbEdit(id); f.sent = true; f.sentAt = Date.now(); fbCommit(id, f, { now:true, toast:'학생 성적서 화면에 보냈어요.' }); if(!cloud.db) showToast('보냈어요. 실시간 수합이 꺼져 있어서 이 기기 성적서에만 보여요. 피드백지로 출력해 나눠 주세요.'); render(); break; }
-    case 'unsend': { const f = fbEdit(id); f.sent = false; fbCommit(id, f, { now:true, toast:'학생 화면에서 내렸어요.' }); render(); break; }
+    case 'send': void fbPublish(id, true); break;
+    case 'unsend': void fbPublish(id, false); break;
+    case 'retry': void fbRetry(id); break;
     case 'print': { const d = allTeams().find(x => x.id === id); if(d) fbPrint([d]); break; }
     case 'html': { const d = allTeams().find(x => x.id === id); if(d) fbSaveHTML([d]); break; }
     case 'printall': fbPrint(allTeams().filter(d => ui.tCls == null || String(d.team.cls) === ui.tCls)); break;
@@ -3393,7 +3453,9 @@ document.addEventListener('input', e => {
   else if(k === 'all') f.note = el.value;
   fbCommit(id, f);
   const st = document.getElementById('fb-state');
-  if(st) st.textContent = f.sent ? (cloud.db ? '학생 성적서에 보이는 중 · 고치면 바로 반영돼요' : '보냄 · 이 기기 성적서에만 보여요') : '작성 중 · 저장됨';
+  if(st) st.textContent = fbState(id, f);
+  const publish = document.getElementById('fb-publish');
+  if(publish) publish.disabled = !fbHas(f) || fbc.actions.has(id);
   ui.pendingRender = true;   /* 칸을 떠나면 보내기 버튼 상태 등을 다시 그림 */
 });
 
@@ -3995,6 +4057,15 @@ document.addEventListener('focusout', () => {
   ui.pendingRender = false;
   setTimeout(softRender, 0);
 });
+let pointerReleaseTimer;
+function releasePointer(){
+  clearTimeout(pointerReleaseTimer); ui.pointerDown = false;
+  if(ui.pendingRender){ ui.pendingRender = false; setTimeout(softRender, 0); }
+}
+document.addEventListener('pointerdown', () => { clearTimeout(pointerReleaseTimer); ui.pointerDown = true; }, true);
+document.addEventListener('click', releasePointer, true);
+document.addEventListener('pointercancel', releasePointer, true);
+document.addEventListener('pointerup', () => { pointerReleaseTimer = setTimeout(releasePointer, 500); }, true);
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') pushNow(); });
 window.addEventListener('pagehide', () => pushNow());
 document.addEventListener('keydown', e => {
