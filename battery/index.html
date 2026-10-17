@@ -300,7 +300,6 @@ table.rt{ border-collapse:collapse; width:100%; min-width:720px; background:var(
 table.rt.compact{ min-width:420px; }
 .rt td.n{ font-family:var(--num); font-size:17px; text-align:right; }
 .rt .c{ text-align:center; font-family:var(--display); font-size:22px; }
-.rt .kc{ color:var(--ink2); }
 .rt .kc.no{ color:var(--bad); font-weight:700; }
 .rt .kc.yes{ color:var(--good); font-weight:700; }
 .twin{ display:grid; gap:16px; }
@@ -1120,14 +1119,14 @@ function teamIssues(){
   if(S.solo){
     if(!t.cls) out.push('반을 고르세요.');
     if(!t.grp) out.push('번호를 고르세요.');
-    if(!String(t.m[0] || '').trim()) out.push('이름을 적어요.');
+    if(!String(t.m[0] || '').trim()) out.push('이름 또는 별칭을 적어요.');
     return out;
   }
   if(!t.cls) out.push('반을 고르세요.');
   if(!t.grp) out.push('조를 고르세요.');
   const names = memberIdx().map(i => t.m[i].trim());
-  if(names.length < 4) out.push(`팀원 이름을 4명 이상 적어요. 지금 ${names.length}명이에요.`);
-  if(new Set(names).size !== names.length) out.push('같은 이름이 두 번 있어요. 동명이인이면 이름 뒤에 번호를 붙여요.');
+  if(names.length < 4) out.push(`팀원의 이름 또는 별칭을 4명 이상 적어요. 지금 ${names.length}명이에요.`);
+  if(new Set(names).size !== names.length) out.push('같은 이름 또는 별칭이 두 번 있어요. 선생님이 구분할 수 있도록 서로 다른 표기를 사용해요.');
   return out;
 }
 function dupNote(){
@@ -1378,29 +1377,31 @@ function viewTeam(){
   const opt = (n, v) => `<option value="${n}" ${String(v) === String(n) ? 'selected' : ''}>${n}</option>`;
   if(S.solo) return `<section class="narrow">
     <h1 class="st">시험자 등록</h1>
-    <p class="instr">반과 번호, 이름을 적어요. 혼자서 모든 역할을 맡아요.</p>
+    <p class="instr">반과 번호, 이름 또는 별칭을 적어요. 혼자서 모든 역할을 맡아요.</p>
     ${modeBlock()}
     <div class="field-row">
       <label class="f"><span>반</span><select id="team-cls" data-in="cls"><option value="">선택</option>${Array.from({length:12},(_,k)=>opt(k+1,t.cls)).join('')}</select></label>
       <label class="f"><span>번호</span><select id="team-grp" data-in="grp"><option value="">선택</option>${Array.from({length:40},(_,k)=>opt(k+1,t.grp)).join('')}</select></label>
     </div>
-    <label class="f" style="max-width:380px"><span>이름</span><input type="text" id="member-0" data-in="m0" value="${esc(t.m[0])}" maxlength="12" autocomplete="off"></label>
-    <p class="who privacy-note">${cloud.db ? '적은 반·조·이름과 실험 기록은 이 기기와 선생님 화면의 수합 공간에 저장돼요.' : '적은 반·조·이름과 실험 기록은 이 기기에만 저장되고, 선생님께는 결과 파일로 내요.'} <a href="${PRIVACY_URL}" target="_blank" rel="noopener">개인정보 처리방침</a></p>
+    <label class="f" style="max-width:380px"><span>이름 또는 별칭</span><input type="text" id="member-0" data-in="m0" value="${esc(t.m[0])}" maxlength="12" autocomplete="off"></label>
+    <p class="who">별칭을 쓰면 선생님께 알려드리세요. 선생님이 누구의 기록인지 확인하고 피드백할 때 사용해요.</p>
+    <p class="who privacy-note">${cloud.db ? '입력한 반·조, 이름 또는 별칭과 실험 기록은 이 기기와 선생님 화면의 수합 공간에 저장돼요.' : '입력한 반·조, 이름 또는 별칭과 실험 기록은 이 기기에만 저장되고, 선생님께는 결과 파일로 내요.'} <a href="${PRIVACY_URL}" target="_blank" rel="noopener">개인정보 처리방침</a></p>
     <ul class="hint" id="team-hint">${iss.map(x => `<li>${x}</li>`).join('')}${dup ? `<li>${esc(dup)}</li>` : ''}</ul>
     <div class="actions"><button type="button" class="primary" id="next" data-act="next" ${iss.length ? 'disabled' : ''}>시험 의뢰서 열기</button></div>
   </section>`;
   return `<section class="narrow">
     <h1 class="st">팀 편성</h1>
-    <p class="instr">반과 조, 팀원 이름을 적어요. 4명인 조와 5명인 조 모두 할 수 있어요.</p>
+    <p class="instr">반과 조, 팀원의 이름 또는 별칭을 적어요. 4명인 조와 5명인 조 모두 할 수 있어요.</p>
     ${modeBlock()}
     <div class="field-row">
       <label class="f"><span>반</span><select id="team-cls" data-in="cls"><option value="">선택</option>${Array.from({length:12},(_,k)=>opt(k+1,t.cls)).join('')}</select></label>
       <label class="f"><span>조</span><select id="team-grp" data-in="grp"><option value="">선택</option>${Array.from({length:8},(_,k)=>opt(k+1,t.grp)).join('')}</select></label>
     </div>
-    <fieldset><legend>팀원</legend>
+    <fieldset><legend>팀원 이름 또는 별칭</legend>
       <div class="members">${[0,1,2,3,4].map(i => `<label class="f"><span>${i < 4 ? `팀원 ${i+1}` : '팀원 5 (5명인 조만)'}</span><input type="text" id="member-${i}" data-in="m${i}" value="${esc(t.m[i])}" maxlength="12" autocomplete="off"></label>`).join('')}</div>
     </fieldset>
-    <p class="who privacy-note">${cloud.db ? '적은 반·조·이름과 실험 기록은 이 기기와 선생님 화면의 수합 공간에 저장돼요.' : '적은 반·조·이름과 실험 기록은 이 기기에만 저장되고, 선생님께는 결과 파일로 내요.'} <a href="${PRIVACY_URL}" target="_blank" rel="noopener">개인정보 처리방침</a></p>
+    <p class="who">별칭을 쓰면 선생님께 알려드리세요. 선생님이 누구의 기록인지 확인하고 피드백할 때 사용해요.</p>
+    <p class="who privacy-note">${cloud.db ? '입력한 반·조, 이름 또는 별칭과 실험 기록은 이 기기와 선생님 화면의 수합 공간에 저장돼요.' : '입력한 반·조, 이름 또는 별칭과 실험 기록은 이 기기에만 저장되고, 선생님께는 결과 파일로 내요.'} <a href="${PRIVACY_URL}" target="_blank" rel="noopener">개인정보 처리방침</a></p>
     <ul class="hint" id="team-hint">${iss.map(x => `<li>${x}</li>`).join('')}${dup ? `<li>${esc(dup)}</li>` : ''}</ul>
     <div class="actions"><button type="button" class="primary" id="next" data-act="next" ${iss.length ? 'disabled' : ''}>역할 정하기</button></div>
   </section>`;
@@ -1741,13 +1742,13 @@ function viewReply(){
 /* ───────── 화면: 1차 성적서 ───────── */
 function tableLook(withKey){
   const kc = withKey && hasKey();
-  return `<div class="scroll"><table class="rt"><thead><tr><th>판</th><th>색</th><th>자석</th><th>(−)극 순서</th><th>식별</th>${kc ? '<th>정답</th><th>판정</th>' : ''}<th>근거</th></tr></thead><tbody>
+  return `<div class="scroll"><table class="rt"><thead><tr><th>판</th><th>색</th><th>자석</th><th>(−)극 순서</th><th>식별</th>${kc ? '<th>정답</th>' : ''}<th>근거</th></tr></thead><tbody>
     ${PL.map(p => { const L = S.look[p], j = S.judge[p], r = S.order.indexOf(p), held = j.ok && j.hold, id = idOf(p);
       const basis = held ? j.why.trim() : chipsOf(p).filter(c => j.chips.includes(c.id)).map(c => c.label).join(', ');
       const key = keyFor(p);
       return `<tr><th scope="row" class="c">${p}</th><td>${L.color ? sw(COLOR[L.color].sw) + ' ' + COLOR[L.color].label : '-'}</td><td>${L.mag == null ? '-' : L.mag ? '붙음' : '붙지 않음'}</td>
         <td>${orderOk() ? `${r + 1}번째` : ordNA() ? '확정 불가' : '-'}</td><td><b>${id ? mname(id) : held ? '판단 보류' : '미확정'}</b>${held ? `<br><span class="who">후보: ${esc(candText(p))}</span>` : ''}</td>
-        ${kc ? (key ? `<td>${mname(key)}</td>` + (held ? '<td class="kc">판단 보류</td>' : !id ? '<td class="kc">식별 안 함</td>' : `<td class="kc ${id === key ? 'yes' : 'no'}">${id === key ? '맞음 ✓' : '틀림 ✗'}</td>`) : '<td>-</td><td>-</td>') : ''}
+        ${kc ? (key ? (held ? `<td class="kc">${mname(key)} (보류)</td>` : `<td class="kc ${id === key ? 'yes' : 'no'}">${mname(key)} ${id === key ? '✓' : '✗'}</td>`) : '<td>-</td>') : ''}
         <td class="wrap">${esc(basis) || '-'}</td></tr>`; }).join('')}
   </tbody></table></div>`;
 }
@@ -3558,7 +3559,7 @@ function gdView(){
         ${gdStep('새 시험 시작', '을 누릅니다.')}
         ${gdStep('참여 방식', `을 고릅니다. <b>조별</b>은 4~5명이 한 기기로 역할을 나눠 하고, <b>개별</b>은 혼자 모든 역할을 맡습니다${VIRTUAL ? '' : '(결석생 보충 실험 등)'}.`)}
         ${VIRTUAL ? gdStep('모드', '를 고릅니다. <b>연습</b>은 다음 할 일과 도움말이 나오고, <b>평가</b>는 안내 없이 실제 실험과 같은 조건이에요. 선생님이 정해 두었으면 고를 수 없어요.') : ''}
-        ${gdStep('반·조(개별은 번호)와 이름', '을 적습니다. 선생님이 정한 방식이 있으면 이름 대신 별칭이나 번호를 써요.')}
+        ${gdStep('반·조(개별은 번호)와 이름 또는 별칭', '을 적습니다. 별칭을 쓰면 선생님께 알려드리세요. 체험할 때에는 실제 학생 이름을 입력하지 않습니다.')}
         ${gdStep('역할 정하기', '(조별만): 셀 개발 책임자, 전기화학 분석원, 시험 기록 담당, 배터리 안전 담당을 나눕니다.')}
         ${gdStep('위쪽 단계를 따라', ' 의뢰 확인 → 준비 → 관찰·측정 → 판단 순서로 진행합니다. 기록끼리 어긋나면 앱이 그 자리에서 알려 주니, 다시 재거나 까닭을 적어요.')}
         ${gdStep('서명과 성적서', ': 전압 규격 판정에서 서명하면 1차 성적서가 만들어집니다. 선생님이 2차 과정을 정했으면 이어서 합니다.')}
@@ -3576,6 +3577,7 @@ function gdView(){
 
       <h2 class="sec" id="gd-t">선생님: 처음 준비 (기기마다 한 번)</h2>
       <ol class="gd-list">
+        ${gdStep('별칭 확인', '학생이 별칭을 쓰는 경우 누구의 기록인지 알아볼 수 있도록 별칭을 미리 확인합니다.')}
         ${gdStep('교사 화면', '(처음 화면 아래)을 누르고 숫자 4~6자리 <b>교사 PIN</b>을 정합니다. 학생이 우연히 들어오지 않게 막는 용도이고, 학생이 쓸 기기마다 정해 둡니다.')}
         <li>${tabs}</li>
         ${gdStep('피드백 문구', ' 탭에서 서술 피드백에 눌러 붙일 지적사항 목록을 고칩니다(선택).')}
