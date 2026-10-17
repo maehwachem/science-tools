@@ -300,6 +300,7 @@ table.rt{ border-collapse:collapse; width:100%; min-width:720px; background:var(
 table.rt.compact{ min-width:420px; }
 .rt td.n{ font-family:var(--num); font-size:17px; text-align:right; }
 .rt .c{ text-align:center; font-family:var(--display); font-size:22px; }
+.rt .kc{ color:var(--ink2); }
 .rt .kc.no{ color:var(--bad); font-weight:700; }
 .rt .kc.yes{ color:var(--good); font-weight:700; }
 .twin{ display:grid; gap:16px; }
@@ -1742,13 +1743,13 @@ function viewReply(){
 /* ───────── 화면: 1차 성적서 ───────── */
 function tableLook(withKey){
   const kc = withKey && hasKey();
-  return `<div class="scroll"><table class="rt"><thead><tr><th>판</th><th>색</th><th>자석</th><th>(−)극 순서</th><th>식별</th>${kc ? '<th>정답</th>' : ''}<th>근거</th></tr></thead><tbody>
+  return `<div class="scroll"><table class="rt"><thead><tr><th>판</th><th>색</th><th>자석</th><th>(−)극 순서</th><th>식별</th>${kc ? '<th>정답</th><th>판정</th>' : ''}<th>근거</th></tr></thead><tbody>
     ${PL.map(p => { const L = S.look[p], j = S.judge[p], r = S.order.indexOf(p), held = j.ok && j.hold, id = idOf(p);
       const basis = held ? j.why.trim() : chipsOf(p).filter(c => j.chips.includes(c.id)).map(c => c.label).join(', ');
       const key = keyFor(p);
       return `<tr><th scope="row" class="c">${p}</th><td>${L.color ? sw(COLOR[L.color].sw) + ' ' + COLOR[L.color].label : '-'}</td><td>${L.mag == null ? '-' : L.mag ? '붙음' : '붙지 않음'}</td>
         <td>${orderOk() ? `${r + 1}번째` : ordNA() ? '확정 불가' : '-'}</td><td><b>${id ? mname(id) : held ? '판단 보류' : '미확정'}</b>${held ? `<br><span class="who">후보: ${esc(candText(p))}</span>` : ''}</td>
-        ${kc ? (key ? (held ? `<td class="kc">${mname(key)} (보류)</td>` : `<td class="kc ${id === key ? 'yes' : 'no'}">${mname(key)} ${id === key ? '✓' : '✗'}</td>`) : '<td>-</td>') : ''}
+        ${kc ? (key ? `<td>${mname(key)}</td>` + (held ? '<td class="kc">판단 보류</td>' : !id ? '<td class="kc">식별 안 함</td>' : `<td class="kc ${id === key ? 'yes' : 'no'}">${id === key ? '맞음 ✓' : '틀림 ✗'}</td>`) : '<td>-</td><td>-</td>') : ''}
         <td class="wrap">${esc(basis) || '-'}</td></tr>`; }).join('')}
   </tbody></table></div>`;
 }
