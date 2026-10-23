@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>전자기 유도 가상 실험실 (교사 설명용) · KJE</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* layout: experiment tabs on top; dark instrument stage on the left, lab notebook panel on the right (stacked on phones) */
+:root{
+  --bg:#e6ecf1; --ink:#0f2236; --muted:#566779; --line:#c8d3dc; --panel:#f5f8fa; --card:#ffffff;
+  --warm:#d9412f; --cold:#2f7fc1; --ok:#1f8a5b; --hi:#f6c46a; --amber:#c96a1a;
+  --btn:#0f2236; --btnInk:#f2f6f9;
+  --display:"Black Han Sans","IBM Plex Sans KR",sans-serif;
+  --body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#07121d; --ink:#e3ecf4; --muted:#8ea3b6; --line:#1d3349; --panel:#0d1c2c; --card:#0b1826;
+    --warm:#ef5a44; --cold:#4d9be0; --ok:#3cc488; --amber:#e08a3a;
+    --btn:#e3ecf4; --btnInk:#07121d; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#07121d; --ink:#e3ecf4; --muted:#8ea3b6; --line:#1d3349; --panel:#0d1c2c; --card:#0b1826;
+  --warm:#ef5a44; --cold:#4d9be0; --ok:#3cc488; --amber:#e08a3a;
+  --btn:#e3ecf4; --btnInk:#07121d; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--body);word-break:keep-all;-webkit-tap-highlight-color:transparent}
+button,select,input{font:inherit}
+:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+#app{max-width:1600px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 28px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-bottom:12px}
+.brand{font-family:var(--display);font-size:24px;line-height:1.1;white-space:nowrap}
+.brand small{font-family:var(--body);font-weight:500;font-size:14px;color:var(--muted);margin-left:8px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{border:1.5px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:8px 16px;min-height:42px;font-weight:700;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--btn);color:var(--btnInk);border-color:var(--btn)}
+.tabs .n{font-family:var(--display);font-weight:400;margin-right:6px;opacity:.7}
+.credit{margin-left:auto;font-size:13px;color:var(--muted)}
+.usage{margin:0 0 14px;padding:10px 14px;border-radius:12px;background:var(--panel);border:1px solid var(--line);font-size:14px;color:var(--muted)}
+.usage b{display:inline-block;margin-right:8px;padding:1px 10px;border-radius:999px;background:var(--amber);color:#fff;font-size:13px}
+.exp{display:none;grid-template-columns:minmax(0,1.65fr) minmax(320px,1fr);gap:18px;align-items:start}
+.exp.on{display:grid}
+@media (max-width:980px){.exp.on{grid-template-columns:minmax(0,1fr)}}
+.stagecol{position:sticky;top:10px;min-width:0}
+@media (max-width:980px){.stagecol{position:static}}
+.stage{position:relative;width:100%;aspect-ratio:1000/600;max-width:100%;border-radius:18px;overflow:hidden;background:#0b2440;user-select:none;-webkit-user-select:none}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;display:block;font-family:var(--body);touch-action:none}
+.aim{margin:10px 2px 0;color:var(--muted);font-size:15px}
+.aim b{color:var(--ink)}
+.panel{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.card h2{font-family:var(--display);font-weight:400;font-size:21px;margin:0 0 8px;line-height:1.3;text-wrap:balance}
+.card h3{font-size:15px;margin:0 0 8px;color:var(--muted);font-weight:700;letter-spacing:.02em}
+.ctl{display:grid;gap:10px}
+.lbl{font-weight:700;font-size:14px;margin-bottom:4px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1 1 0;min-width:70px;min-height:42px;border-radius:10px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);font-weight:600;font-size:14px;cursor:pointer;padding:4px 8px}
+.seg button.sel{background:var(--btn);color:var(--btnInk);border-color:var(--btn)}
+.seg button:disabled{opacity:.4;cursor:default}
+input[type=range]{width:100%;accent-color:var(--amber);height:32px}
+.scale{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:-6px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts button{flex:1 1 120px;min-height:46px;border-radius:12px;border:1.5px solid var(--btn);background:var(--btn);color:var(--btnInk);font-weight:700;cursor:pointer;padding:4px 10px}
+.acts button.alt{background:transparent;color:var(--ink);border-color:var(--line)}
+.acts button.rec{background:var(--amber);border-color:var(--amber);color:#fff}
+.acts button:disabled{opacity:.35;cursor:default}
+.read{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:baseline;font-size:15px}
+.read .v{font-family:var(--display);font-size:24px;line-height:1.2;text-align:right;font-variant-numeric:tabular-nums}
+.read .u{font-family:var(--body);font-size:13px;color:var(--muted);margin-left:3px}
+.note{font-size:13px;color:var(--muted);margin:6px 0 0}
+.tblwrap{overflow-x:auto;margin:0 -4px;padding:0 4px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 6px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+th{font-size:12.5px;color:var(--muted);font-weight:700}
+td.l,th.l{text-align:left}
+.empty{color:var(--muted);font-size:14px;padding:6px 0}
+.tbar{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.tbar button{min-height:36px;border-radius:10px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font-weight:600;font-size:13.5px;cursor:pointer;padding:2px 12px}
+.tbar .msg{font-size:13px;color:var(--ok);align-self:center}
+.graph{width:100%;height:auto;display:block;margin-top:4px}
+.graph .ax{stroke:var(--muted);stroke-width:1.2}
+.graph .gr{stroke:var(--line);stroke-width:1}
+.graph text{fill:var(--muted);font-size:11px;font-family:var(--body)}
+.graph .tt{fill:var(--ink);font-size:12px;font-weight:700}
+.gsel{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.gsel button{min-height:32px;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--ink);font-size:13px;font-weight:600;cursor:pointer;padding:0 12px}
+.gsel button.sel{background:var(--btn);color:var(--btnInk);border-color:var(--btn)}
+ol.steps{margin:0;padding-left:20px;font-size:14.5px}
+ol.steps li{margin-bottom:4px}
+details{border-top:1px solid var(--line);padding:8px 0}
+details:first-of-type{border-top:0}
+summary{cursor:pointer;font-weight:600;font-size:14.5px;list-style-position:outside}
+details p{margin:6px 0 2px;font-size:14px;color:var(--muted)}
+/* svg text */
+.tw{fill:#fff;font-weight:600;paint-order:stroke;stroke:rgba(4,18,34,.85);stroke-width:4px;stroke-linejoin:round}
+.tp{fill:#fff;font-weight:700}
+.tm{fill:#cfe0ee;font-weight:500}
+.flow{stroke-dasharray:7 7;animation:flow 1s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-14}}
+.grab{cursor:grab}
+@media (prefers-reduced-motion:reduce){.flow{animation:none}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">전자기 유도 가상 실험실<small>통합과학2 · 교사 설명용</small></div>
+    <nav class="tabs" role="tablist" aria-label="실험 고르기">
+      <button type="button" role="tab" data-x="0" aria-selected="true"><span class="n">1</span>자석과 코일</button>
+      <button type="button" role="tab" data-x="1" aria-selected="false"><span class="n">2</span>떨어지는 자석</button>
+      <button type="button" role="tab" data-x="2" aria-selected="false"><span class="n">3</span>관 속 자석 낙하</button>
+      <button type="button" role="tab" data-x="3" aria-selected="false"><span class="n">4</span>손발전기</button>
+    </nav>
+    <span class="credit">제작 · KJE</span>
+  </header>
+  <p class="usage"><b>교사 설명용</b> 수업 중 교사가 화면에 띄워 실험을 시연하고 설명하는 데 쓰는 가상 실험실이다. 학생 제출이나 평가 기능은 없고, 기록은 이 화면을 닫으면 지워진다. 값은 경향을 보여 주는 모형 값이며, 실제 실험 장비의 수치와는 다를 수 있다.</p>
+
+  <!-- ===================== 1 ===================== -->
+  <section class="exp on" id="x0" aria-label="실험 1 자석과 코일">
+    <div class="stagecol">
+      <div class="stage"><svg id="s0" viewBox="0 0 1000 600" role="img" aria-label="자석, 코일, 검류계 실험 장치"></svg></div>
+      <p class="aim"><b>목표</b> 유도 전류의 세기와 방향이 무엇에 따라 달라지는지 찾는다. 버튼을 누르면 자석이 늘 같은 자리에서 출발해 같은 거리를 움직인다. 손가락으로 직접 끌어 볼 수도 있다.</p>
+    </div>
+    <div class="panel">
+      <div class="card">
+        <h2>실험 조건</h2>
+        <div class="ctl">
+          <div><div class="lbl">코일 쪽을 향한 극</div><div class="seg" data-k="pole"><button type="button" data-v="1">N극</button><button type="button" data-v="-1">S극</button></div></div>
+          <div><div class="lbl">자석의 세기</div><div class="seg" data-k="B"><button type="button" data-v="0.5">약한 자석</button><button type="button" data-v="1">보통</button><button type="button" data-v="2">강한 자석</button></div></div>
+          <div><div class="lbl">코일의 감은 수</div><div class="seg" data-k="N"><button type="button" data-v="50">50회</button><button type="button" data-v="100">100회</button><button type="button" data-v="200">200회</button></div></div>
+          <div><label class="lbl" for="spd0">자석을 움직이는 빠르기: <span id="spdv0">3</span>단계</label><input type="range" id="spd0" min="1" max="5" step="1" value="3"><div class="scale"><span>1 (느리게)</span><span>5 (빠르게)</span></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="acts"><button type="button" id="in0">코일에 넣기</button><button type="button" id="out0" class="alt">코일에서 빼기</button></div>
+        <div class="read" style="margin-top:12px"><span>바늘이 가장 많이 기운 정도</span><span class="v" id="max0">0<span class="u">칸</span></span></div>
+        <p class="note" id="st0">자석을 움직이면 그동안 바늘이 가장 많이 기운 눈금이 남는다.</p>
+        <div class="acts" style="margin-top:10px"><button type="button" class="rec" id="rec0" disabled>기록하기</button></div>
+      </div>
+      <div class="card">
+        <h3>기록</h3>
+        <div class="tblwrap"><table id="t0"></table></div>
+        <div class="tbar"><button type="button" data-copy="0">표 복사</button><button type="button" data-clear="0">기록 지우기</button><span class="msg"></span></div>
+        <div class="gsel" style="margin-top:12px" id="g0sel"><button type="button" data-v="spd" class="sel">가로축: 빠르기</button><button type="button" data-v="N">감은 수</button><button type="button" data-v="B">자석의 세기</button></div>
+        <svg class="graph" id="g0" viewBox="0 0 380 230" role="img" aria-label="기록 그래프"></svg>
+        <p class="note" id="g0note"></p>
+      </div>
+      <div class="card">
+        <h3>탐구 순서</h3>
+        <ol class="steps">
+          <li>보통 자석, 100회 코일로 N극을 넣고 빼 본다. 바늘의 방향을 비교한다.</li>
+          <li>S극으로 바꿔 같은 실험을 한다.</li>
+          <li>다른 조건은 그대로 두고 빠르기만 1~5단계로 바꿔 기록한다.</li>
+          <li>같은 방법으로 감은 수, 자석의 세기를 하나씩 바꿔 기록한다.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>생각해 보기</h3>
+        <details><summary>N극을 넣을 때와 뺄 때 바늘은 어떻게 달랐나?</summary><p>서로 반대쪽으로 기운다. 코일을 지나는 자기장이 늘어날 때와 줄어들 때 유도 전류의 방향이 반대이다.</p></details>
+        <details><summary>N극을 넣을 때와 S극을 넣을 때는?</summary><p>이것도 반대쪽으로 기운다. 코일을 지나는 자기장의 방향이 반대이기 때문이다.</p></details>
+        <details><summary>빠르기를 2배로 하면 바늘은 몇 배쯤 기울었나?</summary><p>약 2배이다. 자기장이 빨리 변할수록 유도 전류가 세다. 감은 수와 자석의 세기도 같은 방법으로 비교해 보자.</p></details>
+        <details><summary>한 가지 조건만 바꾸어야 하는 까닭은?</summary><p>여러 조건을 한꺼번에 바꾸면 바늘이 달라진 까닭이 어느 조건 때문인지 알 수 없기 때문이다.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 2 ===================== -->
+  <section class="exp" id="x1" aria-label="실험 2 떨어지는 자석">
+    <div class="stagecol">
+      <div class="stage"><svg id="s1" viewBox="0 0 1000 600" role="img" aria-label="코일을 통과해 떨어지는 자석과 전류 그래프"></svg></div>
+      <p class="aim"><b>목표</b> 자석이 코일을 지나 떨어질 때 전류가 시간에 따라 어떻게 변하는지 그래프로 보고, 두 봉우리를 비교한다. 화면은 실제보다 느리게 보여 준다.</p>
+    </div>
+    <div class="panel">
+      <div class="card">
+        <h2>실험 조건</h2>
+        <div class="ctl">
+          <div><div class="lbl">떨어뜨리는 높이 (코일 가운데에서)</div><div class="seg" data-k="h"><button type="button" data-v="10">10 cm</button><button type="button" data-v="20">20 cm</button><button type="button" data-v="30">30 cm</button><button type="button" data-v="40">40 cm</button></div></div>
+          <div><div class="lbl">아래쪽을 향한 극</div><div class="seg" data-k="pole"><button type="button" data-v="1">N극</button><button type="button" data-v="-1">S극</button></div></div>
+          <div><div class="lbl">코일의 감은 수</div><div class="seg" data-k="N"><button type="button" data-v="50">50회</button><button type="button" data-v="100">100회</button><button type="button" data-v="200">200회</button></div></div>
+          <div><div class="lbl">화면 빠르기</div><div class="seg" data-k="slow"><button type="button" data-v="0.04">1/25배</button><button type="button" data-v="0.1">1/10배</button><button type="button" data-v="1">실제 빠르기</button></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="acts"><button type="button" id="go1">떨어뜨리기</button></div>
+        <div class="read" style="margin-top:12px">
+          <span>첫 번째 봉우리 (들어갈 때)</span><span class="v" id="p1a">–</span>
+          <span>두 번째 봉우리 (나올 때)</span><span class="v" id="p1b">–</span>
+          <span>두 봉우리 사이 시간</span><span class="v" id="p1t">–</span>
+        </div>
+        <p class="note">전류는 + 쪽이 검류계의 + 단자로 들어가는 방향이다.</p>
+        <div class="acts" style="margin-top:10px"><button type="button" class="rec" id="rec1" disabled>기록하기</button></div>
+      </div>
+      <div class="card">
+        <h3>기록</h3>
+        <div class="tblwrap"><table id="t1"></table></div>
+        <div class="tbar"><button type="button" data-copy="1">표 복사</button><button type="button" data-clear="1">기록 지우기</button><span class="msg"></span></div>
+        <svg class="graph" id="g1" viewBox="0 0 380 230" role="img" aria-label="높이에 따른 봉우리 크기 그래프"></svg>
+      </div>
+      <div class="card">
+        <h3>탐구 순서</h3>
+        <ol class="steps">
+          <li>20 cm에서 N극이 아래로 가게 떨어뜨리고, 그래프의 두 봉우리 방향과 크기를 확인한다.</li>
+          <li>S극이 아래로 가게 바꿔 다시 떨어뜨린다.</li>
+          <li>높이를 10~40 cm로 바꾸며 두 봉우리의 크기와 사이 시간을 기록한다.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>생각해 보기</h3>
+        <details><summary>두 봉우리의 방향이 반대인 까닭은?</summary><p>자석이 코일에 들어갈 때는 코일을 지나는 자기장이 늘어나고, 빠져나갈 때는 줄어들기 때문이다.</p></details>
+        <details><summary>두 번째 봉우리가 첫 번째보다 큰 까닭은?</summary><p>자석은 떨어지면서 점점 빨라지므로 빠져나갈 때가 들어갈 때보다 빠르다. 자기장이 더 빨리 변하므로 전류가 더 세다. 봉우리의 폭도 더 좁다.</p></details>
+        <details><summary>높이를 높이면 그래프는 어떻게 달라졌나?</summary><p>코일에 닿을 때의 속력이 커져 봉우리가 높아지고, 지나가는 시간이 짧아져 두 봉우리 사이가 좁아진다.</p></details>
+        <details><summary>두 봉우리 사이에서 전류가 0이 되는 순간 자석은 어디에 있을까?</summary><p>코일 가운데를 지나는 순간이다. 코일을 지나는 자기장이 가장 많지만 그 순간에는 늘지도 줄지도 않는다.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 3 ===================== -->
+  <section class="exp" id="x2" aria-label="실험 3 관 속 자석 낙하">
+    <div class="stagecol">
+      <div class="stage"><svg id="s2" viewBox="0 0 1000 600" role="img" aria-label="세워 둔 관 속으로 떨어지는 자석"></svg></div>
+      <p class="aim"><b>목표</b> 길이 1 m의 관 속으로 자석을 떨어뜨려 걸리는 시간을 재고, 관의 재질에 따라 시간이 달라지는 까닭을 전자기 유도로 설명한다. 관은 속이 보이게 잘라 그렸다.</p>
+    </div>
+    <div class="panel">
+      <div class="card">
+        <h2>실험 조건</h2>
+        <div class="ctl">
+          <div><div class="lbl">관</div><div class="seg" data-k="tube"><button type="button" data-v="plastic">플라스틱</button><button type="button" data-v="al">알루미늄</button><button type="button" data-v="cu">구리</button></div></div>
+          <div><div class="lbl">떨어뜨리는 물체 (크기와 질량이 같음)</div><div class="seg" data-k="obj"><button type="button" data-v="mag">네오디뮴 자석</button><button type="button" data-v="ball">쇠구슬</button></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="acts"><button type="button" id="go2">떨어뜨리기</button></div>
+        <div class="read" style="margin-top:12px"><span>관을 통과한 시간</span><span class="v" id="tm2">–</span></div>
+        <p class="note">관의 위아래에 있는 광센서가 시간을 잰다.</p>
+        <div class="acts" style="margin-top:10px"><button type="button" class="rec" id="rec2" disabled>기록하기</button></div>
+      </div>
+      <div class="card">
+        <h3>기록</h3>
+        <div class="tblwrap"><table id="t2"></table></div>
+        <div class="tbar"><button type="button" data-copy="2">표 복사</button><button type="button" data-clear="2">기록 지우기</button><span class="msg"></span></div>
+        <svg class="graph" id="g2" viewBox="0 0 380 230" role="img" aria-label="관과 물체별 평균 시간 그래프"></svg>
+      </div>
+      <div class="card">
+        <h3>탐구 순서</h3>
+        <ol class="steps">
+          <li>플라스틱 관에 자석과 쇠구슬을 각각 3번씩 떨어뜨린다.</li>
+          <li>알루미늄 관, 구리 관에서도 같은 실험을 한다.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>생각해 보기</h3>
+        <details><summary>구리 관에서 자석만 천천히 떨어지는 까닭은?</summary><p>자석이 떨어지면 관 벽 곳곳을 지나는 자기장이 변해 관 벽에 고리 모양의 유도 전류가 흐른다. 자석 아래쪽 벽은 자석을 밀어내고, 위쪽 벽은 끌어당겨 낙하를 방해한다.</p></details>
+        <details><summary>쇠구슬은 왜 어느 관에서나 빨리 떨어질까?</summary><p>쇠구슬은 자석이 아니어서 관 벽을 지나는 자기장을 변화시키지 못한다. 유도 전류가 생기지 않는다.</p></details>
+        <details><summary>플라스틱 관에서는 왜 자석도 빨리 떨어질까?</summary><p>플라스틱은 전류가 거의 흐르지 않아 자기장이 변해도 유도 전류가 생기지 않는다.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 4 ===================== -->
+  <section class="exp" id="x3" aria-label="실험 4 손발전기">
+    <div class="stagecol">
+      <div class="stage"><svg id="s3" viewBox="0 0 1000 600" role="img" aria-label="손발전기와 전구, 전압계"></svg></div>
+      <p class="aim"><b>목표</b> 손발전기를 돌리는 빠르기와 연결한 전구 수에 따라 전압, 전구 밝기, 돌리는 데 드는 힘이 어떻게 달라지는지 알아본다. 손잡이를 직접 돌려도 된다.</p>
+    </div>
+    <div class="panel">
+      <div class="card">
+        <h2>실험 조건</h2>
+        <div class="ctl">
+          <div><label class="lbl" for="spd3">돌리는 빠르기: <span id="spdv3">1.0</span>바퀴/초</label><input type="range" id="spd3" min="0" max="3" step="0.5" value="1"><div class="scale"><span>0</span><span>3바퀴/초</span></div></div>
+          <div><div class="lbl">연결한 전구 수 (나란히 연결)</div><div class="seg" data-k="n"><button type="button" data-v="0">0개</button><button type="button" data-v="1">1개</button><button type="button" data-v="2">2개</button><button type="button" data-v="3">3개</button></div></div>
+        </div>
+        <p class="note">손잡이를 손가락으로 돌리면 그 빠르기가 쓰이고, 손을 떼면 위의 빠르기로 돌아간다.</p>
+      </div>
+      <div class="card">
+        <div class="read">
+          <span>돌리는 빠르기</span><span class="v" id="w3">–</span>
+          <span>전압계</span><span class="v" id="v3">–</span>
+          <span>전구 1개의 밝기</span><span class="v" id="b3">–</span>
+          <span>돌리는 데 드는 힘</span><span class="v" id="f3">–</span>
+        </div>
+        <p class="note">밝기와 힘은 3바퀴/초에 전구 1개를 켤 때를 10으로 한 값이다.</p>
+        <div class="acts" style="margin-top:10px"><button type="button" class="rec" id="rec3">기록하기</button></div>
+      </div>
+      <div class="card">
+        <h3>기록</h3>
+        <div class="tblwrap"><table id="t3"></table></div>
+        <div class="tbar"><button type="button" data-copy="3">표 복사</button><button type="button" data-clear="3">기록 지우기</button><span class="msg"></span></div>
+        <div class="gsel" style="margin-top:12px" id="g3sel"><button type="button" data-v="v" class="sel">세로축: 전압</button><button type="button" data-v="f">돌리는 데 드는 힘</button></div>
+        <svg class="graph" id="g3" viewBox="0 0 380 230" role="img" aria-label="빠르기에 따른 그래프"></svg>
+      </div>
+      <div class="card">
+        <h3>탐구 순서</h3>
+        <ol class="steps">
+          <li>전구 1개를 연결하고 빠르기를 0.5~3바퀴/초로 바꿔 기록한다.</li>
+          <li>빠르기를 2바퀴/초로 두고 전구 수를 0~3개로 바꿔 기록한다.</li>
+          <li>돌리는 데 드는 힘이 언제 커지는지 찾는다.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>생각해 보기</h3>
+        <details><summary>빠르게 돌리면 전압이 커지는 까닭은?</summary><p>코일을 지나는 자기장이 더 빨리 변하기 때문이다.</p></details>
+        <details><summary>전구를 0개 연결했을 때 돌리기가 가장 쉬운 까닭은?</summary><p>회로가 열려 있어 전류가 흐르지 않는다. 전류가 흐르지 않으면 코일이 회전을 방해하는 힘도 생기지 않는다. 남은 힘은 마찰 때문이다.</p></details>
+        <details><summary>전구를 많이 연결할수록 돌리기 힘든 까닭은?</summary><p>코일에 흐르는 전류가 많아질수록 코일이 전자석이 되어 회전을 방해하는 힘이 커진다. 더 많은 전기 에너지를 쓰려면 그만큼 더 많은 일을 해야 한다.</p></details>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+'use strict';
+const NS = 'http://www.w3.org/2000/svg';
+const $ = s => document.querySelector(s);
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const f1 = v => v.toFixed(1);
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function el(tag, at, p) { const e = document.createElementNS(NS, tag); if (at) for (const k in at) { if (k === 'text') e.textContent = at[k]; else e.setAttribute(k, at[k]); } if (p) p.appendChild(e); return e; }
+function tx(p, x, y, s, cls, size, anchor) { return el('text', { x, y, class: cls || 'tw', 'font-size': size || 18, 'text-anchor': anchor || 'middle', text: s }, p); }
+function pill(p, label, fill, w, h, size) {
+  const g = el('g', null, p); el('rect', { x: -w / 2, y: -h / 2, width: w, height: h, rx: h / 2, fill }, g);
+  g.t = el('text', { x: 0, y: size * .36, 'text-anchor': 'middle', class: 'tp', 'font-size': size, text: label }, g); g.r = g.firstChild; return g;
+}
+function defsFor(svg) {
+  const d = el('defs', null, svg);
+  const lin = (id, stops) => { const g = el('linearGradient', { id, x1: 0, y1: 0, x2: 0, y2: 1 }, d); stops.forEach(s => el('stop', { offset: s[0], 'stop-color': s[1] }, g)); };
+  const linh = (id, stops) => { const g = el('linearGradient', { id, x1: 0, y1: 0, x2: 1, y2: 0 }, d); stops.forEach(s => el('stop', { offset: s[0], 'stop-color': s[1] }, g)); };
+  const rad = (id, stops) => { const g = el('radialGradient', { id }, d); stops.forEach(s => el('stop', { offset: s[0], 'stop-color': s[1], 'stop-opacity': s[2] }, g)); };
+  const p = svg.id;
+  lin(p + 'bg', [[0, '#123555'], [1, '#081a2e']]);
+  lin(p + 'n', [[0, '#f07560'], [1, '#c1352a']]);
+  lin(p + 's', [[0, '#62a8e4'], [1, '#2366ad']]);
+  lin(p + 'gv', [[0, '#f4f7f9'], [1, '#d5dde4']]);
+  linh(p + 'cu', [[0, '#8a4a22'], [.5, '#e2965a'], [1, '#8a4a22']]);
+  linh(p + 'al', [[0, '#7d8994'], [.5, '#dde5ec'], [1, '#7d8994']]);
+  linh(p + 'pl', [[0, 'rgba(160,210,240,.35)'], [.5, 'rgba(220,240,255,.18)'], [1, 'rgba(160,210,240,.35)']]);
+  linh(p + 'ball', [[0, '#5d6a75'], [.5, '#dfe6ec'], [1, '#5d6a75']]);
+  rad(p + 'glow', [[0, '#fff7cf', 1], [.3, '#ffd66b', .85], [1, '#ffb640', 0]]);
+  el('rect', { width: 1000, height: 600, fill: `url(#${p}bg)` }, svg);
+  return id => `url(#${p}${id})`;
+}
+function rnd(v, sp) { return v * (1 + (Math.random() - .5) * sp); }
+const half = v => Math.round(v * 2) / 2;
+
+/* ---------- galvanometer (shared by 1 & 2) ---------- */
+function galv(p, cx, cy, range, labelEvery) {
+  const g = el('g', null, p), u = defsFor.u;
+  el('rect', { x: cx - 110, y: cy - 92, width: 220, height: 150, rx: 16, fill: '#e9eef2', stroke: '#7d8c99', 'stroke-width': 2 }, g);
+  const R = 88, px = cx, py = cy + 28;
+  for (let v = -range; v <= range; v++) {
+    const a = v / range * 1.15, big = v % labelEvery === 0;
+    const r1 = big ? R - 14 : R - 8;
+    el('line', { x1: px + r1 * Math.sin(a), y1: py - r1 * Math.cos(a), x2: px + R * Math.sin(a), y2: py - R * Math.cos(a), stroke: v === 0 ? '#0f2236' : '#5d6d7c', 'stroke-width': big ? 2.4 : 1.1 }, g);
+    if (big) { const t = tx(g, px + (R - 28) * Math.sin(a), py - (R - 28) * Math.cos(a) + 5, String(Math.abs(v)), 'tq', 13); t.setAttribute('fill', '#33475a'); t.setAttribute('font-weight', 600); }
+  }
+  const nd = el('g', null, g);
+  el('line', { x1: px, y1: py, x2: px, y2: py - R + 4, stroke: '#d9412f', 'stroke-width': 3, 'stroke-linecap': 'round' }, nd);
+  el('circle', { cx: px, cy: py, r: 7, fill: '#0f2236' }, g);
+  const tg = tx(g, cx, cy + 50, 'G', 'tq', 14); tg.setAttribute('fill', '#566779'); tg.setAttribute('font-weight', 700);
+  el('rect', { x: cx - 78, y: cy + 56, width: 18, height: 14, rx: 3, fill: '#c93a28' }, g);
+  el('rect', { x: cx + 60, y: cy + 56, width: 18, height: 14, rx: 3, fill: '#1c2c3c' }, g);
+  const a = tx(g, cx - 69, cy + 50, '+', 'tq', 18); a.setAttribute('fill', '#c93a28'); a.setAttribute('font-weight', 800);
+  const b = tx(g, cx + 69, cy + 50, '−', 'tq', 18); b.setAttribute('fill', '#1c2c3c'); b.setAttribute('font-weight', 800);
+  g.set = v => nd.setAttribute('transform', `rotate(${f1(clamp(v / range, -1.08, 1.08) * 1.15 * 180 / Math.PI)} ${px} ${py})`);
+  g.tp = [cx - 69, cy + 70]; g.tm = [cx + 69, cy + 70];
+  return g;
+}
+
+/* ---------- table & graph helpers ---------- */
+const REC = [[], [], [], []];
+const COLS = [
+  [['번호', 'n'], ['극', 'pole'], ['동작', 'act'], ['자석', 'B'], ['감은 수', 'N'], ['빠르기', 'spd'], ['바늘 (칸)', 'val'], ['방향', 'dir']],
+  [['번호', 'n'], ['높이 (cm)', 'h'], ['아래 극', 'pole'], ['감은 수', 'N'], ['첫 봉우리 (mA)', 'a'], ['두 번째 (mA)', 'b'], ['사이 시간 (ms)', 't']],
+  [['번호', 'n'], ['관', 'tube'], ['물체', 'obj'], ['시간 (s)', 't']],
+  [['번호', 'n'], ['빠르기 (바퀴/초)', 'w'], ['전구 수', 'n2'], ['전압 (V)', 'v'], ['밝기', 'b'], ['힘', 'f']]
+];
+function drawTable(i) {
+  const t = document.getElementById('t' + i), rows = REC[i];
+  if (!rows.length) { t.innerHTML = '<caption class="empty" style="caption-side:bottom;text-align:left">아직 기록이 없다. 실험한 뒤 ‘기록하기’를 누른다.</caption>'; drawGraph(i); return; }
+  t.innerHTML = '<thead><tr>' + COLS[i].map(c => `<th>${c[0]}</th>`).join('') + '</tr></thead><tbody>' +
+    rows.map((r, k) => '<tr>' + COLS[i].map(c => `<td>${c[1] === 'n' ? k + 1 : r[c[1]]}</td>`).join('') + '</tr>').join('') + '</tbody>';
+  drawGraph(i);
+}
+function tsv(i) { return [COLS[i].map(c => c[0]).join('\t')].concat(REC[i].map((r, k) => COLS[i].map(c => c[1] === 'n' ? k + 1 : r[c[1]]).join('\t'))).join('\n'); }
+document.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => {
+  const i = +b.dataset.copy, msg = b.parentNode.querySelector('.msg'), text = tsv(i);
+  const done = m => { msg.textContent = m; setTimeout(() => msg.textContent = '', 2200); };
+  try { navigator.clipboard.writeText(text).then(() => done('복사했다. 스프레드시트에 붙여 넣으면 된다.'), () => done('복사하지 못했다. 표를 길게 눌러 직접 복사한다.')); }
+  catch (e) { done('복사하지 못했다. 표를 길게 눌러 직접 복사한다.'); }
+});
+const CLR = [0, 0, 0, 0];
+document.querySelectorAll('[data-clear]').forEach(b => b.onclick = () => {
+  const i = +b.dataset.clear, msg = b.parentNode.querySelector('.msg');
+  if (!REC[i].length) return;
+  if (CLR[i] && Date.now() - CLR[i] < 3000) { REC[i] = []; CLR[i] = 0; drawTable(i); msg.textContent = '지웠다.'; setTimeout(() => msg.textContent = '', 1800); }
+  else { CLR[i] = Date.now(); msg.textContent = '한 번 더 누르면 지운다.'; msg.style.color = 'var(--warm)'; setTimeout(() => { msg.textContent = ''; msg.style.color = ''; }, 3000); }
+});
+function gsvg(id) { const g = document.getElementById(id); g.innerHTML = ''; return g; }
+const GX0 = 46, GX1 = 368, GY0 = 196, GY1 = 22;
+function axes(g, xl, yl, xmin, xmax, ymin, ymax, xt, yt) {
+  const X = v => GX0 + (v - xmin) / (xmax - xmin) * (GX1 - GX0), Y = v => GY0 - (v - ymin) / (ymax - ymin) * (GY0 - GY1);
+  yt.forEach(v => { el('line', { x1: GX0, y1: Y(v), x2: GX1, y2: Y(v), class: 'gr' }, g); el('text', { x: GX0 - 6, y: Y(v) + 4, 'text-anchor': 'end', text: String(v) }, g); });
+  xt.forEach(v => el('text', { x: X(v[0]), y: GY0 + 15, 'text-anchor': 'middle', text: v[1] }, g));
+  el('line', { x1: GX0, y1: GY0, x2: GX1, y2: GY0, class: 'ax' }, g); el('line', { x1: GX0, y1: GY0, x2: GX0, y2: GY1 - 6, class: 'ax' }, g);
+  el('text', { x: GX1, y: GY0 + 30, 'text-anchor': 'end', class: 'tt', text: xl }, g);
+  el('text', { x: GX0 - 40, y: 12, 'text-anchor': 'start', class: 'tt', text: yl }, g);
+  return [X, Y];
+}
+const PAL = ['#2f7fc1', '#c96a1a', '#1f8a5b', '#a14a9b'];
+function dot(g, x, y, c, shape) {
+  if (shape === 1) el('rect', { x: x - 5, y: y - 5, width: 10, height: 10, fill: c, stroke: 'var(--card)', 'stroke-width': 1.5 }, g);
+  else el('circle', { cx: x, cy: y, r: 5.5, fill: c, stroke: 'var(--card)', 'stroke-width': 1.5 }, g);
+}
+function legend(g, items) { let x = GX0 + 4; items.forEach(([c, t, s]) => { dot(g, x + 5, GY1 + 2, c, s); el('text', { x: x + 14, y: GY1 + 6, text: t }, g); x += 14 + t.length * 11 + 14; }); }
+const G0 = { by: 'spd' }, G3 = { by: 'v' };
+function nice(m) { for (const s of [1, 2, 5, 10, 20, 50]) if (m / s <= 5) return s; return 100; }
+function drawGraph(i) {
+  const g = gsvg('g' + i), rows = REC[i];
+  if (i === 0) {
+    const by = G0.by, xs = { spd: [0, 6, [1, 2, 3, 4, 5].map(v => [v, v + '단계'])], N: [0, 250, [50, 100, 200].map(v => [v, v + '회'])], B: [0, 2.5, [[.5, '약'], [1, '보통'], [2, '강']]] }[by];
+    const use = rows.filter(r => r.act !== '직접' && !r.over), nHand = rows.filter(r => r.act === '직접').length, nOver = rows.filter(r => r.act !== '직접' && r.over).length;
+    const pts = use.map(r => [by === 'spd' ? r.spdv : by === 'N' ? r.N : r.Bv, Math.abs(r.valv), r.spdv]);
+    const ym = Math.max(5, ...pts.map(p => p[1])), st = nice(ym), top = Math.ceil(ym / st) * st;
+    const [X, Y] = axes(g, { spd: '빠르기', N: '감은 수', B: '자석의 세기' }[by], '바늘이 기운 정도 (칸)', xs[0], xs[1], 0, top, xs[2], Array.from({ length: top / st + 1 }, (_, k) => k * st));
+    pts.forEach(p => { dot(g, X(p[0]), Y(p[1]), PAL[0]); if (by !== 'spd') el('text', { x: X(p[0]) + 8, y: Y(p[1]) + 4, text: p[2] + '단계' }, g); });
+    if (!pts.length) {
+      el('text', { x: 207, y: 100, 'text-anchor': 'middle', text: '‘코일에 넣기·빼기’ 버튼으로 움직여 기록하면' }, g);
+      el('text', { x: 207, y: 118, 'text-anchor': 'middle', text: '점이 찍힌다' }, g);
+    }
+    const why = [];
+    if (nHand) why.push('손으로 끈 기록 ' + nHand + '개(빠르기가 매번 달라 비교할 수 없음)');
+    if (nOver) why.push('눈금을 넘은 기록 ' + nOver + '개');
+    const nt = document.getElementById('g0note');
+    nt.textContent = (why.length ? '그래프에서 뺀 것: ' + why.join(', ') + '. ' : '') + (by !== 'spd' ? '점 옆 숫자는 빠르기다. 빠르기를 같게 두고 비교한다.' : '');
+  } else if (i === 1) {
+    const pts = rows.map(r => [r.h, Math.abs(r.av), Math.abs(r.bv)]);
+    const ym = Math.max(4, ...pts.map(p => p[2])), st = nice(ym), top = Math.ceil(ym / st) * st;
+    const [X, Y] = axes(g, '높이 (cm)', '봉우리 크기 (mA)', 0, 45, 0, top, [10, 20, 30, 40].map(v => [v, String(v)]), Array.from({ length: top / st + 1 }, (_, k) => k * st));
+    pts.forEach(p => { dot(g, X(p[0]) - 4, Y(p[1]), PAL[0]); dot(g, X(p[0]) + 4, Y(p[2]), PAL[1], 1); });
+    legend(g, [[PAL[0], '첫 번째'], [PAL[1], '두 번째', 1]]);
+  } else if (i === 2) {
+    const keys = [], avg = {};
+    rows.forEach(r => { const k = r.tube + ' · ' + r.obj; if (!avg[k]) { avg[k] = []; keys.push(k); } avg[k].push(r.tv); });
+    const ym = Math.max(1, ...keys.map(k => avg[k].reduce((a, b) => a + b, 0) / avg[k].length)), st = nice(ym), top = Math.ceil(ym / st) * st;
+    const [X, Y] = axes(g, '', '평균 시간 (s)', 0, 1, 0, top, [], Array.from({ length: top / st + 1 }, (_, k) => k * st));
+    const n = keys.length, bw = n ? Math.min(46, (GX1 - GX0 - 10) / n - 8) : 0;
+    keys.forEach((k, j) => {
+      const m = avg[k].reduce((a, b) => a + b, 0) / avg[k].length, x = GX0 + 8 + j * ((GX1 - GX0 - 10) / n);
+      el('rect', { x, y: Y(m), width: bw, height: GY0 - Y(m), fill: k.includes('자석') ? PAL[1] : PAL[0], rx: 3 }, g);
+      el('text', { x: x + bw / 2, y: Y(m) - 4, 'text-anchor': 'middle', text: m.toFixed(2) }, g);
+      const [a, b] = k.split(' · ');
+      el('text', { x: x + bw / 2, y: GY0 + 13, 'text-anchor': 'middle', text: a }, g);
+      el('text', { x: x + bw / 2, y: GY0 + 26, 'text-anchor': 'middle', text: b === '네오디뮴 자석' ? '자석' : '쇠구슬' }, g);
+    });
+    if (!n) el('text', { x: 207, y: 110, 'text-anchor': 'middle', text: '기록하면 관과 물체별 평균이 막대로 나온다' }, g);
+  } else {
+    const by = G3.by, ym0 = by === 'v' ? 6 : 10;
+    const ym = Math.max(ym0, ...rows.map(r => by === 'v' ? r.vv : r.fv)), st = nice(ym), top = Math.ceil(ym / st) * st;
+    const [X, Y] = axes(g, '빠르기 (바퀴/초)', by === 'v' ? '전압 (V)' : '돌리는 데 드는 힘', 0, 3.2, 0, top, [0, 1, 2, 3].map(v => [v, String(v)]), Array.from({ length: top / st + 1 }, (_, k) => k * st));
+    rows.forEach(r => dot(g, X(r.wv), Y(by === 'v' ? r.vv : r.fv), PAL[r.n2], r.n2 % 2));
+    legend(g, [0, 1, 2, 3].map(k => [PAL[k], '전구 ' + k + '개', k % 2]));
+  }
+}
+document.querySelectorAll('#g0sel button').forEach(b => b.onclick = () => { G0.by = b.dataset.v; document.querySelectorAll('#g0sel button').forEach(x => x.classList.toggle('sel', x === b)); drawGraph(0); });
+document.querySelectorAll('#g3sel button').forEach(b => b.onclick = () => { G3.by = b.dataset.v; document.querySelectorAll('#g3sel button').forEach(x => x.classList.toggle('sel', x === b)); drawGraph(3); });
+
+/* ---------- segmented controls ---------- */
+const ST = [{ pole: 1, B: 1, N: 100 }, { h: 20, pole: 1, N: 100, slow: 0.04 }, { tube: 'cu', obj: 'mag' }, { n: 1 }];
+function bindSeg(i, onChange) {
+  document.querySelectorAll(`#x${i} .seg`).forEach(sg => {
+    const k = sg.dataset.k;
+    const sync = () => sg.querySelectorAll('button').forEach(b => b.classList.toggle('sel', String(ST[i][k]) === b.dataset.v));
+    sg.querySelectorAll('button').forEach(b => b.onclick = () => { const v = b.dataset.v; ST[i][k] = isNaN(+v) ? v : +v; sync(); onChange(k); });
+    sync(); sg.sync = sync;
+  });
+}
+function svgPt(svg, e) { const r = svg.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * 1000, (e.clientY - r.top) / r.height * 600]; }
+
+/* =================================================================
+   1. magnet, coil, galvanometer
+   ================================================================= */
+const E1 = {}, S1 = { x: 200, tw: null, prevPhi: 0, rate: 0, needle: 0, max: 0, maxSign: 0, act: '', drag: null, moved: false, lastX: 200 };
+const C1 = { x0: 440, L: 240, cy: 250, ry: 80, w: 90 }, C1c = C1.x0 + C1.L / 2, MH1 = 70, X_OUT = 200;
+const K1 = 0.9 / (60 * Math.sqrt(2 / Math.E) / C1.w);
+function phi1(x) { const d = (x - C1c) / C1.w; return Math.exp(-d * d); }
+function build1() {
+  const svg = $('#s0'), u = defsFor(svg);
+  E1.back = el('path', { fill: 'none', stroke: '#7b4d22', 'stroke-width': 4 }, svg);
+  E1.mag = el('g', { class: 'grab' }, svg);
+  for (let k = 1; k <= 3; k++) for (const s of [-1, 1]) el('path', { d: `M${MH1},${s * 12}C${MH1 + 28 * k},${s * (36 + 24 * k)} ${-MH1 - 28 * k},${s * (36 + 24 * k)} ${-MH1},${s * 12}`, fill: 'none', stroke: '#9fd0ff', 'stroke-width': 1.8, class: 'flow', opacity: .55 }, E1.mag);
+  E1.body = el('g', null, E1.mag);
+  el('rect', { x: -MH1, y: -24, width: MH1, height: 48, rx: 5, fill: u('s') }, E1.body);
+  el('rect', { x: 0, y: -24, width: MH1, height: 48, rx: 5, fill: u('n') }, E1.body);
+  E1.lS = tx(E1.body, -MH1 / 2, 10, 'S', 'tp', 26); E1.lN = tx(E1.body, MH1 / 2, 10, 'N', 'tp', 26);
+  el('rect', { x: -MH1 - 20, y: -60, width: MH1 * 2 + 40, height: 120, fill: 'transparent' }, E1.mag);
+  E1.strong = pill(E1.mag, '', '#c96a1a', 100, 28, 15); E1.strong.setAttribute('transform', 'translate(0,-46)');
+  E1.front = el('path', { fill: 'none', stroke: '#e0954a', 'stroke-width': 5.5, 'stroke-linecap': 'round' }, svg);
+  E1.fl = el('path', { fill: 'none', stroke: '#ffe28a', 'stroke-width': 3, 'stroke-dasharray': '3 13', 'stroke-linecap': 'round', opacity: 0 }, svg);
+  E1.nlab = tx(svg, C1c, C1.cy - C1.ry - 16, '', 'tw', 17);
+  E1.gv = galv(svg, 790, 440, 20, 5);
+  E1.wire = el('path', { fill: 'none', stroke: '#c9d4de', 'stroke-width': 3.5, 'stroke-linejoin': 'round' }, svg);
+  E1.wfl = el('path', { fill: 'none', stroke: '#ffe28a', 'stroke-width': 3, 'stroke-dasharray': '3 13', 'stroke-linecap': 'round', opacity: 0 }, svg);
+  const gl = tx(svg, 790, 336, '검류계', 'tw', 17);
+  E1.flow = 0;
+  tx(svg, 28, 40, '자석을 끌어 움직일 수 있다', 'tm', 15, 'start');
+  buildCoil1();
+}
+function buildCoil1() {
+  const N = ST[0].N, turns = N === 50 ? 6 : N === 100 ? 10 : 16, st = C1.L / turns, k = 1.33 * 16;
+  let f = '', b = '';
+  for (let i = 0; i < turns; i++) {
+    const x = C1.x0 + i * st, xn = x + st;
+    f += `M${f1(x)},${C1.cy + C1.ry}C${f1(x - k)},${C1.cy + C1.ry} ${f1(x - k)},${C1.cy - C1.ry} ${f1(x)},${C1.cy - C1.ry}`;
+    b += `M${f1(x)},${C1.cy - C1.ry}C${f1(x + k)},${C1.cy - C1.ry} ${f1(xn + k)},${C1.cy + C1.ry} ${f1(xn)},${C1.cy + C1.ry}`;
+  }
+  E1.front.setAttribute('d', f); E1.fl.setAttribute('d', f); E1.back.setAttribute('d', b);
+  E1.nlab.textContent = '코일 (' + N + '회)';
+  const L = C1.x0, R = C1.x0 + C1.L, by = C1.cy + C1.ry, gp = E1.gv.tp, gm = E1.gv.tm;
+  const d = `M${gp[0]},${gp[1]}L${gp[0]},${gp[1] + 40}L${L},${gp[1] + 40}L${L},${by}M${R},${by}L${R},${gp[1] + 22}L${gm[0]},${gp[1] + 22}L${gm[0]},${gm[1]}`;
+  E1.wire.setAttribute('d', d); E1.wfl.setAttribute('d', d);
+}
+function ui1() {
+  const busy = !!S1.tw || !!S1.drag;
+  $('#in0').disabled = busy; $('#out0').disabled = busy;
+  $('#rec0').disabled = busy || !S1.act;
+}
+function start1(act) { S1.max = 0; S1.maxSign = 0; S1.over = false; S1.act = act; ui1(); }
+function move1(to, act) {
+  const v = 60 * +$('#spd0').value, from = act === '넣기' ? X_OUT : C1c;
+  if (Math.abs(S1.x - from) > .5) { S1.x = from; S1.prevPhi = phi1(from); S1.rate = 0; S1.needle = 0; }
+  start1(act); S1.spdUsed = +$('#spd0').value;
+  S1.tw = { from: S1.x, to, t: 0, d: Math.abs(to - S1.x) / v };
+  ui1();
+}
+$('#in0').onclick = () => move1(C1c, '넣기');
+$('#out0').onclick = () => move1(X_OUT, '빼기');
+$('#spd0').oninput = () => { $('#spdv0').textContent = $('#spd0').value; };
+$('#rec0').onclick = () => {
+  if (!S1.act) return;
+  const v = S1.over ? 20 : S1.max < .25 ? 0 : Math.min(20, half(rnd(S1.max, .06)));
+  REC[0].push({ pole: ST[0].pole > 0 ? 'N극' : 'S극', act: S1.act, B: { 0.5: '약함', 1: '보통', 2: '강함' }[ST[0].B], Bv: ST[0].B, N: ST[0].N, spd: S1.act === '직접' ? '–' : S1.spdUsed + '단계', spdv: S1.spdUsed, val: S1.over ? '20 넘음' : v.toFixed(1), valv: v, over: !!S1.over, dir: v === 0 ? '–' : S1.maxSign > 0 ? '오른쪽' : '왼쪽' });
+  S1.act = ''; ui1(); drawTable(0);
+};
+bindSeg(0, k => { if (k === 'N') buildCoil1(); S1.act = ''; S1.max = 0; ui1(); });
+function bind1() {
+  const svg = $('#s0');
+  E1.mag.addEventListener('pointerdown', e => { if (S1.tw) return; const [x] = svgPt(svg, e); S1.drag = { off: S1.x - x, tgt: S1.x }; start1('직접'); try { svg.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); });
+  svg.addEventListener('pointermove', e => { if (!S1.drag) return; const [x] = svgPt(svg, e); S1.drag.tgt = clamp(x + S1.drag.off, 110, 900); });
+  const end = () => { if (S1.drag) { S1.drag = null; ui1(); } };
+  svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+}
+function step1(dt) {
+  if (S1.tw) { S1.tw.t += dt; const p = clamp(S1.tw.t / S1.tw.d); S1.x = S1.tw.from + (S1.tw.to - S1.tw.from) * p; if (p >= 1) { S1.tw = null; ui1(); } }
+  else if (S1.drag) S1.x += (S1.drag.tgt - S1.x) * (1 - Math.exp(-dt * 18));
+  const ph = phi1(S1.x);
+  if (dt > 0) {
+    const raw = (ph - S1.prevPhi) / dt;
+    S1.rate += (raw - S1.rate) * (1 - Math.exp(-dt / .015));
+  }
+  S1.prevPhi = ph;
+  const emf = K1 * (ST[0].N / 100) * ST[0].B * ST[0].pole * S1.rate;
+  S1.needle += (emf - S1.needle) * (1 - Math.exp(-dt / .03));
+  if (S1.act && Math.abs(S1.needle) > S1.max) { S1.max = Math.abs(S1.needle); S1.maxSign = Math.sign(S1.needle); }
+  if (S1.act && S1.max > 20) { S1.over = true; S1.max = 20; }
+  // draw
+  E1.mag.setAttribute('transform', `translate(${f1(S1.x)},${C1.cy})`);
+  E1.body.setAttribute('transform', ST[0].pole > 0 ? '' : 'scale(-1,1)');
+  E1.lS.setAttribute('transform', ST[0].pole > 0 ? '' : `scale(-1,1) translate(${MH1},0)`);
+  E1.lN.setAttribute('transform', ST[0].pole > 0 ? '' : `scale(-1,1) translate(${-MH1},0)`);
+  E1.strong.style.display = ST[0].B === 1 ? 'none' : '';
+  E1.strong.t.textContent = ST[0].B > 1 ? '강한 자석' : '약한 자석'; E1.strong.r.setAttribute('fill', ST[0].B > 1 ? '#c96a1a' : '#5b6f82');
+  E1.gv.set(S1.needle);
+  E1.flow -= S1.needle * dt * 6;
+  const o = f1(clamp(Math.abs(S1.needle) / 4));
+  for (const p of [E1.fl, E1.wfl]) { p.setAttribute('opacity', o); p.style.strokeDashoffset = f1(E1.flow); }
+  const m = S1.max, sg = S1.maxSign;
+  $('#max0').innerHTML = (m < .25 ? '0' : (sg > 0 ? '오른쪽 ' : '왼쪽 ') + (S1.over ? '20' : m.toFixed(1))) + '<span class="u">' + (S1.over ? '칸 넘음' : '칸') + '</span>';
+  const over = Math.abs(S1.needle) > 20.5;
+  const stt = S1.tw ? '자석이 움직이는 중' : S1.drag ? '자석을 손으로 움직이는 중' : over ? '바늘이 눈금을 넘었다. 조금 느리게 움직여 보자.' : S1.act && S1.over ? '바늘이 눈금 끝(20칸)을 넘었다. 이 기록은 그래프에 쓰지 않는다. 느리게 하거나 약한 조건으로 다시 해 보자.' : S1.act ? '측정이 끝났다. ‘기록하기’를 누르면 표에 남는다.' : '자석을 움직이면 그동안 바늘이 가장 많이 기운 눈금이 남는다.';
+  if ($('#st0').textContent !== stt) $('#st0').textContent = stt;
+}
+
+/* =================================================================
+   2. falling magnet through a coil
+   ================================================================= */
+const E2 = {}, S2 = { run: false, t: 0, z: -20, done: false, pts: [], a: 0, b: 0, ta: 0, tb: 0, t0: null };
+const G2 = 980, W2 = 4, K2 = 0.15, PXCM = 5, CY2 = 330, WIN2 = 220, ZS = -12;
+const zY = z => CY2 + z * PXCM;
+const GR = { x: 520, y: 70, w: 450, h: 380 };
+function build2() {
+  const svg = $('#s1'), u = defsFor(svg);
+  // ruler
+  const rl = el('g', null, svg);
+  el('line', { x1: 70, y1: zY(-42), x2: 70, y2: zY(42), stroke: 'rgba(255,255,255,.35)', 'stroke-width': 2 }, rl);
+  for (let z = -40; z <= 40; z += 5) {
+    el('line', { x1: 70, y1: zY(z), x2: z % 10 ? 80 : 88, y2: zY(z), stroke: 'rgba(255,255,255,.5)', 'stroke-width': 1.5 }, rl);
+    if (z % 10 === 0 && z <= 0) tx(rl, 60, zY(z) + 5, String(-z), 'tm', 13, 'end');
+  }
+  tx(rl, 40, zY(-42) - 10, '높이 (cm)', 'tm', 13, 'start');
+  E2.ring = el('line', { x1: 150, x2: 390, stroke: '#f6c46a', 'stroke-width': 2, 'stroke-dasharray': '6 5' }, svg);
+  E2.ringL = tx(svg, 396, 0, '', 'tw', 13, 'start');
+  // coil (horizontal loops), height 6 cm
+  const top = zY(-3), bot = zY(3), n = 7, st = (bot - top) / n, rx = 62, ry = 9;
+  let f = '', b = '';
+  for (let i = 0; i < n; i++) {
+    const y = top + i * st, yn = y + st;
+    b += `M${260 - rx},${f1(y)}A${rx},${ry} 0 0 1 ${260 + rx},${f1(y)}`;
+    f += `M${260 - rx},${f1(y)}A${rx},${ry} 0 0 0 ${260 + rx},${f1(yn)}`;
+  }
+  el('path', { d: b, fill: 'none', stroke: '#7b4d22', 'stroke-width': 2.5 }, svg);
+  E2.mag = el('g', null, svg);
+  E2.mN = el('rect', { x: -14, y: 0, width: 28, height: 22, rx: 3 }, E2.mag);
+  E2.mS = el('rect', { x: -14, y: -22, width: 28, height: 22, rx: 3 }, E2.mag);
+  E2.tN = tx(E2.mag, 0, 17, 'N', 'tp', 15); E2.tS = tx(E2.mag, 0, -5, 'S', 'tp', 15);
+  el('path', { d: f, fill: 'none', stroke: '#e0954a', 'stroke-width': 3.2, 'stroke-linecap': 'round' }, svg);
+  E2.nlab = tx(svg, 260 + rx + 14, zY(0) + 5, '', 'tw', 15, 'start');
+  el('rect', { x: 196, y: zY(42) + 8, width: 128, height: 14, rx: 6, fill: '#3b5066' }, svg);
+  tx(svg, 334, zY(42) + 20, '푹신한 받침', 'tm', 13, 'start');
+  // wires to recorder
+  el('path', { d: `M${260 - rx},${f1(top)}L${260 - rx - 30},${f1(top)}L${260 - rx - 30},${zY(30)}L${GR.x - 10},${zY(30)}`, fill: 'none', stroke: '#c9d4de', 'stroke-width': 3 }, svg);
+  el('path', { d: `M${260 + rx},${f1(bot + st)}L${260 + rx + 24},${f1(bot + st)}L${260 + rx + 24},${zY(34)}L${GR.x - 10},${zY(34)}`, fill: 'none', stroke: '#c9d4de', 'stroke-width': 3 }, svg);
+  // graph panel
+  const g = el('g', null, svg);
+  el('rect', { x: GR.x, y: GR.y - 44, width: GR.w, height: GR.h + 96, rx: 14, fill: 'rgba(4,16,30,.78)' }, g);
+  tx(g, GR.x + 18, GR.y - 16, '전류 측정기 (시간에 따른 전류)', 'tw', 16, 'start');
+  E2.gy0 = GR.y + GR.h / 2;
+  for (let v = -10; v <= 10; v += 2) {
+    const y = E2.gy0 - v * GR.h / 22;
+    el('line', { x1: GR.x + 48, y1: y, x2: GR.x + GR.w - 14, y2: y, stroke: v ? 'rgba(255,255,255,.1)' : 'rgba(255,255,255,.5)', 'stroke-width': v ? 1 : 1.6 }, g);
+    tx(g, GR.x + 40, y + 4, (v > 0 ? '+' : '') + v, 'tm', 12, 'end');
+  }
+  for (let t = 0; t <= WIN2; t += 20) {
+    const x = GR.x + 48 + t / WIN2 * (GR.w - 62);
+    el('line', { x1: x, y1: GR.y, x2: x, y2: GR.y + GR.h, stroke: 'rgba(255,255,255,.07)' }, g);
+    if (t % 40 === 0) tx(g, x, GR.y + GR.h + 18, String(t), 'tm', 12);
+  }
+  tx(g, GR.x + GR.w - 14, GR.y + GR.h + 38, '시간 (ms)', 'tm', 12, 'end');
+  tx(g, GR.x + 18, GR.y + 6, 'mA', 'tm', 12, 'start');
+  E2.trace = el('path', { fill: 'none', stroke: '#ffd66b', 'stroke-width': 3, 'stroke-linejoin': 'round' }, g);
+  E2.mkA = pill(g, '', '#2f7fc1', 60, 24, 13); E2.mkB = pill(g, '', '#c96a1a', 60, 24, 13);
+  E2.speed = tx(svg, 28, 40, '', 'tm', 15, 'start');
+  E2.hint = tx(svg, 28, 584, '', 'tm', 14, 'start');
+}
+function grX(t) { return GR.x + 48 + t / WIN2 * (GR.w - 62); }
+function grY(v) { return E2.gy0 - clamp(v, -11, 11) * GR.h / 22; }
+function emf2(z, v) { const d = z / W2; return K2 * (ST[1].N / 100) * ST[1].pole * v * (-2 * z / (W2 * W2)) * Math.exp(-d * d); }
+function reset2() {
+  S2.run = false; S2.done = false; S2.t = 0; S2.z = -ST[1].h; S2.pts = []; S2.a = 0; S2.b = 0; S2.t0 = null;
+  E2.trace.setAttribute('d', ''); E2.mkA.style.display = E2.mkB.style.display = 'none';
+  ['p1a', 'p1b', 'p1t'].forEach(id => $('#' + id).textContent = '–'); $('#rec1').disabled = true; $('#go1').textContent = '떨어뜨리기';
+}
+$('#go1').onclick = () => { reset2(); S2.run = true; $('#go1').disabled = true; };
+bindSeg(1, k => { if (k === 'slow') return; reset2(); });
+$('#rec1').onclick = () => {
+  if (!S2.done) return;
+  const a = +rnd(S2.a, .04).toFixed(1), b = +rnd(S2.b, .04).toFixed(1), t = Math.round(rnd(S2.tb - S2.ta, .03));
+  REC[1].push({ h: ST[1].h, pole: ST[1].pole > 0 ? 'N극' : 'S극', N: ST[1].N, a: (a > 0 ? '+' : '') + a.toFixed(1), av: a, b: (b > 0 ? '+' : '') + b.toFixed(1), bv: b, t });
+  $('#rec1').disabled = true; drawTable(1);
+};
+function step2(dt) {
+  if (S2.run) {
+    const sim = dt * ST[1].slow, sub = 40;
+    for (let i = 0; i < sub; i++) {
+      S2.t += sim / sub;
+      S2.z = -ST[1].h + .5 * G2 * S2.t * S2.t;
+      const v = G2 * S2.t;
+      if (S2.z >= ZS) {
+        if (S2.t0 === null) S2.t0 = S2.t;
+        const tm = (S2.t - S2.t0) * 1000, e = emf2(S2.z, v);
+        if (tm <= WIN2) {
+          if (!S2.pts.length || tm - S2.pts[S2.pts.length - 1][0] > .4) S2.pts.push([tm, e]);
+          if (Math.abs(e) > Math.abs(S2.a) && S2.z < 0) { S2.a = e; S2.ta = tm; }
+          if (Math.abs(e) > Math.abs(S2.b) && S2.z > 0) { S2.b = e; S2.tb = tm; }
+        }
+      }
+      if (S2.z >= 42) { S2.z = 42; S2.run = false; S2.done = true; break; }
+    }
+    if (S2.done) {
+      $('#go1').disabled = false; $('#go1').textContent = '다시 떨어뜨리기'; $('#rec1').disabled = false;
+      const sgn = v => (v > 0 ? '+' : '') + v.toFixed(1);
+      $('#p1a').innerHTML = sgn(S2.a) + '<span class="u">mA</span>'; $('#p1b').innerHTML = sgn(S2.b) + '<span class="u">mA</span>';
+      $('#p1t').innerHTML = Math.round(S2.tb - S2.ta) + '<span class="u">ms</span>';
+      for (const [mk, t, v] of [[E2.mkA, S2.ta, S2.a], [E2.mkB, S2.tb, S2.b]]) { mk.style.display = ''; mk.t.textContent = (v > 0 ? '+' : '') + v.toFixed(1); mk.setAttribute('transform', `translate(${f1(grX(t))},${f1(grY(v) + (v > 0 ? -18 : 18))})`); }
+    }
+  } else if (!S2.done) S2.z = -ST[1].h;
+  let d = '';
+  for (const [t, v] of S2.pts) d += (d ? 'L' : 'M') + f1(grX(t)) + ',' + f1(grY(v));
+  E2.trace.setAttribute('d', d);
+  E2.mag.setAttribute('transform', `translate(260,${f1(zY(S2.z))})`);
+  const np = ST[1].pole > 0;
+  E2.mN.setAttribute('fill', np ? '#c93a28' : '#2366ad'); E2.mS.setAttribute('fill', np ? '#2366ad' : '#c93a28');
+  E2.tN.textContent = np ? 'N' : 'S'; E2.tS.textContent = np ? 'S' : 'N';
+  E2.nlab.textContent = '코일 ' + ST[1].N + '회';
+  const ry = zY(-ST[1].h);
+  E2.ring.setAttribute('y1', ry); E2.ring.setAttribute('y2', ry); E2.ringL.setAttribute('y', ry + 5); E2.ringL.textContent = '출발 ' + ST[1].h + ' cm';
+  const v = S2.run || S2.done ? G2 * S2.t / 100 : 0;
+  E2.speed.textContent = S2.run || S2.done ? '자석의 속력 ' + v.toFixed(2) + ' m/s' : '';
+  E2.hint.textContent = ST[1].slow < 1 ? '화면은 실제보다 ' + (ST[1].slow === .04 ? '25' : '10') + '배 느리게 보여 준다. 시간 눈금은 실제 시간이다.' : '실제 빠르기로 보여 준다.';
+}
+
+/* =================================================================
+   3. magnet falling in a tube
+   ================================================================= */
+const E3 = {}, S3 = { run: false, z: 0, v: 0, t: 0, done: false, res: 0, cur: 0 };
+const TB = { x: 380, top: 70, bot: 530, w: 96 }, TL = 100, TP = (TB.bot - TB.top) / TL;
+const TUBE = { plastic: ['플라스틱', 0], al: ['알루미늄', 28], cu: ['구리', 17] };
+function build3() {
+  const svg = $('#s2'), u = defsFor(svg);
+  E3.u = u;
+  el('rect', { x: TB.x - 150, y: TB.bot + 26, width: 300, height: 14, rx: 6, fill: '#3b5066' }, svg);
+  E3.back = el('rect', { x: TB.x - TB.w / 2, y: TB.top, width: TB.w, height: TB.bot - TB.top, fill: 'rgba(0,0,0,.25)' }, svg);
+  E3.rings = el('g', null, svg);
+  E3.ringU = el('ellipse', { rx: TB.w / 2 + 4, ry: 10, fill: 'none', stroke: '#ffd66b', 'stroke-width': 3, 'stroke-dasharray': '8 6' }, E3.rings);
+  E3.ringD = el('ellipse', { rx: TB.w / 2 + 4, ry: 10, fill: 'none', stroke: '#ffd66b', 'stroke-width': 3, 'stroke-dasharray': '8 6' }, E3.rings);
+  E3.labU = pill(E3.rings, '위: 끌어당김', 'rgba(35,102,173,.95)', 118, 26, 13);
+  E3.labD = pill(E3.rings, '아래: 밀어냄', 'rgba(201,58,40,.95)', 118, 26, 13);
+  E3.obj = el('g', null, svg);
+  E3.magG = el('g', null, E3.obj);
+  el('rect', { x: -22, y: -26, width: 44, height: 26, rx: 4, fill: u('s') }, E3.magG); el('rect', { x: -22, y: 0, width: 44, height: 26, rx: 4, fill: u('n') }, E3.magG);
+  tx(E3.magG, 0, -8, 'S', 'tp', 15); tx(E3.magG, 0, 19, 'N', 'tp', 15);
+  E3.ball = el('circle', { r: 24, fill: u('ball'), stroke: '#3b4d5e', 'stroke-width': 1.5 }, E3.obj);
+  E3.wallL = el('rect', { x: TB.x - TB.w / 2 - 12, y: TB.top, width: 12, height: TB.bot - TB.top }, svg);
+  E3.wallR = el('rect', { x: TB.x + TB.w / 2, y: TB.top, width: 12, height: TB.bot - TB.top }, svg);
+  E3.name = tx(svg, 790, 96, '', 'tw', 22);
+  for (const [y, t] of [[TB.top, '광센서 (출발)'], [TB.bot, '광센서 (도착)']]) {
+    el('circle', { cx: TB.x - TB.w / 2 - 30, cy: y, r: 7, fill: '#3cc488' }, svg); el('circle', { cx: TB.x + TB.w / 2 + 30, cy: y, r: 7, fill: '#3cc488' }, svg);
+    el('line', { x1: TB.x - TB.w / 2 - 24, y1: y, x2: TB.x + TB.w / 2 + 24, y2: y, stroke: '#3cc488', 'stroke-width': 1.5, 'stroke-dasharray': '4 4', opacity: .7 }, svg);
+    tx(svg, TB.x - TB.w / 2 - 44, y + 5, t, 'tm', 13, 'end');
+  }
+  tx(svg, TB.x - TB.w / 2 - 44, (TB.top + TB.bot) / 2, '길이 1 m', 'tm', 14, 'end');
+  // timer
+  el('rect', { x: 640, y: 120, width: 300, height: 130, rx: 16, fill: '#0b1826', stroke: '#3b5066', 'stroke-width': 2 }, svg);
+  tx(svg, 790, 150, '타이머', 'tm', 15);
+  E3.timer = el('text', { x: 790, y: 222, 'text-anchor': 'middle', fill: '#7cf2c0', 'font-size': 60, 'font-family': 'ui-monospace,Menlo,Consolas,monospace', 'font-weight': 700, text: '0.00 s' }, svg);
+  E3.state = tx(svg, 790, 300, '', 'tw', 16);
+  E3.hint = tx(svg, 790, 340, '', 'tm', 14);
+  E3.hint2 = tx(svg, 790, 362, '', 'tm', 14);
+}
+function look3() {
+  const k = ST[2].tube, u = E3.u, fill = { plastic: u('pl'), al: u('al'), cu: u('cu') }[k];
+  E3.wallL.setAttribute('fill', fill); E3.wallR.setAttribute('fill', fill);
+  E3.name.textContent = TUBE[k][0] + ' 관';
+  E3.magG.style.display = ST[2].obj === 'mag' ? '' : 'none'; E3.ball.style.display = ST[2].obj === 'mag' ? 'none' : '';
+}
+function reset3() { S3.run = false; S3.done = false; S3.z = -6; S3.v = 0; S3.t = 0; $('#tm2').textContent = '–'; $('#rec2').disabled = true; E3.timer.textContent = '0.00 s'; $('#go2').textContent = '떨어뜨리기'; }
+$('#go2').onclick = () => { reset3(); S3.run = true; $('#go2').disabled = true; };
+bindSeg(2, () => { reset3(); look3(); });
+$('#rec2').onclick = () => {
+  if (!S3.done) return;
+  REC[2].push({ tube: TUBE[ST[2].tube][0], obj: ST[2].obj === 'mag' ? '네오디뮴 자석' : '쇠구슬', t: S3.res.toFixed(2), tv: S3.res });
+  $('#rec2').disabled = true; drawTable(2);
+};
+function step3(dt) {
+  const vt = ST[2].obj === 'mag' ? TUBE[ST[2].tube][1] : 0;
+  if (S3.run) {
+    const sub = 20, h = dt / sub;
+    for (let i = 0; i < sub; i++) {
+      const a = vt ? 980 * (1 - S3.v / vt) : 980;
+      S3.v += a * h; S3.z += S3.v * h;
+      if (S3.z >= 0) S3.t += h;
+      if (S3.z >= TL) { S3.run = false; S3.done = true; S3.res = rnd(S3.t, .025); break; }
+    }
+    E3.timer.textContent = (S3.done ? S3.res : S3.t).toFixed(2) + ' s';
+    if (S3.done) { $('#go2').disabled = false; $('#go2').textContent = '다시 떨어뜨리기'; $('#rec2').disabled = false; $('#tm2').innerHTML = S3.res.toFixed(2) + '<span class="u">s</span>'; }
+  }
+  const zz = S3.done ? TL + 3 : S3.z, y = TB.top + clamp(zz, -6, TL + 3) * TP;
+  E3.obj.setAttribute('transform', `translate(${TB.x},${f1(y)})`);
+  const strength = vt && vt < 100 && (S3.run) ? clamp(S3.v / vt) : 0;
+  E3.rings.style.opacity = f1(strength);
+  E3.ringU.setAttribute('cx', TB.x); E3.ringU.setAttribute('cy', f1(y - 42)); E3.ringD.setAttribute('cx', TB.x); E3.ringD.setAttribute('cy', f1(y + 42));
+  E3.ringU.style.strokeDashoffset = f1(-performance.now() / 30); E3.ringD.style.strokeDashoffset = f1(performance.now() / 30);
+  E3.labU.setAttribute('transform', `translate(${TB.x + TB.w / 2 + 84},${f1(y - 42)})`); E3.labD.setAttribute('transform', `translate(${TB.x + TB.w / 2 + 84},${f1(y + 42)})`);
+  const stt = S3.run ? '떨어지는 중' : S3.done ? '도착' : '준비';
+  if (E3.state.textContent !== stt) E3.state.textContent = stt;
+  const conductive = ST[2].tube !== 'plastic', mag = ST[2].obj === 'mag';
+  const h1 = mag && conductive ? '노란 고리: 관 벽에 흐르는 유도 전류' : '';
+  const h2 = mag && conductive ? '(실제로는 보이지 않는다)' : '';
+  if (E3.hint.textContent !== h1) E3.hint.textContent = h1;
+  if (E3.hint2.textContent !== h2) E3.hint2.textContent = h2;
+}
+
+/* =================================================================
+   4. hand generator
+   ================================================================= */
+const E4 = {}, S4 = { th: 0, w: 1, drag: null, wDrag: 0 };
+const CR = { x: 168, y: 330, r: 72 }, KX = .72, KY = .3, HL = 50, R_IN = 1, R_B = 6, EK = 2;
+function crankTip(a) { const c = Math.cos(a), sn = Math.sin(a); return [CR.x + KX * CR.r * sn, CR.y - CR.r * c - KY * CR.r * sn]; }
+function calc4(w, n) { const E = EK * w, I = n ? E / (R_IN + R_B / n) : 0, V = E - I * R_IN, b = V * V / R_B, f = .6 + 1.4 * I; return { E, I, V, b, f }; }
+const REF4 = calc4(3, 1);
+function build4() {
+  const svg = $('#s3'), u = defsFor(svg);
+  E4.u = u;
+  // generator box
+  el('rect', { x: 230, y: 230, width: 210, height: 200, rx: 22, fill: '#2c3f52', stroke: '#8fa1b2', 'stroke-width': 2.5 }, svg);
+  el('rect', { x: 256, y: 258, width: 158, height: 144, rx: 12, fill: '#0b1826' }, svg);
+  el('rect', { x: 266, y: 266, width: 138, height: 20, rx: 4, fill: u('n') }, svg); el('rect', { x: 266, y: 374, width: 138, height: 20, rx: 4, fill: u('s') }, svg);
+  tx(svg, 278, 281, 'N', 'tp', 13); tx(svg, 278, 389, 'S', 'tp', 13);
+  el('line', { x1: CR.x, y1: CR.y, x2: 404, y2: CR.y, stroke: '#8fa1b2', 'stroke-width': 5 }, svg);
+  E4.coil = el('rect', { x: 290, y: 312, width: 92, height: 36, rx: 3, fill: 'rgba(224,149,74,.2)', stroke: '#e0954a', 'stroke-width': 4 }, svg);
+  tx(svg, 335, 222, '손발전기', 'tw', 18);
+  // crank: arm turns in the plane perpendicular to the axle, drawn obliquely; the grip sticks out along the axle
+  let ep = '';
+  for (let k = 0; k <= 48; k++) { const a = k / 48 * 2 * Math.PI, q = crankTip(a); ep += (k ? 'L' : 'M') + f1(q[0]) + ',' + f1(q[1]); }
+  el('path', { d: ep + 'Z', fill: 'rgba(255,255,255,.04)', stroke: 'rgba(255,255,255,.22)', 'stroke-width': 1.5, 'stroke-dasharray': '5 6' }, svg);
+  E4.arm = el('line', { x1: CR.x, y1: CR.y, stroke: '#b8c6d2', 'stroke-width': 11, 'stroke-linecap': 'round' }, svg);
+  el('circle', { cx: CR.x, cy: CR.y, r: 13, fill: '#e3ecf4', stroke: '#8fa1b2', 'stroke-width': 2 }, svg);
+  E4.grip = el('line', { stroke: '#f6c46a', 'stroke-width': 20, 'stroke-linecap': 'round', class: 'grab' }, svg);
+  E4.gripHi = el('line', { stroke: 'rgba(255,255,255,.55)', 'stroke-width': 4, 'stroke-linecap': 'round' }, svg);
+  E4.gripEnd = el('ellipse', { rx: 5, ry: 10, fill: '#d9a442', stroke: '#0f2236', 'stroke-width': 1.5 }, svg);
+  E4.hit = el('rect', { x: CR.x - CR.r * KX - HL - 30, y: CR.y - CR.r - 40, width: 2 * CR.r * KX + HL + 60, height: 2 * CR.r + 80, fill: 'transparent', class: 'grab' }, svg);
+  E4.knob = E4.grip;
+  tx(svg, CR.x - 20, CR.y + CR.r + 58, '손잡이', 'tw', 15);
+  tx(svg, CR.x - 20, CR.y + CR.r + 78, '(축에 붙은 크랭크)', 'tm', 12);
+  // force gauge
+  tx(svg, 230, 486, '돌리는 데 드는 힘', 'tw', 15, 'start');
+  el('rect', { x: 230, y: 498, width: 210, height: 14, rx: 7, fill: 'rgba(255,255,255,.14)' }, svg);
+  E4.fbar = el('rect', { x: 230, y: 498, width: 0, height: 14, rx: 7, fill: '#ef7a3d' }, svg);
+  // wires
+  E4.wA = el('path', { d: 'M440,300L540,300L540,180L830,180', fill: 'none', stroke: '#c9d4de', 'stroke-width': 3.5 }, svg);
+  E4.wB = el('path', { d: 'M440,360L560,360L560,470L880,470', fill: 'none', stroke: '#c9d4de', 'stroke-width': 3.5 }, svg);
+  E4.fA = el('path', { d: 'M440,300L540,300L540,180L880,180', fill: 'none', stroke: '#ffe28a', 'stroke-width': 3, 'stroke-dasharray': '3 13', 'stroke-linecap': 'round' }, svg);
+  E4.fB = el('path', { d: 'M880,470L560,470L560,360L440,360', fill: 'none', stroke: '#ffe28a', 'stroke-width': 3, 'stroke-dasharray': '3 13', 'stroke-linecap': 'round' }, svg);
+  // voltmeter (in parallel with the generator)
+  const vm = el('g', null, svg), px = 625, py = 352, R = 40;
+  el('line', { x1: px, y1: 180, x2: px, y2: 268, stroke: '#c9d4de', 'stroke-width': 2.5 }, svg);
+  el('line', { x1: px, y1: 380, x2: px, y2: 470, stroke: '#c9d4de', 'stroke-width': 2.5 }, svg);
+  el('circle', { cx: px, cy: 180, r: 5, fill: '#c9d4de' }, svg); el('circle', { cx: px, cy: 470, r: 5, fill: '#c9d4de' }, svg);
+  el('rect', { x: px - 52, y: 268, width: 104, height: 112, rx: 12, fill: '#e9eef2', stroke: '#7d8c99', 'stroke-width': 2 }, vm);
+  const vt = tx(vm, px, 288, '전압계 (V)', 'tq', 12); vt.setAttribute('fill', '#33475a'); vt.setAttribute('font-weight', 700);
+  for (let v = 0; v <= 8; v++) { const a = (v / 8 - .5) * 2.1, r1 = R - (v % 4 ? 6 : 11); el('line', { x1: px + r1 * Math.sin(a), y1: py - r1 * Math.cos(a), x2: px + R * Math.sin(a), y2: py - R * Math.cos(a), stroke: '#33475a', 'stroke-width': v % 4 ? 1.2 : 2.2 }, vm); if (v % 4 === 0) { const t = tx(vm, px + (R + 10) * Math.sin(a), py - (R + 10) * Math.cos(a) + 4, String(v), 'tq', 11); t.setAttribute('fill', '#33475a'); t.setAttribute('font-weight', 700); } }
+  E4.vn = el('line', { x1: px, y1: py, x2: px, y2: py - R + 4, stroke: '#d9412f', 'stroke-width': 2.6, 'stroke-linecap': 'round' }, vm);
+  el('circle', { cx: px, cy: py, r: 5, fill: '#0f2236' }, vm);
+  E4.vpx = px; E4.vpy = py;
+  // bulbs
+  E4.bulbs = [0, 1, 2].map(k => {
+    const x = 730 + k * 100, g = el('g', null, svg);
+    g.wire = el('path', { d: `M${x},180L${x},262M${x},338L${x},470`, fill: 'none', stroke: '#c9d4de', 'stroke-width': 3 }, g);
+    g.glow = el('circle', { cx: x, cy: 290, r: 80, fill: u('glow'), opacity: 0 }, g);
+    el('circle', { cx: x, cy: 290, r: 28, fill: 'rgba(255,255,255,.1)', stroke: '#dfe7ee', 'stroke-width': 2.5 }, g);
+    g.fil = el('path', { d: `M${x - 10},302L${x - 5},284L${x},298L${x + 5},284L${x + 10},302`, fill: 'none', stroke: '#8a7a5a', 'stroke-width': 2.5 }, g);
+    el('rect', { x: x - 14, y: 316, width: 28, height: 22, rx: 3, fill: '#8fa1b2' }, g);
+    return g;
+  });
+  E4.none = tx(svg, 840, 330, '전구 없음 (회로가 열림)', 'tw', 16);
+  E4.flow = 0;
+}
+(function () {
+  const svg = $('#s3');
+  const ang = e => { const [x, y] = svgPt(svg, e); const dx = x + HL / 2 - CR.x, z = dx / KX, yy = -(y - CR.y) - KY * z; return Math.atan2(z, yy); };
+  E4.down = e => { S4.drag = { a: ang(e), t: performance.now() }; S4.wDrag = 0; try { svg.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); };
+  svg.addEventListener('pointerdown', e => { if (e.target === E4.hit || e.target === E4.knob) E4.down(e); });
+  svg.addEventListener('pointermove', e => {
+    if (!S4.drag) return;
+    const a = ang(e), now = performance.now(); let d = a - S4.drag.a;
+    if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
+    const dt = Math.max(.008, (now - S4.drag.t) / 1000);
+    S4.th += d; S4.wDrag += (Math.abs(d) / (2 * Math.PI) / dt - S4.wDrag) * .35;
+    S4.drag.a = a; S4.drag.t = now;
+  });
+  const end = () => { S4.drag = null; };
+  svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+})();
+$('#spd3').oninput = () => { $('#spdv3').textContent = (+$('#spd3').value).toFixed(1); };
+bindSeg(3, () => {});
+$('#rec3').onclick = () => {
+  const w = +S4.w.toFixed(1), c = calc4(w, ST[3].n);
+  const v = +rnd(c.V, .03).toFixed(2), b = Math.round(c.b / REF4.b * 10 * 10) / 10, f = Math.round(c.f / REF4.f * 10 * 10) / 10;
+  REC[3].push({ w: w.toFixed(1), wv: w, n2: ST[3].n, v: v.toFixed(2), vv: v, b: ST[3].n ? b.toFixed(1) : '–', f: f.toFixed(1), fv: f });
+  drawTable(3);
+};
+function step4(dt) {
+  if (S4.drag) { if (performance.now() - S4.drag.t > 120) S4.wDrag *= Math.exp(-dt * 8); S4.w += (Math.min(S4.wDrag, 4) - S4.w) * (1 - Math.exp(-dt * 10)); }
+  else { const tgt = +$('#spd3').value; S4.w += (tgt - S4.w) * (1 - Math.exp(-dt * 4)); S4.th += 2 * Math.PI * S4.w * dt; }
+  const n = ST[3].n, c = calc4(S4.w, n);
+  const [kx, ky] = crankTip(S4.th);
+  E4.arm.setAttribute('x2', f1(kx)); E4.arm.setAttribute('y2', f1(ky));
+  for (const g of [E4.grip, E4.gripHi]) { g.setAttribute('x1', f1(kx)); g.setAttribute('y1', f1(ky)); g.setAttribute('x2', f1(kx - HL)); g.setAttribute('y2', f1(ky)); }
+  E4.gripHi.setAttribute('y1', f1(ky - 5)); E4.gripHi.setAttribute('y2', f1(ky - 5)); E4.gripHi.setAttribute('x1', f1(kx - 8)); E4.gripHi.setAttribute('x2', f1(kx - HL + 4));
+  E4.gripEnd.setAttribute('cx', f1(kx - HL)); E4.gripEnd.setAttribute('cy', f1(ky));
+  E4.coil.setAttribute('transform', `translate(336,330) scale(1,${f1(Math.cos(S4.th * 1))}) translate(-336,-330)`);
+  E4.vn.setAttribute('transform', `rotate(${f1((clamp(c.V / 8, 0, 1.03) - .5) * 2.1 * 180 / Math.PI)} ${E4.vpx} ${E4.vpy})`);
+  E4.fbar.setAttribute('width', f1(210 * clamp(c.f / (REF4.f * 1.9))));
+  E4.flow -= c.I * dt * 60;
+  for (const p of [E4.fA, E4.fB]) { p.style.strokeDashoffset = f1(E4.flow); p.setAttribute('opacity', f1(clamp(c.I * 2))); }
+  E4.bulbs.forEach((g, k) => {
+    const on = k < n; g.style.display = on ? '' : 'none';
+    const br = on ? clamp(c.b / REF4.b) : 0; g.glow.setAttribute('opacity', f1(Math.pow(br, .7))); g.fil.setAttribute('stroke', br > .05 ? '#ffe9a0' : '#8a7a5a');
+  });
+  const xe = n ? 730 + (n - 1) * 100 : 625;
+  E4.wA.setAttribute('d', `M440,300L540,300L540,180L${xe},180`);
+  E4.wB.setAttribute('d', `M440,360L560,360L560,470L${xe},470`);
+  E4.fA.setAttribute('d', E4.wA.getAttribute('d')); E4.fB.setAttribute('d', `M${xe},470L560,470L560,360L440,360`);
+  E4.none.style.display = n ? 'none' : '';
+  $('#w3').innerHTML = S4.w.toFixed(1) + '<span class="u">바퀴/초</span>';
+  $('#v3').innerHTML = c.V.toFixed(2) + '<span class="u">V</span>';
+  $('#b3').innerHTML = n ? (c.b / REF4.b * 10).toFixed(1) : '<span class="u">전구 없음</span>';
+  $('#f3').innerHTML = (c.f / REF4.f * 10).toFixed(1);
+}
+
+/* ---------- tabs & loop ---------- */
+let CUR = 0;
+function tab(i) {
+  CUR = i;
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', +b.dataset.x === i ? 'true' : 'false'));
+  document.querySelectorAll('.exp').forEach((s, k) => s.classList.toggle('on', k === i));
+  try { localStorage.setItem('emi-lab-tab', String(i)); } catch (e) {}
+}
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => tab(+b.dataset.x));
+build1(); bind1(); build2(); build3(); build4();
+reset2(); reset3(); look3(); ui1();
+[0, 1, 2, 3].forEach(drawTable);
+try { const t = +localStorage.getItem('emi-lab-tab'); if (t >= 0 && t <= 3) tab(t); } catch (e) {}
+let last = performance.now();
+function frame(now) {
+  let dt = Math.min(.05, Math.max(0, (now - last) / 1000)); last = now;
+  if (CUR === 0) step1(dt); else if (CUR === 1) step2(dt); else if (CUR === 2) step3(dt); else step4(dt);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
