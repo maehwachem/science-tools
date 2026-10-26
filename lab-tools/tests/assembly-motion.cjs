@@ -25,7 +25,7 @@ assert(!frame('hotstirrer',5,.5).querySelector('[data-piece="stirbar"]'));consol
 doc.querySelector('[data-chapter="usage"]').click();let checked=0;
 for(const l of w.LAB_PRACTICE.lessons){let picker=doc.querySelector('#practice-lesson-select');picker.value=l.id;picker.dispatchEvent(new w.Event('change',{bubbles:true}));for(let k=0;k<l.steps.length;k++){
  doc.querySelector(`[data-step="${k}"]`).click();assert.equal(doc.querySelector('.scene-caption').textContent,l.steps[k][0],l.id+' caption');assert.equal(doc.querySelector('.scene-instruction').textContent,l.steps[k][1],l.id+' instruction');
- if(k>0)assert.equal(doc.querySelector('.practice-conditions'),null,'Do not repeat starting conditions at every step');checked++;
+ if(k>0)assert.equal(doc.querySelector('.practice-conditions'),null,'Do not repeat starting conditions at every step');assert.equal(doc.activeElement.id,'practice-title','Mobile step changes return focus to the visible workspace heading');assert(doc.querySelector('.practice-visual > .guide-navigation'),'Previous/next controls stay beside the graphic');checked++;
 }}
 console.log('PASS selected instruction beside graphic:',checked,'guide steps');
 for(const [id,step]of [['retriever',4],['rod',3],['spatula',3]]){
