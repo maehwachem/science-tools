@@ -225,7 +225,7 @@ window.LAB_TOOLS.find(t=>t.id==='thermometer').keywords = window.LAB_TOOLS.find(
  function marks(x,y,count,gap,dir=1){return Array.from({length:count},(_,i)=>line(x,y+i*gap,x+dir*(i%5===0?19:10),y+i*gap,'stroke-width="1.2" opacity=".6"')).join('')}
  // Reserve left/right gutters so labels never cover the equipment.
 
-for(const [id,points] of Object.entries({paper:[[79,100],[173,177],[55,124]],rack:[[75,85],[183,92],[135,198]],controller:[[63,107],[129,129],[151,166]],boat:[[120,118],[187,96],[122,138]]})){
+for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],paper:[[79,100],[173,177],[55,124]],rack:[[75,85],[183,92],[135,198]],controller:[[63,107],[129,129],[151,166]],boat:[[120,118],[187,96],[122,138]]})){
  const tool=window.LAB_TOOLS.find(t=>t.id===id);points.forEach(([x,y],i)=>{tool.parts[i][1]=x/240*100;tool.parts[i][2]=y/260*100;});
 }
  window.labPartLayout=function(tool){
