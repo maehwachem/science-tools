@@ -592,14 +592,14 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
 
  function containment(id,k,t){let body=vessel(id,k===1?55*t:55);
   if(k===0)return inspect(body,t);
-  if(k===1){if(id==='tube')return body+drop(205,mix(65,237,t),t<.98?1:0);if(id==='flask')return body+drop(205,mix(53,214,t),t<.98?1:0);return body+G(stirrod(215,95,150)+glove(217,111,.55),Math.sin(t*Math.PI*2)*8,0);}
-  if(k===2){if(id==='flask')return G(body+glove(222,119,.65),Math.sin(t*Math.PI*2)*7,0);if(id==='tube')return inspect(body,t,220,205);return pourScene(id,t);}
+  if(k===1){if(id==='tube')return body+drop(205,mix(65,237,t),t<.98?1:0);if(id==='flask')return body+drop(205,mix(53,214,t),t<.98?1:0);return body+G(stirrod(215,95,150),Math.sin(t*Math.PI*2)*8,0);}
+  if(k===2){if(id==='flask')return G(body,Math.sin(t*Math.PI*2)*7,0);if(id==='tube')return inspect(body,t,220,205);return pourScene(id,t);}
   return rinse(id,t);
  }
  function rod(k,t){
   const body=cup(155,180,110,105,65);
   if(k===0)return inspect(stirrod(220,75,200),t,220,100);
-  if(k===1)return body+G(stirrod(225,100,150)+glove(227,110,.55),Math.sin(t*Math.PI*2)*10,0);
+  if(k===1)return body+G(stirrod(225,100,150),Math.sin(t*Math.PI*2)*10,0);
   if(k===2){
    const source='<path d="M80 100h95v77q0 8-8 8h-79q-8 0-8-8Z" transform="rotate(35 175 100)" fill="#f5f9f0"/>';
    return source+`<defs><clipPath id="rod-pour-clip">${source}</clipPath></defs><rect x="5" y="103" width="220" height="150" fill="#b7d7df" stroke="none" clip-path="url(#rod-pour-clip)"/>`+cup(210,230,110,90,32*t)+line(175,100,245,280,'stroke="#89aa9b" stroke-width="5"')+line(178,100,mix(184,242,t),mix(117,272,t),'stroke="#79aabd" stroke-width="2.5" opacity="'+(t<.97?1:0)+'"')+text(313,205,'주둥이 → 막대 → 받는 용기',11);
@@ -671,13 +671,12 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
   const rack='<path d="M151 188h13v112h-13m107-112h13v112h-13M143 300h137v13H143" fill="#c7d5bc"/><path d="M149 179h125v14H149Z" fill="#e0e8d5"/><ellipse cx="211" cy="183" rx="16" ry="4" fill="#8ea58d"/>';
   if(id==='rack'){
    const dy=k===1?mix(-75,0,t):k===3?mix(0,-80,t):0,x=k===3?mix(0,104,Math.max(0,(t-.65)/.35)):0;
-   const held=k===1||k===3?glove(222,125,.6):'';
    const label=k===2?'<rect x="201" y="132" width="20" height="26" rx="3" fill="#f8edcd"/>'+text(211,150,'1',12):'';
-   return `<g data-support="tube-rack">${rack}</g>`+(k>0?G(tube+label+held,x,dy):'')+'<path d="M149 193h48m28 0h49" stroke="#92a68a" stroke-width="2"/>'+text(211,340,k===0?'평평한 곳 · 구멍 크기 확인':k===1?'구멍을 지나 바닥 받침까지':k===2?'위쪽 보이는 곳에 시료 표시':'먼저 위로 빼고 옆으로 옮겨요',12);
+   return `<g data-support="tube-rack">${rack}</g>`+(k>0?G(tube+label,x,dy):'')+'<path d="M149 193h48m28 0h49" stroke="#92a68a" stroke-width="2"/>'+text(211,340,k===0?'평평한 곳 · 구멍 크기 확인':k===1?'구멍을 지나 바닥 받침까지':k===2?'위쪽 보이는 곳에 시료 표시':'먼저 위로 빼고 옆으로 옮겨요',12);
   }
   if(id==='holder'){
    const open=k===0?mix(12,0,t):k===1?mix(10,0,t):k===3?mix(0,12,Math.min(1,t*2)):0,dx=k===1?mix(65,0,t):k===3?mix(0,90,Math.max(0,(t-.45)/.55)):0;
-   const clamp=`<g data-part="test-tube-holder"><path d="M${195-open} 150Q190 148 190 155L275 225l10-13-77-62Z" fill="#d2b78b"/><path d="M${227+open} 150Q233 151 232 158l-29 16 76 35-7 12-83-43q-5-4 0-9Z" fill="#e3cea6"/><path d="M${195-open} 153v12m${227+open} -12v12" stroke="#9eae91" stroke-width="4"/><path d="M237 187q9-18 19-3l-4 17" stroke="#748c7d" stroke-width="3" fill="none"/><circle cx="244" cy="191" r="4" fill="#748c7d"/>${glove(269,202,.62,15)}</g>`;
+   const clamp=`<g data-part="test-tube-holder"><path d="M${195-open} 150Q190 148 190 155L275 225l10-13-77-62Z" fill="#d2b78b"/><path d="M${227+open} 150Q233 151 232 158l-29 16 76 35-7 12-83-43q-5-4 0-9Z" fill="#e3cea6"/><path d="M${195-open} 153v12m${227+open} -12v12" stroke="#9eae91" stroke-width="4"/><path d="M237 187q9-18 19-3l-4 17" stroke="#748c7d" stroke-width="3" fill="none"/><circle cx="244" cy="191" r="4" fill="#748c7d"/></g>`;
    const holder=G(clamp,dx,0),rest=k===3?'<path d="M174 240h12v61h-12m63-61h12v61h-12M170 300h84v12h-84M176 233h69v12h-69" fill="#c7d5bc"/>':'';
    return rest+(k>0?tube:'')+holder+text(211,45,k===0?'예: 나무 시험관 집게':k===3?'시험관을 받친 뒤 집게를 풀어요':'입구 쪽 약 1/3을 잡아요',12)+text(211,340,'뜨거운 관은 손으로 직접 잡지 않아요',11);
   }
@@ -685,12 +684,12 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
   const dx=k===2?mix(60,0,t):k===3?mix(0,65,Math.max(0,(t-.4)/.6)):0;
   const gap=k<2?12:k===2?mix(12,0,Math.max(0,(t-.6)/.4)):mix(0,12,Math.min(1,t/.4));
   const clamp=`<g data-part="padded-clamp"><rect x="111" y="147" width="23" height="20" rx="4" fill="#779583"/><path d="M134 157h49M183 145v26M183 145q7-12 ${45+gap} 1M183 171q7 12 ${45+gap} -1" stroke="#718d7e" stroke-width="5" fill="none"/><path d="M${194-gap} 149v17m${228+gap} -17v17" stroke="#4d7e7d" stroke-width="5"/></g>`;
-  return base+(k===0?'':G(clamp,0,k===1?mix(-55,0,t):0))+(k>=2?G(tube+glove(223,241,.6),dx,0):'')+text(211,344,k===0?'도구가 받침 위에 오게 배치':k===1?'높이를 맞춘 뒤 연결부 고정':k===2?'도구를 받치고 완충 집게로 고정':'받친 상태에서 풀고 옆으로 분리',11);
+  return base+(k===0?'':G(clamp,0,k===1?mix(-55,0,t):0))+(k>=2?G(tube,dx,0):'')+text(211,344,k===0?'도구가 받침 위에 오게 배치':k===1?'높이를 맞춘 뒤 연결부 고정':k===2?'도구를 받치고 완충 집게로 고정':'받친 상태에서 풀고 옆으로 분리',11);
  }
  let motionVesselSerial=0;
  function pouringCup(t,outletX,surface){
   const source='<path d="M109 123h72l14-5v8l-8 5v70q0 8-8 8h-62q-8 0-8-8Z" transform="rotate(43 195 123)" fill="#f4f8ef"/>',clip='pour-source-'+(++motionVesselSerial);
-  return source+`${glove(105,132,.78,20)}<defs><clipPath id="${clip}">${source}</clipPath></defs><rect x="30" y="${mix(125,213,t)}" width="175" height="100" fill="#b0d0d9" clip-path="url(#${clip})" stroke="none"/><path d="M195 123Q248 143 ${outletX} ${surface}" stroke="#7eafbf" stroke-width="3" fill="none" opacity="${t<.93?1:0}"/>`;
+  return source+`<defs><clipPath id="${clip}">${source}</clipPath></defs><rect x="30" y="${mix(125,213,t)}" width="175" height="100" fill="#b0d0d9" clip-path="url(#${clip})" stroke="none"/><path d="M195 123Q248 143 ${outletX} ${surface}" stroke="#7eafbf" stroke-width="3" fill="none" opacity="${t<.93?1:0}"/>`;
  }
 
  function stirringVessel(x,base,level,barArt=''){
@@ -700,7 +699,7 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
  function turningBar(t){const a=t*Math.PI*2,x=17*Math.cos(a),y=4*Math.sin(a);return `<path data-piece="stirbar" d="M${-x} ${-8-y}L${x} ${-8+y}" stroke="#fefcf0" stroke-width="8" stroke-linecap="round"/><path d="M-27-21q27-14 54 0m-6-5 6 5-8 1" fill="none" stroke="#6b999c" stroke-width="1.7"/>`;}
  function retrieval(t,x=200,base=252){
   const contact=base-12,tip=t<.3?mix(158,contact,t/.3):mix(contact,base-124,(t-.3)/.7),attached=t>=.3;
-  return stirringVessel(x,base,64,attached?'':bar(0,-8))+`<g data-assembly="retriever" transform="translate(${x} ${tip-99})">${wand(0,0,72)}${attached?bar(0,103):''}${glove(4,5,.55)}</g>`+text(210,29,'회전 정지 · 충분히 식힌 뒤 회수해요',12);
+  return stirringVessel(x,base,64,attached?'':bar(0,-8))+`<g data-assembly="retriever" transform="translate(${x} ${tip-99})">${wand(0,0,72)}${attached?bar(0,103):''}</g>`+text(210,29,'회전 정지 · 충분히 식힌 뒤 회수해요',12);
  }
  function wasteScene(t){
   return `<path d="M269 210h32v31l30 20v60H239v-60l30-20Z" fill="#e6d5b6"/><ellipse cx="285" cy="210" rx="16" ry="4" fill="#f8f1df"/><rect x="248" y="274" width="74" height="29" rx="4" fill="#fff8e8"/>${text(285,293,'지정 폐액',12)}<path d="M246 315h78" stroke="#9db5a8"/>`+pouringCup(t,285,211)+`<path d="M77 301h85v12H77Z" fill="#d3dfd0"/>${bar(120,297)}${text(120,340,'먼저 회수한 교반자',11)}${text(285,340,'성분에 맞는 통에 처리',11)}${text(210,27,'교반자가 빠져 있는지 확인해요',12)}`;
@@ -714,12 +713,11 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
   let barArt=stage===0||stage>=8?'':stage===1?'':running?turningBar(t):bar(0,-8);
   let art=plate+stirringVessel(x,base,61,barArt);
   if(stage===1)art+=G(bar(0,mix(-124,-8,t)),x,base)+text(178,66,'바닥에 세게 떨어뜨리지 않아요',11);
-  if(stage===2&&t<.99)art+=glove(x-42,base-32,.65,180);
   if(stage===4)art+=`<path d="M180 95q-7-11 0-22m40 22q-7-11 0-22" stroke="#b98c50" fill="none"/>`;
   if(stage>=4&&stage<7)art+=text(200,341,'잔열 주의 · 손으로 만지지 않아요',12);
   if(stage===7)art+=text(200,341,'잔열 표시와 실험 안내로 냉각 확인',12);
   if(stage===8){const tip=t<.25?mix(157,212,t/.25):t<.6?mix(212,100,(t-.25)/.35):t<.8?100:mix(100,280,(t-.8)/.2),rx=t<.6?200:t<.8?mix(200,350,(t-.6)/.2):350;
-   art=plate+stirringVessel(200,224,61,t<.25?bar(0,-8):'')+'<path d="M321 288h60v12h-60Z" fill="#d5e0d0"/>'+G(wand(0,0,72)+(t>=.25?bar(0,103):'')+glove(4,5,.55),rx,tip-99)+text(342,331,'회수 받침',11);}
+   art=plate+stirringVessel(200,224,61,t<.25?bar(0,-8):'')+'<path d="M321 288h60v12h-60Z" fill="#d5e0d0"/>'+G(wand(0,0,72)+(t>=.25?bar(0,103):''),rx,tip-99)+text(342,331,'회수 받침',11);}
   return art;
  }
  function magnetic(id,k,t){
@@ -727,7 +725,7 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
   if(id==='stirbar'){if(k===0)return inspect(bar(210,210),t,210,210);if(k===1)return stirringVessel(210,257,64)+G(bar(0,mix(-124,-8,t)),210,257);if(k===2)return hotStirring(3,t,false);return retrieval(t);}
   if(id==='stirrer'){if(k===0)return stirringVessel(210,257,64)+G(bar(0,mix(-124,-8,t)),210,257);if(k===1)return hotStirring(2,t,false);if(k===2)return hotStirring(3,t,false);return retrieval(t);}
   const plate='<rect x="117" y="252" width="185" height="68" rx="9" fill="#c9d9c3"/><path d="M112 249l17-17h160l17 17v12H112Z" fill="#e0e8d8"/><circle cx="210" cy="287" r="14" fill="#729475"/>';
-  if(k===0)return inspect(plate,t,210,249);if(k===1)return plate+G(cup(167,139,86,93,53)+glove(250,160,.6),0,mix(-35,0,t));if(k===2)return plate+cup(167,139,86,93,53)+`<path d="M189 126q-8-11 0-22t0-22M218 126q-8-11 0-22t0-22" stroke="#b68749" fill="none"/>`;return plate+cup(167,139,86,93,53)+text(210,110,'가열 OFF · 잔열 주의',14);
+  if(k===0)return inspect(plate,t,210,249);if(k===1)return plate+G(cup(167,139,86,93,53),0,mix(-35,0,t));if(k===2)return plate+cup(167,139,86,93,53)+`<path d="M189 126q-8-11 0-22t0-22M218 126q-8-11 0-22t0-22" stroke="#b68749" fill="none"/>`;return plate+cup(167,139,86,93,53)+text(210,110,'가열 OFF · 잔열 주의',14);
  }
  function goggles(k,t){
   const face='<ellipse cx="210" cy="178" rx="59" ry="77" fill="#f0e6cf"/><path d="M179 161q9-7 17 0m29 0q9-7 17 0" fill="none"/><circle cx="189" cy="166" r="2" fill="#6f8173"/><circle cx="233" cy="166" r="2" fill="#6f8173"/><path d="M210 171l-4 16h8m-15 22q12 8 24 0" fill="none" stroke="#b4a88b"/>';
@@ -756,14 +754,13 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
   if(k===0)return inspect(art,t,210,112)+text(312,110,'표선 확인',13);
   if(k===1)return art+`<path d="M210 43V${mix(55,125,t)}" stroke="#7eafc1" stroke-width="3" fill="none" opacity="${t<.96?1:0}"/>`+text(307,169,'표선 아래까지',13);
   if(k===2){const cycle=t<1?(t*3)%1:1;art+=drop(210,mix(49,level-5,cycle),cycle<.93&&t<1?1:0)+line(229,112,308,112,'stroke="#ad854a" stroke-dasharray="4 4"')+`<path d="M331 100Q309 112 331 124Q343 112 331 100Z" fill="#fafbf3"/><ellipse cx="319" cy="112" rx="2.5" ry="6" fill="#385648"/>`+text(305,75,'눈높이 맞추기',13);return art;}
-  if(k===3){const hands=glove(199,54,.55,-30)+glove(193,293,.65,-90);return art+G(hands,0,0,angle,210,187)+text(331,171,'마개와 바닥',12)+text(331,188,'함께 지지',12);}
+  if(k===3){return art+text(331,171,'마개와 바닥',12)+text(331,188,'함께 지지',12);}
   return art+G(`<rect x="175" y="219" width="68" height="27" fill="#f9f1d5"/>${text(209,237,'용액 라벨',11)}`,mix(55,0,t),0);
  }
  window.LAB_FLASK_GEOMETRY=flaskGeometry;
 
  // Equipment geometry is shared by introduction drawings and motion scenes.
  const clamp01=n=>Math.max(0,Math.min(1,n));
- function glove(x,y,scale=.8,angle=0){return `<g data-hand="gloved-grip" transform="translate(${x} ${y}) rotate(${angle}) scale(${scale})"><title>잡는 위치를 나타낸 손 모형. 보호구는 실험 안내에 맞게 선택해요.</title><path d="M47 17L79 26L74 59L45 51Z" fill="#b7d1d4" stroke="#5c8185"/><path d="M43 49L20 51Q9 51 9 43Q0 40 4 32Q-4 26 1 18L10 9Q9-1 18-1Q25-1 31 7L40 16Q59 16 61 30L55 46Z" fill="#e0eff0" stroke="#5c8185"/><path d="M2 19h18q9 0 9 7t-9 7H5m1 0h17q8 0 8 6t-8 6H12m3 0h13q7 0 7 5m-19-47 13 11q5 5 10 3" fill="none" stroke="#6e969b"/><path d="M57 23L52 47" stroke="#a1c0c2" fill="none"/></g>`;}
  function cue(x,y,label,tx=x+50,ty=y-20){return `<g data-action-cue="true"><circle cx="${x}" cy="${y}" r="9" fill="none" stroke="#ad7c36" stroke-width="2"/>${line(x+9,y,tx-6,ty-4,'stroke="#ad7c36" stroke-width="1"')}${text(tx,ty,label,11)}</g>`;}
  function microBody(pressed=0,tipped=true,liquid=0,tipDrop=0,eject=0,active=false){
   const clip='micro-tip-'+(++motionVesselSerial);
@@ -785,7 +782,7 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
  function microScene(k,t,state={}){
   const p=microPose(k,t),dropTip=k===8?98*clamp01((t-.55)/.45):k===1?42*(1-Math.min(1,t/.45)):0;
   const vessels=k<3?'':cup(65,244,94,80,45)+cup(258,244,78,80,k>6?9:k===6?9*(1-p.liquid):0)+text(112,347,state.sourceLabel||'물',12)+text(296,347,'받는 용기',11);
-  const grip=k<8?glove(18,76,.58):'',device=G(`<g transform="rotate(${p.angle} 0 213)">${microBody(p.pressed,k>=1,p.liquid,dropTip,k===8&&t>.4?5:0,[2,3,6,7].includes(k))+grip}</g>`,p.x,p.top);
+  const device=G(`<g transform="rotate(${p.angle} 0 213)">${microBody(p.pressed,k>=1,p.liquid,dropTip,k===8&&t>.4?5:0,[2,3,6,7].includes(k))}</g>`,p.x,p.top);
   let art=vessels+device;
   if(k===0)art+=cue(p.x,91,'범위·설정 확인',244,100);
   if(k===1)art+='<path data-support="tip-rack" d="M75 225h74v72H75Z" fill="#d8e4da"/><ellipse cx="112" cy="225" rx="10" ry="3" fill="none"/>'+text(254,157,'팁 박스의 새 팁 장착',11);
@@ -940,7 +937,7 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
  Object.assign(buretteLesson,{source:'https://www.brand.de/en/applications/volumetric-instruments/handling-of-burettes',sourceName:'BRAND · 유리 뷰렛 사용 안내',note:'그림은 꼭지 몸체와 회전 손잡이가 있는 50 mL 유리 뷰렛의 한 예예요. 전체 눈금은 간략히, 읽는 단계의 0.1 mL 눈금은 확대해 표시했어요. 꼭지 형태와 열림 방향은 제품마다 달라요. 배출 전후의 눈금 차이를 기록해요.'});
  const microLesson=window.LAB_PRACTICE.lessons.find(l=>l.id==='micropipette');
  Object.assign(microLesson,{source:'https://www.eppendorf.com/product-media/doc/en/186591/Eppendorf_Liquid-Handling_Operating-manual_Research-plus_Eppendorf-Research-plus.pdf',sourceName:'Eppendorf · 정방향 피펫팅 안내',note:'20–200 µL 공기 치환식 단일 채널 피펫으로 물 100 µL를 옮기는 예예요. 실제 예비 습윤·담금 깊이·대기 시간·보호구는 제품과 실험 안내를 따라요. 누름 깊이와 액량은 조작을 알아보기 쉽게 확대했어요.'});
- window.LAB_ART={glove,microBody,microPose,buretteBody};
+ window.LAB_ART={microBody,microPose,buretteBody};
  window.LAB_MOTION={ids,frame,start,pause,stop,native};
 })();
 
