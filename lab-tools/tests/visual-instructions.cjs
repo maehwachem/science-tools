@@ -31,9 +31,9 @@ console.log('PASS dilution UI stock solution and final-volume context');
 let frames=0;
 for(const l of practice.lessons){assert(l.steps.length);for(let k=0;k<l.steps.length;k++)for(const t of [0,.2,.5,.8,1]){const svg=frame(l.id,k,t);xml(svg);frames++;}}
 assert.equal(practice.lessons.length,31);console.log('PASS valid guide SVG samples:',frames,'frames across 31 guides');
-// Reading steps stay still and retain liquid; discharge changes the numerical reading before final reading.
+// A burette reading stays still. A graduated pipette first drains to its start mark outside the source.
 for(const id of ['graduated','burette']){
- const readings=[];for(const step of [2,4]){const values=[0,.2,.5,.8,1].map(t=>xml(frame(id,step,t)).querySelector('[data-liquid-reading]').getAttribute('data-liquid-reading'));assert.equal(new Set(values).size,1,id+' reading motion');readings.push(Number(values[0]));}
+ const readings=[];for(const step of [2,4]){const values=[0,.2,.5,.8,1].map(t=>Number(xml(frame(id,step,t)).querySelector('[data-liquid-reading]').getAttribute('data-liquid-reading')));if(id==='graduated'&&step===2){assert(values.at(-1)>values[0]);assert.equal(values.at(-1),1);for(let i=1;i<values.length;i++)assert(values[i]>=values[i-1]);}else assert.equal(new Set(values).size,1,id+' reading motion');readings.push(values.at(-1));}
  assert(readings[1]>readings[0]);assert(xml(frame(id,4)).querySelector('[data-liquid-reading]'));console.log('PASS stable initial/final meniscus and retained liquid:',id,readings.join(' -> '));
 }
 // A pipette must move as an instrument, not merely move its caption text.
