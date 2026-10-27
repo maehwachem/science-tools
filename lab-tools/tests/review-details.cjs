@@ -14,4 +14,17 @@ assert.equal([...frame('graduated',4,1).querySelectorAll('text[y="345"]')].lengt
 assert(frame('pipette',3,1).querySelector('[data-horizontal-liquid]'));
 const fp=frame('pipette',3,1,{receiverKind:'volflask'});assert(fp.querySelector('g[transform="translate(272 42) rotate(0 0 0)"]')||[...fp.querySelectorAll('g')].some(g=>g.getAttribute('transform')?.startsWith('translate(272 42)')),'bulb clears narrow neck');
 assert(w.labDrawing('holder').includes('data-part="test-tube-holder"'));assert(frame('holder',1,1).querySelector('[data-part="test-tube-holder"]'));
+// Sample the entire delivery: inverse-transform flow points into the tilted beaker.
+for(let i=61;i<98;i++){
+ const f=frame('pipette',3,i/100),flow=f.querySelector('[data-wall-flow]');
+ if(!flow)continue;
+ assert(flow.getAttribute('clip-path').includes('inclined-receiver'));
+ const nums=flow.getAttribute('d').match(/-?\d+(?:\.\d+)?/g).map(Number);
+ for(let j=0;j<nums.length;j+=2){const dx=nums[j]-265.4,dy=nums[j+1]-264,a=12*Math.PI/180,lx=265.4+dx*Math.cos(a)-dy*Math.sin(a),ly=264+dx*Math.sin(a)+dy*Math.cos(a);assert(lx>=265.4&&lx<=335.4,'flow crosses beaker wall');assert(ly>=246&&ly<=320,'flow outside receiver');}
+ assert(![...f.querySelectorAll('path')].some(p=>/^M267 .*q-9 14/.test(p.getAttribute('d')||'')),'free drop outside tilted receiver');
+}
+for(const [k,t] of [[0,1],[1,.2],[1,.6],[1,1],[2,.3],[3,.5]])assert(frame('spatula',k,t).querySelector('[data-part="lab-spatula"]'),'spatula shape differs between steps');
+assert(w.labDrawing('spatula').includes('data-part="lab-spatula"'));
+assert.equal(frame('spatula',1,.1).querySelector('[data-spoon-loaded]').getAttribute('data-spoon-loaded'),'false');
+assert.equal(frame('spatula',1,.8).querySelector('[data-spoon-loaded]').getAttribute('data-spoon-loaded'),'true');
 assert.deepEqual(errors,[]);console.log('PASS dish, filler, conditional cooling, TARE/stability, drop arrival, labels, pipette clearance and shared holder');w.close();
