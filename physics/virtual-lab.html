@@ -176,7 +176,7 @@ details p{margin:6px 0 2px;font-size:14px;color:var(--muted)}
   <section class="exp" id="x1" aria-label="실험 2 떨어지는 자석">
     <div class="stagecol">
       <div class="stage"><svg id="s1" viewBox="0 0 1000 600" role="img" aria-label="코일을 통과해 떨어지는 자석과 전류 그래프"></svg></div>
-      <p class="aim"><b>목표</b> 자석이 코일을 지나 떨어질 때 전류가 시간에 따라 어떻게 변하는지 그래프로 보고, 두 봉우리를 비교한다. 화면은 실제보다 느리게 보여 준다.</p>
+      <p class="aim"><b>목표</b> 자석이 코일을 지나 떨어질 때 전류가 시간에 따라 어떻게 변하는지 그래프로 보고, 두 봉우리를 비교한다. 자석을 놓는 순간부터 그래프를 기록한다. 0 ms는 놓은 순간이며, 시간 눈금은 모형 속 실제 시간이다.</p>
     </div>
     <div class="panel">
       <div class="card">
@@ -189,7 +189,8 @@ details p{margin:6px 0 2px;font-size:14px;color:var(--muted)}
         </div>
       </div>
       <div class="card">
-        <div class="acts"><button type="button" id="go1">떨어뜨리기</button></div>
+        <div class="acts"><button type="button" id="go1">떨어뜨리기</button><button type="button" id="zoom1" class="alt" disabled>코일 통과 구간 확대</button></div>
+        <p class="note" id="clock1" aria-live="off">놓는 순간 = 0 ms · 기록 준비</p>
         <div class="read" style="margin-top:12px">
           <span>첫 번째 봉우리 (들어갈 때)</span><span class="v" id="p1a">–</span>
           <span>두 번째 봉우리 (나올 때)</span><span class="v" id="p1b">–</span>
@@ -589,8 +590,8 @@ function step1(dt) {
 /* =================================================================
    2. falling magnet through a coil
    ================================================================= */
-const E2 = {}, S2 = { run: false, t: 0, z: -20, done: false, pts: [], a: 0, b: 0, ta: 0, tb: 0, t0: null };
-const G2 = 980, W2 = 4, K2 = 0.15, PXCM = 5, CY2 = 330, WIN2 = 220, ZS = -12;
+const E2 = {}, S2 = { run: false, t: 0, z: -20, done: false, pts: [], a: 0, b: 0, ta: 0, tb: 0, zoom: false };
+const G2 = 980, W2 = 4, K2 = 0.15, PXCM = 5, CY2 = 330, WIN2 = 500;
 const zY = z => CY2 + z * PXCM;
 const GR = { x: 520, y: 70, w: 450, h: 380 };
 function build2() {
@@ -633,32 +634,44 @@ function build2() {
   for (const [y, sign, color] of [[zY(30), '−', '#aab9ca'], [zY(34), '+', '#ef7a3d']]) { el('circle', {cx: GR.x, cy: y, r: 5, fill: color}, g); tx(g, GR.x + 12, y + 5, sign, 'tw', 16, 'start'); }
   tx(g, GR.x + 18, GR.y - 16, '전류 측정기 (시간에 따른 전류)', 'tw', 16, 'start');
   E2.gy0 = GR.y + GR.h / 2;
+  E2.axes = el('g', null, g);
+  drawAxes2();
+  E2.cursor = el('line', { y1: GR.y, y2: GR.y + GR.h, stroke: '#7cf2c0', 'stroke-width': 1.5, 'stroke-dasharray': '4 4', opacity: 0 }, g);
+  E2.trace = el('path', { fill: 'none', stroke: '#ffd66b', 'stroke-width': 3, 'stroke-linejoin': 'round' }, g);
+  E2.tip = el('circle', { r: 4, fill: '#7cf2c0', opacity: 0 }, g);
+  E2.mkA = pill(g, '', '#2f7fc1', 60, 24, 13); E2.mkB = pill(g, '', '#c96a1a', 60, 24, 13);
+  E2.speed = tx(svg, 28, 40, '', 'tm', 15, 'start');
+  E2.hint = tx(svg, 28, 584, '', 'tm', 14, 'start');
+}
+function window2() { const mid = Math.sqrt(2 * ST[1].h / G2) * 1000; return S2.zoom ? [mid - 50, mid + 50] : [0, WIN2]; }
+function drawAxes2() {
+  const g = E2.axes; g.innerHTML = '';
   for (let v = -20; v <= 20; v += 5) {
     const y = E2.gy0 - v * GR.h / 44;
     el('line', { x1: GR.x + 48, y1: y, x2: GR.x + GR.w - 14, y2: y, stroke: v ? 'rgba(255,255,255,.1)' : 'rgba(255,255,255,.5)', 'stroke-width': v ? 1 : 1.6 }, g);
     tx(g, GR.x + 40, y + 4, (v > 0 ? '+' : '') + v, 'tm', 12, 'end');
   }
-  for (let t = 0; t <= WIN2; t += 20) {
-    const x = GR.x + 48 + t / WIN2 * (GR.w - 62);
+  const [lo, hi] = window2(), tick = S2.zoom ? 20 : 100;
+  for (let t = Math.ceil(lo / tick) * tick; t <= hi; t += tick) {
+    const x = grX(t);
     el('line', { x1: x, y1: GR.y, x2: x, y2: GR.y + GR.h, stroke: 'rgba(255,255,255,.07)' }, g);
-    if (t % 40 === 0) tx(g, x, GR.y + GR.h + 18, String(t), 'tm', 12);
+    tx(g, x, GR.y + GR.h + 18, String(t), 'tm', 12);
   }
-  tx(g, GR.x + GR.w - 14, GR.y + GR.h + 38, '시간 (ms)', 'tm', 12, 'end');
+  tx(g, GR.x + GR.w - 14, GR.y + GR.h + 38, '놓은 뒤 시간 (ms)', 'tm', 12, 'end');
   tx(g, GR.x + 18, GR.y + 6, 'mA', 'tm', 12, 'start');
-  E2.trace = el('path', { fill: 'none', stroke: '#ffd66b', 'stroke-width': 3, 'stroke-linejoin': 'round' }, g);
-  E2.mkA = pill(g, '', '#2f7fc1', 60, 24, 13); E2.mkB = pill(g, '', '#c96a1a', 60, 24, 13);
-  E2.speed = tx(svg, 28, 40, '', 'tm', 15, 'start');
-  E2.hint = tx(svg, 28, 584, '', 'tm', 14, 'start');
 }
-function grX(t) { return GR.x + 48 + t / WIN2 * (GR.w - 62); }
+function grX(t) { const [lo, hi] = window2(); return GR.x + 48 + (t - lo) / (hi - lo) * (GR.w - 62); }
 function grY(v) { return E2.gy0 - v * GR.h / 44; }
 function emf2(z, v) { const d = z / W2; return K2 * (ST[1].N / 100) * ST[1].pole * v * (-2 * z / (W2 * W2)) * Math.exp(-d * d); }
 function reset2() {
-  S2.run = false; S2.done = false; S2.t = 0; S2.z = -ST[1].h; S2.pts = []; S2.a = 0; S2.b = 0; S2.t0 = null;
+  S2.run = false; S2.done = false; S2.t = 0; S2.z = -ST[1].h; S2.pts = []; S2.a = 0; S2.b = 0; S2.ta = 0; S2.tb = 0; S2.zoom = false; drawAxes2();
+  $('#zoom1').disabled = true; $('#zoom1').textContent = '코일 통과 구간 확대';
+  E2.cursor.setAttribute('opacity', 0); E2.tip.setAttribute('opacity', 0); $('#clock1').textContent = '놓는 순간 = 0 ms · 기록 준비';
   E2.trace.setAttribute('d', ''); E2.mkA.style.display = E2.mkB.style.display = 'none';
   ['p1a', 'p1b', 'p1t'].forEach(id => $('#' + id).textContent = '–'); $('#rec1').disabled = true; $('#go1').textContent = '떨어뜨리기'; $('#go1').disabled = false;
 }
-$('#go1').onclick = () => { reset2(); S2.run = true; $('#go1').disabled = true; };
+$('#go1').onclick = () => { reset2(); S2.pts = [[0, 0]]; S2.run = true; $('#go1').disabled = true; };
+$('#zoom1').onclick = () => { if (!S2.done) return; S2.zoom = !S2.zoom; $('#zoom1').textContent = S2.zoom ? '전체 시간 보기' : '코일 통과 구간 확대'; drawAxes2(); step2(0); };
 bindSeg(1, k => { if (k === 'slow') return; reset2(); });
 $('#rec1').onclick = () => {
   if (!S2.done) return;
@@ -668,40 +681,42 @@ $('#rec1').onclick = () => {
 };
 function step2(dt) {
   if (S2.run) {
-    const sim = dt * ST[1].slow, sub = 40;
+    const sim = dt * ST[1].slow, sub = Math.max(40, Math.ceil(sim / .0002));
     for (let i = 0; i < sub; i++) {
-      S2.t += sim / sub;
+      S2.t = Math.min(S2.t + sim / sub, Math.sqrt(2 * (ST[1].h + 42) / G2));
       S2.z = -ST[1].h + .5 * G2 * S2.t * S2.t;
       const v = G2 * S2.t;
-      if (S2.z >= ZS) {
-        if (S2.t0 === null) S2.t0 = Math.sqrt(2 * Math.max(0, ST[1].h + ZS) / G2);
-        const tm = (S2.t - S2.t0) * 1000, e = emf2(S2.z, v);
-        if (tm <= WIN2) {
-          if (!S2.pts.length || tm - S2.pts[S2.pts.length - 1][0] > .4) S2.pts.push([tm, e]);
-          if (Math.abs(e) > Math.abs(S2.a) && S2.z < 0) { S2.a = e; S2.ta = tm; }
-          if (Math.abs(e) > Math.abs(S2.b) && S2.z > 0) { S2.b = e; S2.tb = tm; }
-        }
-      }
-      if (S2.z >= 42) { S2.z = 42; S2.run = false; S2.done = true; break; }
+      const tm = S2.t * 1000, e = emf2(S2.z, v);
+      if (!S2.pts.length || tm - S2.pts[S2.pts.length - 1][0] > .4) S2.pts.push([tm, e]);
+      if (Math.abs(e) > Math.abs(S2.a) && S2.z < 0) { S2.a = e; S2.ta = tm; }
+      if (Math.abs(e) > Math.abs(S2.b) && S2.z > 0) { S2.b = e; S2.tb = tm; }
+      if (S2.t >= Math.sqrt(2 * (ST[1].h + 42) / G2)) { S2.z = 42; S2.run = false; S2.done = true; S2.pts.push([tm, e]); break; }
     }
     if (S2.done) {
-      $('#go1').disabled = false; $('#go1').textContent = '다시 떨어뜨리기'; $('#rec1').disabled = false;
+      $('#go1').disabled = false; $('#go1').textContent = '다시 떨어뜨리기'; $('#zoom1').disabled = false; $('#rec1').disabled = false;
       const sgn = v => (v > 0 ? '+' : '') + v.toFixed(1);
       $('#p1a').innerHTML = sgn(S2.a) + '<span class="u">mA</span>'; $('#p1b').innerHTML = sgn(S2.b) + '<span class="u">mA</span>';
       $('#p1t').innerHTML = Math.round(S2.tb - S2.ta) + '<span class="u">ms</span>';
       for (const [mk, t, v] of [[E2.mkA, S2.ta, S2.a], [E2.mkB, S2.tb, S2.b]]) { mk.style.display = ''; mk.t.textContent = (v > 0 ? '+' : '') + v.toFixed(1); mk.setAttribute('transform', `translate(${f1(grX(t))},${f1(grY(v) + (v > 0 ? -18 : 18))})`); }
     }
   } else if (!S2.done) S2.z = -ST[1].h;
+  if (S2.done) for (const [mk, t, v] of [[E2.mkA, S2.ta, S2.a], [E2.mkB, S2.tb, S2.b]]) mk.setAttribute('transform', `translate(${f1(grX(t))},${f1(grY(v) + (v > 0 ? -18 : 18))})`);
+  const [lo, hi] = window2();
   let d = '';
-  for (const [t, v] of S2.pts) d += (d ? 'L' : 'M') + f1(grX(t)) + ',' + f1(grY(v));
+  for (const [t, v] of S2.pts.filter(p => p[0] >= lo && p[0] <= hi)) d += (d ? 'L' : 'M') + f1(grX(t)) + ',' + f1(grY(v));
   E2.trace.setAttribute('d', d);
+  const tm = S2.t * 1000, tipVisible = S2.pts.length && tm >= lo && tm <= hi;
+  E2.cursor.setAttribute('opacity', tipVisible ? .7 : 0); E2.tip.setAttribute('opacity', tipVisible ? 1 : 0);
+  E2.cursor.setAttribute('x1', grX(tm)); E2.cursor.setAttribute('x2', grX(tm));
+  E2.tip.setAttribute('cx', grX(tm)); E2.tip.setAttribute('cy', grY(emf2(S2.z, G2 * S2.t)));
+  $('#clock1').textContent = S2.run || S2.done ? '놓은 뒤 ' + Math.round(tm) + ' ms · ' + (S2.done ? '받침 도착 · 기록 종료' : '기록 중') + (S2.zoom ? ' · 확대해도 0 ms 기준은 같다' : '') : '놓는 순간 = 0 ms · 기록 준비';
   E2.mag.setAttribute('transform', `translate(260,${f1(zY(S2.z))})`);
   const np = ST[1].pole > 0;
   E2.mN.setAttribute('fill', np ? '#c93a28' : '#2366ad'); E2.mS.setAttribute('fill', np ? '#2366ad' : '#c93a28');
   E2.tN.textContent = np ? 'N' : 'S'; E2.tS.textContent = np ? 'S' : 'N';
   E2.nlab.textContent = '코일 ' + ST[1].N + '회';
   const ry = zY(-ST[1].h);
-  E2.ring.setAttribute('y1', ry); E2.ring.setAttribute('y2', ry); E2.ringL.setAttribute('y', ry + 5); E2.ringL.textContent = '출발 ' + ST[1].h + ' cm';
+  E2.ring.setAttribute('y1', ry); E2.ring.setAttribute('y2', ry); E2.ringL.setAttribute('y', ry + 5); E2.ringL.textContent = ST[1].h + ' cm · 0 ms';
   const v = S2.run || S2.done ? G2 * S2.t / 100 : 0;
   E2.speed.textContent = S2.run || S2.done ? (S2.done ? '받침에 닿기 직전 속력 ' : '자석의 속력 ') + v.toFixed(2) + ' m/s' : '';
   E2.hint.textContent = ST[1].slow < 1 ? '화면은 실제보다 ' + (ST[1].slow === .04 ? '25' : '10') + '배 느리게 보여 준다. 시간 눈금은 실제 시간이다.' : '실제 빠르기로 보여 준다.';
