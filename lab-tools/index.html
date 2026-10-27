@@ -227,7 +227,9 @@ window.LAB_TOOLS.find(t=>t.id==='thermometer').keywords = window.LAB_TOOLS.find(
  const line=(x1,y1,x2,y2,extra='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" ${extra}/>`;
  const text=(x,y,t,size=7)=>`<text x="${x}" y="${y}" font-size="${size}" fill="#547464" stroke="none" font-family="Arial,sans-serif">${t}</text>`;
  function marks(x,y,count,gap,dir=1){return Array.from({length:count},(_,i)=>line(x,y+i*gap,x+dir*(i%5===0?19:10),y+i*gap,'stroke-width="1.2" opacity=".6"')).join('')}
+ window.labSpatula=(loaded=false)=>`<g data-part="lab-spatula"><path d="M-146-7H-119L-109-3H-18Q-10-11 5-10Q23-9 24 0Q23 9 5 10Q-10 11-18 3H-109L-119 7H-146Z" fill="#d8e4dd" stroke="#708d80" stroke-width="1.8"/><path d="M-138-3h18M-105 0h83M-9-5Q7-10 17-3" stroke="#f8fbf5" stroke-width="2" fill="none"/>${loaded?'<g fill="#c9ac6c" stroke="none"><circle cx="0" cy="0" r="2.5"/><circle cx="6" cy="-2" r="2.4"/><circle cx="9" cy="3" r="2.3"/><circle cx="1" cy="5" r="2.1"/></g>':''}</g>`;
  window.labWoodHolder=(opening=0)=>`<g data-part="test-tube-holder"><path d="M-24 5Q0 22 24 5L142 12V25L20 19Q0 31-24 18Z" fill="#d4b88a"/><g transform="rotate(${opening} 65 2)"><path d="M-24-18Q0-30 24-18L101-10V3L23-5Q0-18-24-5Z" fill="#e5cea3"/><path d="M-19-16Q0-25 19-16" fill="none" stroke="#b49b70"/></g><path d="M65-11v31m-9-25q-5 8 0 16m6-16q-5 8 0 16m6-16q-5 8 0 16m6-16q-5 8 0 16M55-7L35-15M76 18l30 3" fill="none" stroke="#748578" stroke-width="2.8"/><path d="M28 11l101 7" stroke="#f3dfb5" stroke-width="2"/></g>`;
+ const spatulaTool=window.LAB_TOOLS.find(t=>t.id==='spatula');spatulaTool.parts=[['오목한 끝',57,71,'고체 시약을 조금씩 떠서 옮기는 부분이에요.','right'],['가운데 손잡이',44,46,'깨끗하고 마른 상태로 잡아요.','left'],['납작한 끝',34,24,'소량의 고체를 덜 때 쓰는 평평한 부분이에요. 실제 제품은 끝 모양이 달라요.','right']];
  const dishTool=window.LAB_TOOLS.find(t=>t.id==='boat');dishTool.parts=[['시료를 담는 안쪽 면',50,45,'고체 시료를 담는 오목한 안쪽 면이에요.','left'],['가장자리',78,37,'시료가 밖으로 흘러나오지 않도록 둘러싼 부분이에요.','right']];
  const holderTool=window.LAB_TOOLS.find(t=>t.id==='holder');holderTool.parts=[['집는 홈',25,42,'시험관을 감싸 지지하는 오목한 부분이에요.','left'],['금속 스프링',49,51,'누름부를 놓으면 집는 부분이 닫히도록 해요.','right'],['긴 손잡이와 누름부',66,61,'긴 손잡이를 잡고 짧은 누름부를 눌러 집게를 벌려요.','right']];
  const heatTool=window.LAB_TOOLS.find(t=>t.id==='hotplate');for(const p of heatTool.parts)if(p[0]==='전원 표시'){p[0]='가열 표시등';p[3]='그림에서는 가열 작동 상태를 알리는 표시등이에요. 잔열 표시 여부는 제품마다 달라요.';}
@@ -276,7 +278,7 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
  cylinder:`<path d="M94 222L75 232L88 239H153L166 232L147 222Z" fill="#c4d8c6"/><path d="M94 43H140L148 50L139 56V214Q139 222 132 222H104Q98 222 98 214V52Z" fill="${glass}"/><path d="M102 132Q118 138 135 132V211Q135 218 130 218H107Q102 218 102 211Z" fill="${water}" stroke="none"/><path d="M102 132Q118 138 135 132" opacity=".6"/>${marks(99,66,20,7)}${text(121,69,'100',6)}${text(121,104,'75',6)}${text(121,139,'50',6)}${text(121,174,'25',6)}${text(122,38,'mL',7)}<path d="M105 55V124M105 146V207" stroke="white" stroke-width="2.5"/>`,
  dropper:`<g transform="rotate(15 120 130)"><path d="M105 33Q105 18 120 18Q135 18 135 33V76H105Z" fill="#5e7f65"/><path d="M107 28Q111 20 119 23" fill="none" stroke="#a8bc95" stroke-width="3"/><rect x="102" y="73" width="36" height="10" rx="3" fill="#466a53"/><path d="M112 84H128V187L122 220H118L112 187Z" fill="${glass}"/><path d="M115 152H125V186L120 212L115 186Z" fill="#a6cddd" stroke="none"/><path d="M115 91V143" stroke="white" stroke-width="2"/><path d="M120 230Q111 241 120 244Q129 241 120 230Z" fill="#a9c8d4" stroke="#7293a1"/></g>`,
  wash:`<path d="M93 76V58H139V77Q161 81 166 101L173 204Q173 221 158 223H73Q58 221 59 204L66 100Q68 83 93 76Z" fill="#e4eee0"/><path d="M73 213L79 110Q79 94 97 92" fill="none" stroke="white" stroke-width="6" opacity=".7"/><rect x="88" y="55" width="56" height="18" rx="4" fill="#a5bfaa"/>${marks(91,59,11,0)}<path d="M117 55V35Q117 23 130 30L179 57L190 75" fill="none" stroke="#577a66" stroke-width="10"/><path d="M117 55V35Q117 23 130 30L179 57L190 75" fill="none" stroke="#cfdfcf" stroke-width="6"/><path d="M117 75V196" fill="none" stroke="#a9c2ac" stroke-width="5"/><rect x="79" y="143" width="76" height="44" rx="5" fill="#f8f9f3" stroke="#aabca4"/>${text(95,163,'WATER',9)}${text(99,178,'H₂O',10)}`,
- spatula:`<g transform="rotate(29 120 130)"><path d="M110 43Q96 19 115 14Q133 8 139 27Q144 44 128 53L125 180L135 213Q137 222 130 225L112 229Q104 229 104 220L111 178Z" fill="${metal}"/><ellipse cx="119" cy="32" rx="11" ry="16" fill="#dae4db" stroke="#7d9384"/><path d="M116 57L116 177M110 216L127 212" stroke="white" opacity=".8" stroke-width="2"/></g>`,
+ spatula:`<g transform="translate(137 184) rotate(65)">${window.labSpatula()}</g>`,
  funnel:`<ellipse cx="120" cy="65" rx="70" ry="17" fill="#eef6ec"/><path d="M50 65L109 143Q115 151 115 158V214L125 208V158Q125 151 131 143L190 65Q120 82 50 65Z" fill="${glass}"/><path d="M57 70L116 146Q118 151 118 158V207" stroke="white" stroke-width="4" opacity=".75"/><ellipse cx="120" cy="211" rx="5.8" ry="1.7" transform="rotate(-31 120 211)" fill="#c6dcd5"/><path d="M50 65Q120 48 190 65" fill="none"/><path d="M50 65Q120 84 190 65" fill="none" stroke="#a4b7a6"/>`,
  paper:`<circle cx="79" cy="106" r="60" fill="#f4efdd" stroke="#aba98c"/><path d="M19 106H139M79 46V166" stroke="#cec8ac" stroke-dasharray="4 5" stroke-width="1"/><path d="M79 49Q34 59 28 99" fill="none" stroke="#fffaf0" stroke-width="5"/><path d="M121 141L173 217L225 141Z" fill="#ded5b5" stroke="#9d9c81"/><ellipse cx="173" cy="141" rx="52" ry="15" fill="#f9f5e6" stroke="#9d9c81"/><path d="M121 141Q173 160 225 141L173 217Z" fill="#efe7ce" stroke="#9d9c81"/><path d="M189 155L173 217" fill="none" stroke="#b3a783"/><path d="M196 153L177 207" fill="none" stroke="#c2b797"/>`,
  rack:`<path d="M48 96V190H63V96M174 96V190H189V96" fill="#b69768"/><path d="M43 190H193V206H43Z" fill="#c5aa7c"/><path d="M46 86L60 76H182L195 86V101H46Z" fill="#d4bb91"/><path d="M46 86H195" stroke="#ae936b"/><g fill="#7c7960" stroke="#9e8c6d"><ellipse cx="75" cy="85" rx="9" ry="4"/><ellipse cx="105" cy="85" rx="9" ry="4"/><ellipse cx="135" cy="85" rx="9" ry="4"/><ellipse cx="165" cy="85" rx="9" ry="4"/></g><g fill="${glass}"><path d="M98 49H112V180Q112 190 105 190Q98 190 98 180Z"/><path d="M158 59H172V180Q172 190 165 190Q158 190 158 180Z"/></g><path d="M100 147H110V179Q110 186 105 186Q100 186 100 179Z" fill="#a2cbd0" stroke="none"/><path d="M160 166H170V179Q170 186 165 186Q160 186 160 179Z" fill="#c8b57f" stroke="none"/><path d="M46 101H98M112 101H158M172 101H195" stroke="#ae936b"/><ellipse cx="105" cy="49" rx="7" ry="2.4" fill="#fbfdf7"/><ellipse cx="165" cy="59" rx="7" ry="2.4" fill="#fbfdf7"/>`,
@@ -532,7 +534,7 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
  boat:[['준비','담을 물질에 알맞은 재질의 깨끗하고 마른 칭량접시를 준비해요.'],['빈 접시 올리기','전자저울 측정판 가운데에 놓고 표시가 안정되는지 확인해요.'],['질량 제외 후 담기','TARE로 빈 접시 질량을 제외하고 약숟가락으로 고체를 조금씩 담아요.'],['옮기고 마무리','흘리지 않도록 받는 용기에 옮겨요. 일회용 여부와 남은 물질의 처리 방법을 확인해요.']],
  thermometer:[['범위와 담금 깊이 확인','측정 범위와 담가야 하는 깊이를 확인해요. 아래쪽의 액체가 담긴 부분이 감온부예요. 유리관에 금이 없는지도 살펴봐요.'],['감온부 위치 맞추기','측정하려는 물질 속에 감온부를 두고, 용기 벽이나 바닥에 닿지 않게 해요. 담금 깊이는 제품 안내를 따라요.'],['액체 기둥의 끝 읽기','알코올 기둥의 높이가 안정될 때까지 기다려요. 눈높이를 기둥의 끝과 맞춰 눈금을 읽고 온도와 단위를 기록해요.'],['세척과 보관','사용한 부분을 실험 안내에 따라 세척하고 보관해요. 온도계를 젓는 막대로 사용하지 않아요. 깨졌다면 손으로 치우지 말고 선생님께 알려요.']],
  wash:[['내용물 확인','라벨을 읽어 내용물과 사용할 목적이 맞는지 확인해요. 모르는 액체가 든 병을 임의로 쓰지 않아요.'],['끝의 방향 맞추기','받는 용기를 안정적으로 놓고 노즐이 용기 안쪽을 향하게 해요. 사람에게 향하지 않아요.'],['조금씩 내보내기','병 몸통을 천천히 눌러 필요한 양만 내보내요. 노즐이 시료에 닿아 오염되지 않게 해요.'],['마무리','누르는 힘을 풀고 지정된 곳에 세워 놓아요. 세척병으로 정밀한 부피를 재지는 않아요.']],
- spatula:[['준비','시약과 접촉해도 되는 재질의 깨끗하고 마른 약숟가락을 준비해요.'],['조금씩 덜기','시약병을 확인하고 필요한 양을 조금씩 덜어요. 병 입구와 주변에 시약을 흘리지 않아요.'],['옮기기','칭량접시나 지정한 용기에 담아요. 서로 다른 시약에 같은 약숟가락을 그대로 사용하지 않아요.'],['마무리','남은 시약을 원래 병에 되돌리지 않아요. 안내에 따라 별도로 처리하고 약숟가락을 세척해요.']],
+ spatula:[['준비','시약과 접촉해도 되는 재질의 깨끗하고 마른 약숟가락을 준비해요.'],['조금씩 덜기','시약병을 확인하고 한 손으로 받쳐 살짝 기울여요. 깨끗하고 마른 약숟가락을 입구로 넣어 조금만 뜬 뒤, 입구를 통해 빼요. 시약이 쏟아지지 않게 해요.'],['옮기기','칭량접시나 지정한 용기에 담아요. 서로 다른 시약에 같은 약숟가락을 그대로 사용하지 않아요.'],['마무리','남은 시약을 원래 병에 되돌리지 않아요. 안내에 따라 별도로 처리하고 약숟가락을 세척해요.']],
  funnel:[['준비','받는 용기의 입구와 용도에 맞는 크기·재질의 깔때기를 준비해요.'],['안정적으로 놓기','받는 용기가 넘어지지 않게 놓고 깔때기를 받쳐요. 필요하면 스탠드로 지지해요.'],['천천히 붓기','한꺼번에 가득 붓지 않고 유리막대를 따라 조금씩 부어요. 거를 때는 알맞게 접은 거름종이를 먼저 넣어요.'],['마무리','액체가 충분히 내려간 뒤 분리해요. 거름종이와 남은 물질을 알맞게 처리하고 씻어요.']],
  paper:[['크기 고르기','깔때기에 맞는 거름종이를 골라요. 거름종이 윗부분이 깔때기 가장자리보다 낮아야 해요.'],['접어 넣기','일반적인 원뿔 접기는 반으로, 다시 반으로 접은 뒤 한 겹과 세 겹으로 벌려 깔때기에 넣어요.'],['밀착하고 거르기','실험에 알맞은 용매로 적셔 밀착해요. 혼합물을 천천히 붓고 액면이 거름종이 가장자리를 넘지 않게 해요.'],['마무리','고체가 종이에, 여액이 아래 용기에 모이는지 확인해요. 용해된 물질까지 모두 걸러지는 것은 아니에요. 내용물에 맞게 폐기해요.']],
  rack:[['준비','시험관 크기에 맞는 시험관대를 평평하고 안정된 곳에 놓아요.'],['세워 꽂기','시험관 바닥이 받침에 안정적으로 놓이게 꽂아요. 서로 부딪히지 않게 간격을 확인해요.'],['구분하기','시험관에 시료 이름이나 번호를 표시해 혼동을 줄여요.'],['마무리','시험관을 꺼내 정리하고 시험관대를 깨끗하게 해요. 이동할 때는 손잡이와 구조, 실험실 안내에 맞게 안정적으로 들어요.']],
@@ -586,7 +588,7 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
   let tool;
   if(long){
    const supports='<path d="M162 216v49m94-49v49M151 216h22m72 0h22" stroke="#9bb1a5" stroke-width="4" fill="none"/>';
-   tool=supports+(kind==='spatula'?'<path d="M121 212h153" stroke="#88a69b" stroke-width="6"/><ellipse cx="292" cy="212" rx="18" ry="7" fill="#dbe7dc"/>':kind==='rod'?'<path d="M122 214h184" stroke="#a4c4b8" stroke-width="7" stroke-linecap="round"/>':'<rect x="118" y="202" width="44" height="20" rx="7" fill="#6e9487"/><path d="M160 212h143" stroke="#e9f1df" stroke-width="9" stroke-linecap="round"/><path d="M160 212h143" stroke="#6b8371" stroke-width="1"/>')+(kind==='retriever'?bar(292,262):'');
+   tool=supports+(kind==='spatula'?G(window.labSpatula(),285,212):kind==='rod'?'<path d="M122 214h184" stroke="#a4c4b8" stroke-width="7" stroke-linecap="round"/>':'<rect x="118" y="202" width="44" height="20" rx="7" fill="#6e9487"/><path d="M160 212h143" stroke="#e9f1df" stroke-width="9" stroke-linecap="round"/><path d="M160 212h143" stroke="#6b8371" stroke-width="1"/>')+(kind==='retriever'?bar(292,262):'');
   }else if(kind==='tube')tool='<path d="M225 265V164q0-20 14-20t14 20v101" fill="#edf5e9"/><ellipse cx="239" cy="265" rx="14" ry="3" fill="none"/><path d="M210 266h60v8h-60Z" fill="#b9cec1"/>';
   else if(kind==='flask')tool='<path d="M207 266h28v-47l37-84q5-11-8-11h-86q-13 0-8 11l37 84Z" fill="#edf5e9"/><ellipse cx="221" cy="266" rx="14" ry="3" fill="none"/><path d="M181 138l34 77v44" fill="none" stroke="white" opacity=".7"/><path d="M192 266h58v8h-58Z" fill="#b9cec1"/>';
   else tool='<path d="M179 266V165q0-10 10-10h77q10 0 10 10v92l8 9h-8" fill="#edf5e9"/><ellipse cx="227.5" cy="266" rx="48.5" ry="5" fill="none"/><path d="M186 166v85" fill="none" stroke="white" opacity=".7"/><path d="M166 266h124v8H166Z" fill="#b9cec1"/>';
@@ -614,10 +616,18 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
   return rinse('rod',t);
  }
  function solids(id,k,t){
-  const dish=`<path d="M153 248h108l-14 26h-80Z" fill="#f7f2db"/><path d="M167 254h79l-8 13h-63Z" fill="#eee7cd"/>`,plate=`<rect x="130" y="274" width="155" height="38" rx="7" fill="#bdd1b8"/><rect x="142" y="284" width="73" height="19" rx="3" fill="#edf2d9"/>`,spoon=`<path d="M106 144l77 42" stroke="#88a194" stroke-width="6"/><ellipse cx="189" cy="189" rx="17" ry="7" fill="#d9e5dc"/>`;
-  if(k===0)return inspect(id==='boat'?dish:spoon,t,id==='boat'?205:189,id==='boat'?258:185);
+  const dish=`<path d="M153 248h108l-14 26h-80Z" fill="#f7f2db"/><path d="M167 254h79l-8 13h-63Z" fill="#eee7cd"/>`,plate=`<rect x="130" y="274" width="155" height="38" rx="7" fill="#bdd1b8"/><rect x="142" y="284" width="73" height="19" rx="3" fill="#edf2d9"/>`,spoon=G(window.labSpatula(),189,189,25);
+  if(k===0)return id==='boat'?inspect(dish,t,205,258):G(window.labSpatula(),250,193,25)+text(210,284,'오목한 끝 · 납작한 끝 · 가운데 손잡이',12);
   if(id==='boat'&&k===1)return plate+G(dish,0,mix(-70,0,t))+text(177,299,'용기 포함',11);
-  if(id==='spatula'&&k===1){const jar=`<path d="M142 205h73v107h-73Z" fill="#edf3e5"/><path d="M147 187h64v18h-64Z" fill="#e0e9da"/><path d="M147 265h63v42h-63Z" fill="#dbc895"/>`;return jar+G('<path d="M178 120v108" stroke="#88a194" stroke-width="6"/><ellipse cx="178" cy="237" rx="12" ry="18" fill="#d9e5dc"/>'+grains(174,237),0,t<.35?mix(-85,30,t/.35):mix(30,-85,(t-.35)/.65))+text(180,337,'확인한 시약을 조금씩',13);}
+  if(id==='spatula'&&k===1){
+   const tilt=25*clamp01(t/.2),depth=t<.2?110:t<.55?mix(110,267,(t-.2)/.35):t<.65?267:mix(267,110,clamp01((t-.65)/.25)),loaded=t>=.55;
+   const jarPath='M147 155h56v20h10v125q0 7-7 7h-62q-7 0-7-7V175h10Z';
+   const jar=`<g data-reagent-bottle="true" transform="rotate(${tilt} 175 300)"><path d="${jarPath}" fill="#f3f7ee"/><ellipse cx="175" cy="155" rx="28" ry="4" fill="none"/></g><defs><clipPath id="reagent-powder"><path d="${jarPath}" transform="rotate(${tilt} 175 300)"/></clipPath></defs><path d="M90 253Q185 245 270 253V330H90Z" fill="#d9c591" stroke="none" clip-path="url(#reagent-powder)"/>`;
+   return `<g data-scoop-scene="true" transform="translate(20 30) scale(.9)">${jar}<g data-scoop-depth="${depth}" data-spoon-loaded="${loaded}" transform="rotate(${tilt} 175 300)">${G(window.labSpatula(loaded),175,depth,90)}</g></g>`+text(210,337,'병을 받쳐 살짝 기울이고, 입구로 넣고 빼요',12);
+  }
+  if(id==='spatula'&&k===2){const move=clamp01(t/.55),pour=clamp01((t-.55)/.45),sx=mix(255.3,210,move),sy=mix(127.8,206,move),a=mix(115,25,move)+25*pour;
+   return dish+G(window.labSpatula(pour<.65),sx,sy,a)+(pour>0&&pour<.85?grains(216,mix(211,253,pour/.85)):'')+(pour>=.85?grains(210,257):'')+text(321,264,'조금씩',13);
+  }
   if(k===2)return (id==='boat'?plate:'')+dish+G(spoon,mix(-12,15,t),-12)+grains(189+mix(-12,15,t),mix(181,254,t))+(id==='boat'?text(178,299,t<.3?'TARE → 0.00':'시료 질량',11):'')+text(321,264,'조금씩',13);
   if(id==='spatula')return rinse('spatula',t);
   const dx=t<.25?0:mix(0,65,Math.min(1,(t-.25)/.35)),dy=t<.25?mix(0,-65,t/.25):-65,angle=t>.6?32*(t-.6)/.4:0,pouring=t>.65;
@@ -876,7 +886,7 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
  function insert(svg,art){return svg.replace('</g></svg>',art+'</g></svg>');}
  function pipetting(id,k,t,state){
   if(id==='micropipette')return microScene(k,t,state);
-  const micro=id==='micropipette',sourceX=115,flask=state.receiverKind==='volflask',targetX=flask?272:263,sourceName=state.sourceLabel||'물';
+  const micro=id==='micropipette',sourceX=115,flask=state.receiverKind==='volflask',targetX=flask?272:267,sourceName=state.sourceLabel||'물';
   let x=sourceX,top=15,liquid=0,pressed=0;
 
    top=k===0?15:k===1?mix(15,102,Math.min(1,t*3)):k===2?mix(102,72,Math.min(1,t*3)):k===3?(t<.2?mix(72,15,t/.2):t<.45?15:t<.6?mix(15,72,(t-.45)/.15):72):k===5?mix(72,15,t):72;
@@ -884,8 +894,8 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
    liquid=k===1?Math.max(0,(t-.3)/.7):k===2?1:k===3?1-Math.max(0,(t-.6)/.4):0;
 
   if(flask&&k>=3)top-=30*(k===3?clamp01((t-.45)/.15):k===5?1-t:1);
-  const received=k>3?1:k===3?1-liquid:0;
-  const receiver=flask?`<g transform="translate(135.5 145.25) scale(.65)">${volflask(0,0,{transferFraction:received})}</g>`:state.receiverKind==='flask'?`<path d="M257 244h24v28l45 50H236l21-50Z" fill="#f3f8ed"/>${received>0?`<path d="M245 ${319-12*received}h69l7 ${12*received}h-85Z" fill="#b7d7df" stroke="none"/>`:''}`:`<g data-receiver="inclined-beaker"><g transform="rotate(-12 261.4 264)">${cup(261.4,244,78,80,0)}</g><defs><clipPath id="inclined-receiver"><path d="M265.4 246H335.4V316Q335.4 320 331.4 320H269.4Q265.4 320 265.4 316Z" transform="rotate(-12 261.4 264)"/></clipPath></defs>${received>0?`<rect data-horizontal-liquid="true" x="250" y="${319-21*received}" width="110" height="50" fill="#b7d7df" stroke="none" clip-path="url(#inclined-receiver)"/>`:''}</g>`;
+  const received=k>3?1:k===3?clamp01((t-.66)/.34):0;
+  const receiver=flask?`<g transform="translate(135.5 145.25) scale(.65)">${volflask(0,0,{transferFraction:received})}</g>`:state.receiverKind==='flask'?`<path d="M257 244h24v28l45 50H236l21-50Z" fill="#f3f8ed"/>${received>0?`<path d="M245 ${319-12*received}h69l7 ${12*received}h-85Z" fill="#b7d7df" stroke="none"/>`:''}`:`<g data-receiver="inclined-beaker"><g transform="rotate(-12 265.4 264)">${cup(261.4,244,78,80,0)}</g><defs><clipPath id="inclined-receiver"><path d="M265.4 246H335.4V316Q335.4 320 331.4 320H269.4Q265.4 320 265.4 316Z" transform="rotate(-12 265.4 264)"/></clipPath></defs>${received>0?`<rect data-horizontal-liquid="true" x="250" y="${316-18*received}" width="110" height="50" fill="#b7d7df" stroke="none" clip-path="url(#inclined-receiver)"/>`:''}</g>`;
 
   const vessels=cup(68,244,94,80,45)+receiver+text(112,347,sourceName,12)+text(293,347,flask?'100 mL 부피 플라스크':'받는 용기',11);
   let device;
@@ -898,8 +908,15 @@ for(const [id,points] of Object.entries({funnel:[[90,65],[158,101],[120,180]],pa
   let art=vessels+device;
   if(k===2)art+=line(x+10,top+yLine*.8,x+74,top+yLine*.8,'stroke="#ad854a" stroke-dasharray="4 4"')+`<path d="M${x+93} ${top+yLine*.8-10}Q${x+73} ${top+yLine*.8} ${x+93} ${top+yLine*.8+10}Q${x+104} ${top+yLine*.8} ${x+93} ${top+yLine*.8-10}Z" fill="#f9fbf1"/><ellipse cx="${x+82}" cy="${top+yLine*.8}" rx="2" ry="5" fill="#385648"/>`;
   if(k===2&&t>1/3&&t<1)art+=drop(x,mix(267,280,((t-1/3)*6)%1));
-  if(k===3&&t>.6&&t<.98)art+=drop(x,mix(flask?236:266,flask?320:305,(t-.6)/.4));
-  if(k===4)art+=text(334,108,'제품 대기 시간',12);
+  if(k===3&&t>.6&&t<.98){
+   const progress=clamp01((t-.6)/.06);
+   if(!flask&&state.receiverKind!=='flask'){
+    const endY=mix(264,316-18*received,progress),endX=267+Math.tan(12*Math.PI/180)*(endY-264);
+    art+=`<path data-wall-flow="true" d="M267 264L${endX} ${endY}" fill="none" stroke="#79aabd" stroke-width="2" clip-path="url(#inclined-receiver)"/>`;
+   }else if(flask){art+=`<path data-neck-flow="true" d="M272 234V${mix(234,334-14*received,progress)}" stroke="#79aabd" stroke-width="2" fill="none"/>`;}
+   else {const ey=mix(264,319-12*received,progress),ex=ey<=272?267:267+.6*(ey-272);art+=`<path data-wall-flow="true" d="M267 264V${Math.min(272,ey)}L${ex} ${ey}" stroke="#79aabd" stroke-width="2" fill="none"/>`;}
+  }
+  if(k===4)art+=text(334,85,'제품 대기 시간',12);
   if(k===5)art+=text(335,106,'끝의 잔액은',12)+text(335,125,'불어내지 않아요',12);
   return art;
  }
