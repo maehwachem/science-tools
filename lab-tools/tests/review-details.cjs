@@ -46,3 +46,12 @@ assert(!w.LAB_FILTER_WETTING(1).includes('data-wetting-stream'));
 assert(frame('volflask',1,.5).querySelector('[data-part="flask-wash-bottle"]'));
 assert(frame('volflask',2,.5).querySelector('[data-part="flask-dropper"]'));
 assert.deepEqual(errors,[]);console.log('PASS dish, filler, conditional cooling, TARE/stability, drop arrival, labels, pipette clearance and shared holder');w.close();
+
+// Inserted paper sits behind the front glass/rim at every insertion frame.
+for(const t of [.55,.65,.75,.9,1]){
+ const svg=w.LAB_FILTER_ASSEMBLY(3,t);
+ assert(svg.indexOf('data-filter-paper')<svg.indexOf('data-funnel-front'));
+ assert(svg.includes('data-funnel-front'));
+}
+
+w.close();
