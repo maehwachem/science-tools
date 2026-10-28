@@ -12,7 +12,7 @@ for(const f of [first,mid])assert(!f.querySelector('path[d^="M268 "]'),'receiver
 assert(!frame('balance',3,.5,{dish:true,tared:true,mass:200,stable:true}).querySelector('path[d="M108 224l4 4 6-8"]'));
 assert.equal([...frame('graduated',4,1).querySelectorAll('text[y="345"]')].length,1);
 assert(frame('pipette',3,1).querySelector('[data-horizontal-liquid]'));
-const fp=frame('pipette',3,1,{receiverKind:'volflask'});assert(fp.querySelector('g[transform="translate(272 42) rotate(0 0 0)"]')||[...fp.querySelectorAll('g')].some(g=>g.getAttribute('transform')?.startsWith('translate(272 42)')),'bulb clears narrow neck');
+const fp=frame('pipette',3,1,{receiverKind:'volflask'});assert(fp.querySelector('g[transform="translate(265.8 42) rotate(0 0 0)"]')||[...fp.querySelectorAll('g')].some(g=>g.getAttribute('transform')?.startsWith('translate(265.8 42)')),'bulb clears narrow neck');
 assert(w.labDrawing('holder').includes('data-part="test-tube-holder"'));assert(frame('holder',1,1).querySelector('[data-part="test-tube-holder"]'));
 // Sample the entire delivery: inverse-transform flow points into the tilted beaker.
 for(let i=61;i<98;i++){
@@ -27,4 +27,22 @@ for(const [k,t] of [[0,1],[1,.2],[1,.6],[1,1],[2,.3],[3,.5]])assert(frame('spatu
 assert(w.labDrawing('spatula').includes('data-part="lab-spatula"'));
 assert.equal(frame('spatula',1,.1).querySelector('[data-spoon-loaded]').getAttribute('data-spoon-loaded'),'false');
 assert.equal(frame('spatula',1,.8).querySelector('[data-spoon-loaded]').getAttribute('data-spoon-loaded'),'true');
+// Shared filler body and a clear path into the slotted storage support.
+assert.equal(w.LAB_TOOLS.find(x=>x.id==='filler').parts.length,4);
+assert(w.labDrawing('filler').includes('data-part="rubber-filler"'));
+for(const mode of ['guide','practice'])for(let k=0;k<6;k++){
+ const svg=w.LAB_MOTION.frame({id:'filler',step:k,mode,state:{...w.LAB_PRACTICE.create('filler'),stage:k+1}},.5);
+ assert(svg.includes('data-part="rubber-filler"'));
+}
+for(let i=0;i<=100;i++){
+ const f=frame('filler',5,i/100),g=f.querySelector('[data-assembly]'),v=g.getAttribute('transform').match(/translate\(([^ ]+) ([^)]+)\)/);
+ const x=Number(v[1]),tipY=Number(v[2])+297*.73;
+ if(x>330&&x<347)assert(tipY<244,'pipette crosses storage support');
+}
+const filt=w.LAB_FILTER_ASSEMBLY(4,1);
+assert(filt.indexOf('data-front-rim')>filt.indexOf('data-funnel-stem'),'front rim must occlude stem');
+assert(w.LAB_FILTER_WETTING(.5).includes('data-wetting-stream'));
+assert(!w.LAB_FILTER_WETTING(1).includes('data-wetting-stream'));
+assert(frame('volflask',1,.5).querySelector('[data-part="flask-wash-bottle"]'));
+assert(frame('volflask',2,.5).querySelector('[data-part="flask-dropper"]'));
 assert.deepEqual(errors,[]);console.log('PASS dish, filler, conditional cooling, TARE/stability, drop arrival, labels, pipette clearance and shared holder');w.close();
