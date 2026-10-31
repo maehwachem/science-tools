@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -108,7 +108,10 @@ details p{margin:6px 0 2px;font-size:14px;color:var(--muted)}
 .grab{cursor:grab}
 @media (prefers-reduced-motion:reduce){.flow{animation:none}}
 </style>
-</head>
+<style>
+:root{color-scheme:only light;--bg:#f7f3eb;--ink:#352a35;--muted:#70636d;--line:#ded5d7;--panel:#eeebe7;--card:#fcfaf5;--btn:#553d50;--btnInk:#fff}
+.tabs button[aria-selected="true"]{background:#f28c28;color:#352a35;border-color:#f28c28}
+</style></head>
 <body>
 <div id="app">
   <header>
@@ -985,4 +988,5 @@ requestAnimationFrame(frame);
 </script>
 </body>
 </html>
+
 
