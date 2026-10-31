@@ -329,11 +329,11 @@ function buildCoil() {
   E.fieldIn = el('g', null, E.field);
   for (let k = 1; k <= 3; k++) {
     for (const s of [-1, 1]) {
-      el('path', { d: `M${MH},${s * 14}C${MH + 30 * k},${s * (40 + 26 * k)} ${-MH - 30 * k},${s * (40 + 26 * k)} ${-MH},${s * 14}`, fill: 'none', stroke: '#9fd0ff', 'stroke-width': 2, class: 'flow' }, E.fieldIn);
+      el('path', { d: `M${MH},${s * 14}C${MH + 30 * k},${s * (40 + 26 * k)} ${-MH - 30 * k},${s * (40 + 26 * k)} ${-MH},${s * 14}`, fill: 'none', stroke: '#9fd0ff', 'stroke-width': 2, 'stroke-dasharray': '7 7' }, E.fieldIn);
     }
   }
-  el('path', { d: `M${MH},0L${MH + 120},0`, fill: 'none', stroke: '#9fd0ff', 'stroke-width': 2, class: 'flow' }, E.fieldIn);
-  el('path', { d: `M${-MH - 120},0L${-MH},0`, fill: 'none', stroke: '#9fd0ff', 'stroke-width': 2, class: 'flow' }, E.fieldIn);
+  el('path', { d: `M${MH},0L${MH + 120},0`, fill: 'none', stroke: '#9fd0ff', 'stroke-width': 2, 'stroke-dasharray': '7 7' }, E.fieldIn);
+  el('path', { d: `M${-MH - 120},0L${-MH},0`, fill: 'none', stroke: '#9fd0ff', 'stroke-width': 2, 'stroke-dasharray': '7 7' }, E.fieldIn);
   E.mag = el('g', { class: 'lyr', 'data-ly': 'mag' }, E.magG);
   el('rect', { x: -MH, y: -27, width: MH, height: 54, rx: 5, fill: 'url(#sG)' }, E.mag);
   el('rect', { x: 0, y: -27, width: MH, height: 54, rx: 5, fill: 'url(#nG)' }, E.mag);
@@ -425,7 +425,7 @@ function simPass() {
     const phi = phiAt(mx, 0, 1);
     rate += ((phi - phiP) / dt - rate) * (1 - Math.exp(-dt / .03));
     phiP = phi;
-    const tgt = 70 * Math.tanh(rate * 23 / 70);
+    const tgt = rate * 23;
     ang = tgt;
     if (out.length === 0 || t - out[out.length - 1][0] > 1 / 60) out.push([t, phi, ang]);
   }
@@ -494,13 +494,15 @@ function drawCoil(dt) {
   // physics
   C.phi = phiAt(C.mx, C.coff, C.B);
   if (dt > 0) {
-    const raw = (C.phi - C.phiPrev) / dt;
-    C.rate += (raw - C.rate) * (1 - Math.exp(-dt / .03));
+    const physicsDt = dt * (C.mode === 'drag' ? 1 : MOT);
+    const raw = physicsDt > 0 ? (C.phi - C.phiPrev) / physicsDt : 0;
+    C.rate += (raw - C.rate) * (1 - Math.exp(-physicsDt / .03));
     const d = Math.abs(C.mx - (CX0 + CL / 2 + C.coff));
     C.distV += ((d - C.dist) / dt - C.distV) * (1 - Math.exp(-dt / .08));
     C.dist = d;
-    const tgt = 70 * Math.tanh((C.N / 10) * C.rate * 23 / 70);
-    C.cur = tgt;
+    const reading = (C.N / 10) * C.rate * 23;
+    C.cur = reading;
+    const tgt = clamp(reading, -70, 70);
     const n = 4, h = dt / n, w0 = 16, z = 1;
     for (let i = 0; i < n; i++) {
       const acc = w0 * w0 * (tgt - C.ang) - 2 * z * w0 * C.angV;
@@ -509,7 +511,7 @@ function drawCoil(dt) {
     C.flow -= C.cur * dt * 3.2;
   }
   C.phiPrev = C.phi;
-  C.max = Math.max(C.max, Math.abs(C.ang));
+  C.max = Math.max(C.max, Math.abs(C.cur));
   if (C.recOn && dt > 0) { C.recT += dt * MOT; C.rec.push([C.recT, C.phi, C.cur]); if (C.recT > PSX) C.recOn = false; }
   if (LAYERS.has('pgraph')) drawPassGraph();
   // draw
@@ -545,7 +547,8 @@ function drawCoil(dt) {
   E.force.style.opacity = f1(io);
   E.force.setAttribute('transform', `translate(${f1(C.mx)},${CY + 62})`);
   const rep = C.distV < 0;
-  E.force.t.textContent = rep ? '← 밀어낸다' : '당긴다 →';
+  const direction = Math.sign(C.mx-(CX0+CL/2+C.coff))*(rep?1:-1);
+  E.force.t.textContent = (direction<0?'← ':'→ ')+(rep?'밀어낸다':'당긴다');
   E.force.firstChild.setAttribute('fill', rep ? '#c93a28' : '#2366ad');
 }
 function coilApply(s, mv, animate) {
@@ -1716,7 +1719,7 @@ function updateSteps(sl, k) {
 function renderCover() {
   inner.innerHTML = '<div class="cover"><h1>전자기 유도</h1><div class="en">Electromagnetic Induction</div>' +
     '<p class="lead">코일을 지나는 자기장이 변할 때 코일에 전류가 흐르는 현상</p>' +
-    '<p class="org">1831년 영국의 패러데이가 자석과 코일로 처음 확인했다. 오늘날 우리가 쓰는 전기의 대부분이 이 원리로 만들어진다.</p>' +
+    '<p class="org">1831년 영국의 패러데이가 1831년 패러데이가 발견했다. 오늘날 우리가 쓰는 전기의 대부분이 이 원리로 만들어진다.</p>' +
     '<button class="go" type="button" id="goBtn">시작하기</button>' +
     '<p class="small">화면을 누르면 다음 내용이 나온다. 좌우로 밀거나 키보드의 ←, → 키(발표용 리모컨 포함)로도 넘길 수 있다. 움직임이 있는 장면은 그림 오른쪽 위의 ‘다시 보기’로 한 번 더 볼 수 있다. 그림은 두 손가락으로 벌리거나 마우스 휠로 확대하고, 확대한 뒤에는 끌어서 옮긴다. 두 번 누르면 원래 크기로 돌아온다. 설명할 시간이 필요하면 그림 위쪽 가운데의 ‘설명을 위한 일시정지’(P 키)로 움직임을 멈췄다가 ‘이어 보기’로 다시 움직인다.</p>' +
     '<p class="credit">제작 · KJE</p></div>';
@@ -1736,7 +1739,7 @@ function segHTML(key, label, opts) {
     opts.map(([v, t]) => `<button type="button" data-v="${v}">${t}</button>`).join('') + '</div>';
 }
 function renderLab() {
-  inner.innerHTML = '<h2>직접 해 보기</h2><p class="intro">그림 속 자석을 손가락이나 마우스로 끌어 코일에 넣었다 빼 보자. 조건을 바꾸면 기록이 지워지니, 바꿀 때마다 바늘이 가장 많이 기운 정도를 비교해 보자.</p>' +
+  inner.innerHTML = '<h2>직접 해 보기</h2><p><a href="virtual-lab.html" style="color:var(--cold)">기록하며 탐구하는 실험실 ↗</a> · <a href="simple-motor.html" style="color:var(--cold)">간이전동기 만들기 ↗</a></p><p class="intro">그림 속 자석을 손가락이나 마우스로 끌어 코일에 넣었다 빼 보자. 조건을 바꾸면 기록이 지워지니, 바꿀 때마다 바늘이 가장 많이 기운 정도를 비교해 보자.</p>' +
     segHTML('mode', '움직이는 방법', [['drag', '직접 끌기'], ['osc', '자동 왕복']]) +
     `<div class="lab-sl" id="spdBox"><label class="sl" for="spd">자동 왕복 빠르기</label><input type="range" id="spd" min="40" max="220" step="1" value="${Math.round(LAB.sp * 100)}"><div class="scale"><span>느리게</span><span>빠르게</span></div></div>` +
     segHTML('B', '자석의 세기', [['0.55', '약한 자석'], ['1', '보통'], ['1.8', '강한 자석']]) +
@@ -1771,7 +1774,7 @@ function updateLab() {
   const v = $('#recV');
   if (!v) return;
   const cells = Math.round(C.max / 10 * 10) / 10;
-  v.textContent = (C.max < .5 ? 0 : cells.toFixed(1)) + '칸';
+  v.textContent = C.max > 70 ? '7칸 넘음 · 약하게 다시 측정' : (C.max < .5 ? 0 : cells.toFixed(1)) + '칸';
   let t;
   const moving = Math.abs(C.distV) > 25;
   if (!moving) t = Math.abs(C.ang) > 3.5 ? '자석이 멈췄다. 전류가 사라지고 바늘이 0으로 돌아가는 중' : '자석이 멈춰 있다. 전류 없음';

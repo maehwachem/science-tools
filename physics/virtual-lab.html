@@ -117,9 +117,9 @@ details p{margin:6px 0 2px;font-size:14px;color:var(--muted)}
       <button type="button" role="tab" data-x="0" aria-selected="true"><span class="n">1</span>자석과 코일</button>
       <button type="button" role="tab" data-x="1" aria-selected="false"><span class="n">2</span>떨어지는 자석</button>
       <button type="button" role="tab" data-x="2" aria-selected="false"><span class="n">3</span>관 속 자석 낙하</button>
-      <button type="button" role="tab" data-x="3" aria-selected="false"><span class="n">4</span>손발전기</button>
+      <button type="button" role="tab" data-x="3" aria-selected="false"><span class="n">4</span>손발전기</button><button type="button" role="tab" data-x="4" aria-selected="false"><span class="n">5</span>간이전동기 만들기</button>
     </nav>
-    <span class="credit">제작 · KJE</span>
+    <a class="credit" href="simple-motor.html">간이전동기 만들기 ↗</a><span class="credit">제작 · KJE</span>
   </header>
   <p class="usage"><b>교사 설명용</b> 수업 중 교사가 화면에 띄워 실험을 시연하고 설명하는 데 쓰는 가상 실험실이다. 학생 제출이나 평가 기능은 없고, 기록은 이 화면을 닫으면 지워진다. 값은 경향을 보여 주는 모형 값이며, 실제 실험 장비의 수치와는 다를 수 있다.</p>
 
@@ -127,20 +127,20 @@ details p{margin:6px 0 2px;font-size:14px;color:var(--muted)}
   <section class="exp on" id="x0" aria-label="실험 1 자석과 코일">
     <div class="stagecol">
       <div class="stage"><svg id="s0" viewBox="0 0 1000 600" role="img" aria-label="자석, 코일, 검류계 실험 장치"></svg></div>
-      <p class="aim"><b>목표</b> 유도 전류의 세기와 방향이 무엇에 따라 달라지는지 찾는다. 버튼을 누르면 자석이 늘 같은 자리에서 출발해 같은 거리를 움직인다. 손가락으로 직접 끌어 볼 수도 있다.</p>
+      <svg class="graph" id="live0" viewBox="0 0 680 180" role="img" aria-label="최근 8초간 유도 전류를 실시간으로 기록한 그래프"></svg><p class="note">최근 8초의 전류 모형 값. 오른쪽 끝이 현재이다. 검류계 바늘은 관성 때문에 실제 전류 변화보다 늦게 돌아올 수 있다.</p><p class="aim"><b>목표</b> 유도 전류의 세기와 방향이 무엇에 따라 달라지는지 찾는다. 버튼을 누르면 자석이 늘 같은 자리에서 출발해 같은 거리를 움직인다. 손가락으로 직접 끌어 볼 수도 있다.</p>
     </div>
     <div class="panel">
       <div class="card">
         <h2>실험 조건</h2>
         <div class="ctl">
-          <div><div class="lbl">코일 쪽을 향한 극</div><div class="seg" data-k="pole"><button type="button" data-v="1">N극</button><button type="button" data-v="-1">S극</button></div></div>
+          <div><div class="lbl">회로 연결</div><div class="seg" data-k="closed"><button type="button" data-v="1">닫힌 회로</button><button type="button" data-v="0">열린 회로</button></div></div><div><div class="lbl">코일 쪽을 향한 극</div><div class="seg" data-k="pole"><button type="button" data-v="1">N극</button><button type="button" data-v="-1">S극</button></div></div>
           <div><div class="lbl">자석의 세기</div><div class="seg" data-k="B"><button type="button" data-v="0.5">약한 자석</button><button type="button" data-v="1">보통</button><button type="button" data-v="2">강한 자석</button></div></div>
           <div><div class="lbl">코일의 감은 수</div><div class="seg" data-k="N"><button type="button" data-v="50">50회</button><button type="button" data-v="100">100회</button><button type="button" data-v="200">200회</button></div></div>
           <div><label class="lbl" for="spd0">자석을 움직이는 빠르기: <span id="spdv0">3</span>단계</label><input type="range" id="spd0" min="1" max="5" step="1" value="3"><div class="scale"><span>1 (느리게)</span><span>5 (빠르게)</span></div></div>
         </div>
       </div>
       <div class="card">
-        <div class="acts"><button type="button" id="in0">코일에 넣기</button><button type="button" id="out0" class="alt">코일에서 빼기</button></div>
+        <label class="lbl" for="pos0">자석 위치 직접 조절 · 코일 가운데 = 560</label><input type="range" id="pos0" min="110" max="900" step="1" value="200"><div class="acts"><button type="button" id="in0">코일에 넣기</button><button type="button" id="out0" class="alt">코일에서 빼기</button><button type="button" id="stop0" class="alt">그 자리에서 멈추기</button></div>
         <div class="read" style="margin-top:12px"><span>바늘이 가장 많이 기운 정도</span><span class="v" id="max0">0<span class="u">칸</span></span></div>
         <p class="note" id="st0">자석을 움직이면 그동안 바늘이 가장 많이 기운 눈금이 남는다.</p>
         <div class="acts" style="margin-top:10px"><button type="button" class="rec" id="rec0" disabled>기록하기</button></div>
@@ -164,7 +164,7 @@ details p{margin:6px 0 2px;font-size:14px;color:var(--muted)}
       </div>
       <div class="card">
         <h3>생각해 보기</h3>
-        <details><summary>N극을 넣을 때와 뺄 때 바늘은 어떻게 달랐나?</summary><p>서로 반대쪽으로 기운다. 코일을 지나는 자기장이 늘어날 때와 줄어들 때 유도 전류의 방향이 반대이다.</p></details>
+        <details><summary>회로를 끊으면 유도 현상도 사라질까?</summary><p>자기 선속이 변하면 열린 회로에도 유도 기전력은 생길 수 있다. 하지만 회로가 끊겨 있으므로 이 모형에서는 유도 전류가 흐르지 않는다. 열린 회로와 닫힌 회로를 같은 조건으로 비교하자.</p></details><details><summary>N극을 넣을 때와 뺄 때 바늘은 어떻게 달랐나?</summary><p>서로 반대쪽으로 기운다. 코일을 지나는 자기장이 늘어날 때와 줄어들 때 유도 전류의 방향이 반대이다.</p></details>
         <details><summary>N극을 넣을 때와 S극을 넣을 때는?</summary><p>이것도 반대쪽으로 기운다. 코일을 지나는 자기장의 방향이 반대이기 때문이다.</p></details>
         <details><summary>빠르기를 2배로 하면 바늘은 몇 배쯤 기울었나?</summary><p>계기 범위 안에서 약 2배이다. 이 모형은 전체 회로 저항이 일정하다고 가정한다. 자기 선속이 빨리 변할수록 유도 전류가 세다. 감은 수와 자석의 세기도 같은 방법으로 비교해 보자.</p></details>
         <details><summary>한 가지 조건만 바꾸어야 하는 까닭은?</summary><p>여러 조건을 한꺼번에 바꾸면 바늘이 달라진 까닭이 어느 조건 때문인지 알 수 없기 때문이다.</p></details>
@@ -189,8 +189,8 @@ details p{margin:6px 0 2px;font-size:14px;color:var(--muted)}
         </div>
       </div>
       <div class="card">
-        <div class="acts"><button type="button" id="go1">떨어뜨리기</button><button type="button" id="zoom1" class="alt" disabled>코일 통과 구간 확대</button></div>
-        <p class="note" id="clock1" aria-live="off">놓는 순간 = 0 ms · 기록 준비</p>
+        <div class="acts"><button type="button" id="go1">떨어뜨리기</button><button type="button" id="pause1" class="alt" disabled>일시정지</button><button type="button" id="zoom1" class="alt" disabled>코일 통과 구간 확대</button></div>
+        <label class="lbl" for="scrub1">기록 시점 되짚기 · 자석 위치와 그래프 점이 함께 이동</label><input type="range" id="scrub1" min="0" max="1" step="1" value="0" disabled><p class="note" id="clock1" aria-live="off">놓는 순간 = 0 ms · 기록 준비</p>
         <div class="read" style="margin-top:12px">
           <span>첫 번째 봉우리 (들어갈 때)</span><span class="v" id="p1a">–</span>
           <span>두 번째 봉우리 (나올 때)</span><span class="v" id="p1b">–</span>
@@ -313,6 +313,7 @@ details p{margin:6px 0 2px;font-size:14px;color:var(--muted)}
       </div>
     </div>
   </section>
+<section class="exp" id="x4" aria-label="실험 5 간이전동기 만들기" style="grid-template-columns:1fr"><div><p class="aim">전기 에너지로 회전시키는 전동기와, 회전시켜 전기를 얻는 발전기를 비교해 보자. <a href="simple-motor.html" target="_blank" rel="noopener">전동기 실험을 넓게 열기 ↗</a></p><iframe title="간이전동기 만들기 가상실험" data-src="simple-motor.html?embed=1" style="width:100%;height:1100px;border:0;border-radius:14px" loading="lazy"></iframe></div></section>
 </div>
 
 <script>
@@ -374,7 +375,7 @@ function galv(p, cx, cy, range, labelEvery) {
 /* ---------- table & graph helpers ---------- */
 const REC = [[], [], [], []];
 const COLS = [
-  [['번호', 'n'], ['극', 'pole'], ['동작', 'act'], ['자석', 'B'], ['감은 수', 'N'], ['빠르기', 'spd'], ['바늘 (칸)', 'val'], ['방향', 'dir']],
+  [['번호', 'n'], ['극', 'pole'], ['회로', 'circuit'], ['동작', 'act'], ['자석', 'B'], ['감은 수', 'N'], ['빠르기', 'spd'], ['바늘 (칸)', 'val'], ['방향', 'dir']],
   [['번호', 'n'], ['높이 (cm)', 'h'], ['아래 극', 'pole'], ['감은 수', 'N'], ['첫 봉우리 (mA)', 'a'], ['두 번째 (mA)', 'b'], ['사이 시간 (ms)', 't']],
   [['번호', 'n'], ['관', 'tube'], ['물체', 'obj'], ['시간 (s)', 't']],
   [['번호', 'n'], ['빠르기 (바퀴/초)', 'w'], ['전구 수', 'n2'], ['전압 (V)', 'v'], ['밝기', 'b'], ['힘', 'f']]
@@ -470,7 +471,7 @@ document.querySelectorAll('#g0sel button').forEach(b => b.onclick = () => { G0.b
 document.querySelectorAll('#g3sel button').forEach(b => b.onclick = () => { G3.by = b.dataset.v; document.querySelectorAll('#g3sel button').forEach(x => x.classList.toggle('sel', x === b)); drawGraph(3); });
 
 /* ---------- segmented controls ---------- */
-const ST = [{ pole: 1, B: 1, N: 100 }, { h: 20, pole: 1, N: 100, slow: 0.04 }, { tube: 'cu', obj: 'mag' }, { n: 1 }];
+const ST = [{ pole: 1, B: 1, N: 100, closed: 1 }, { h: 20, pole: 1, N: 100, slow: 0.04 }, { tube: 'cu', obj: 'mag' }, { n: 1 }];
 function bindSeg(i, onChange) {
   document.querySelectorAll(`#x${i} .seg`).forEach(sg => {
     const k = sg.dataset.k;
@@ -484,7 +485,8 @@ function svgPt(svg, e) { const p = new DOMPoint(e.clientX, e.clientY).matrixTran
 /* =================================================================
    1. magnet, coil, galvanometer
    ================================================================= */
-const E1 = {}, S1 = { x: 200, tw: null, prevPhi: 0, rate: 0, needle: 0, max: 0, maxSign: 0, act: '', drag: null, moved: false, lastX: 200 };
+const E1 = {}, LIVE1 = []; let liveTime1 = 0, liveSample1 = -1;
+const S1 = { x: 200, tw: null, prevPhi: 0, rate: 0, needle: 0, max: 0, maxSign: 0, act: '', drag: null, moved: false, lastX: 200 };
 const C1 = { x0: 440, L: 240, cy: 250, ry: 80, w: 90 }, C1c = C1.x0 + C1.L / 2, MH1 = 70, X_OUT = 200;
 const K1 = 0.9 / (60 * Math.sqrt(2 / Math.E) / C1.w);
 function phi1(x) { const d = (x - C1c) / C1.w; return Math.exp(-d * d); }
@@ -509,6 +511,10 @@ function build1() {
   const gl = tx(svg, 790, 336, '검류계', 'tw', 17);
   E1.flow = 0;
   tx(svg, 28, 40, '자석을 끌어 움직일 수 있다', 'tm', 15, 'start');
+  E1.switchG = el('g', null, svg);
+  el('rect',{x:300,y:538,width:72,height:24,fill:'#102f4d'},E1.switchG);
+  E1.switchLine=el('path',{fill:'none',stroke:'#f6c46a','stroke-width':4},E1.switchG);
+  E1.switchText=tx(svg,335,583,'회로 닫힘','tm',15);
   buildCoil1();
 }
 function buildCoil1() {
@@ -530,7 +536,7 @@ function ui1() {
   $('#in0').disabled = busy; $('#out0').disabled = busy;
   $('#rec0').disabled = busy || !S1.act;
 }
-function start1(act) { S1.max = 0; S1.maxSign = 0; S1.over = false; S1.act = act; ui1(); }
+function start1(act) { LIVE1.length=0; liveTime1=0; liveSample1=-1; S1.max = 0; S1.maxSign = 0; S1.over = false; S1.act = act; ui1(); }
 function move1(to, act) {
   const v = 60 * +$('#spd0').value, from = act === '넣기' ? X_OUT : C1c;
   if (Math.abs(S1.x - from) > .5) { S1.x = from; S1.prevPhi = phi1(from); S1.rate = 0; S1.needle = 0; }
@@ -540,14 +546,17 @@ function move1(to, act) {
 }
 $('#in0').onclick = () => move1(C1c, '넣기');
 $('#out0').onclick = () => move1(X_OUT, '빼기');
+$('#stop0').onclick=()=>{S1.tw=null;S1.drag=null;S1.rate=0;S1.prevPhi=phi1(S1.x);ui1();};
+$('#pos0').oninput=()=>{if(!S1.drag){S1.tw=null;start1('직접');S1.spdUsed=0;}S1.drag={off:0,tgt:+$('#pos0').value,slider:true};};
+$('#pos0').onchange=()=>{if(S1.drag)S1.drag.released=true;};
 $('#spd0').oninput = () => { $('#spdv0').textContent = $('#spd0').value; };
 $('#rec0').onclick = () => {
   if (!S1.act) return;
   const v = S1.over ? 20 : S1.max < .05 ? 0 : Math.min(20, +S1.max.toFixed(1));
-  REC[0].push({ pole: ST[0].pole > 0 ? 'N극' : 'S극', act: S1.act, B: { 0.5: '약함', 1: '보통', 2: '강함' }[ST[0].B], Bv: ST[0].B, N: ST[0].N, spd: S1.act === '직접' ? '–' : S1.spdUsed + '단계', spdv: S1.spdUsed, val: S1.over ? '20 넘음' : v.toFixed(1), valv: v, over: !!S1.over, dir: v === 0 ? '–' : S1.maxSign > 0 ? '오른쪽' : '왼쪽' });
+  REC[0].push({ circuit:ST[0].closed?'닫힘':'열림', pole: ST[0].pole > 0 ? 'N극' : 'S극', act: S1.act, B: { 0.5: '약함', 1: '보통', 2: '강함' }[ST[0].B], Bv: ST[0].B, N: ST[0].N, spd: S1.act === '직접' ? '–' : S1.spdUsed + '단계', spdv: S1.spdUsed, val: S1.over ? '20 넘음' : v.toFixed(1), valv: v, over: !!S1.over, dir: v === 0 ? '–' : S1.maxSign > 0 ? '오른쪽' : '왼쪽' });
   S1.act = ''; ui1(); drawTable(0);
 };
-bindSeg(0, k => { if (k === 'N') buildCoil1(); S1.tw = null; S1.drag = null; S1.act = ''; S1.max = 0; S1.maxSign = 0; S1.over = false; S1.rate = 0; S1.needle = 0; S1.prevPhi = phi1(S1.x); ui1(); });
+bindSeg(0, k => { LIVE1.length=0;liveTime1=0;liveSample1=-1; if (k === 'N') buildCoil1(); S1.tw = null; S1.drag = null; S1.act = ''; S1.max = 0; S1.maxSign = 0; S1.over = false; S1.rate = 0; S1.needle = 0; S1.prevPhi = phi1(S1.x); ui1(); });
 function bind1() {
   const svg = $('#s0');
   E1.mag.addEventListener('pointerdown', e => { if (S1.tw) return; const [x] = svgPt(svg, e); S1.drag = { off: S1.x - x, tgt: S1.x }; start1('직접'); try { svg.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); });
@@ -556,15 +565,19 @@ function bind1() {
   svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
 }
 function step1(dt) {
+  const oldX = S1.x;
   if (S1.tw) { S1.tw.t += dt; const p = clamp(S1.tw.t / S1.tw.d); S1.x = S1.tw.from + (S1.tw.to - S1.tw.from) * p; if (p >= 1) { S1.tw = null; ui1(); } }
-  else if (S1.drag) S1.x += (S1.drag.tgt - S1.x) * (1 - Math.exp(-dt * 18));
-  const ph = phi1(S1.x);
-  if (dt > 0) {
-    const raw = (ph - S1.prevPhi) / dt;
-    S1.rate += (raw - S1.rate) * (1 - Math.exp(-dt / .015));
-  }
+  else if (S1.drag) { S1.x += (S1.drag.tgt - S1.x) * (1 - Math.exp(-dt * 18)); if(S1.drag.released && Math.abs(S1.drag.tgt-S1.x)<.5){S1.x=S1.drag.tgt;S1.drag=null;ui1();} }
+  const ph = phi1(S1.x), velocity = dt>0?(S1.x-oldX)/dt:0;
+  // Gaussian flux linkage; calculate its spatial derivative at the actual position.
+  // Meter lag is separate from current: stopping motion immediately makes emf zero.
+  S1.rate = -2*(S1.x-C1c)/(C1.w*C1.w)*ph*velocity;
   S1.prevPhi = ph;
-  const emf = -K1 * (ST[0].N / 100) * ST[0].B * ST[0].pole * S1.rate;
+  const induced = -K1 * (ST[0].N / 100) * ST[0].B * ST[0].pole * S1.rate;
+  const emf = ST[0].closed ? induced : 0;
+  liveTime1 += dt;
+  if(liveTime1-liveSample1>.025){LIVE1.push([liveTime1,emf]);while(LIVE1.length&&LIVE1[0][0]<liveTime1-8)LIVE1.shift();liveSample1=liveTime1;}
+  drawLive1();
   S1.needle += (emf - S1.needle) * (1 - Math.exp(-dt / .03));
   if (S1.act && Math.abs(S1.needle) > S1.max) { S1.max = Math.abs(S1.needle); S1.maxSign = Math.sign(S1.needle); }
   if (S1.act && S1.max > 20) { S1.over = true; S1.max = 20; }
@@ -578,19 +591,32 @@ function step1(dt) {
   E1.strong.t.textContent = ST[0].B > 1 ? '강한 자석' : '약한 자석'; E1.strong.r.setAttribute('fill', ST[0].B > 1 ? '#c96a1a' : '#5b6f82');
   E1.gv.set(S1.needle);
   E1.flow += S1.needle * dt * 6;
-  const o = f1(clamp(Math.abs(S1.needle) / 4));
+  const o = f1(clamp(Math.abs(emf) / 4));
   for (const p of [E1.fl, E1.wfl]) { p.setAttribute('opacity', o); p.style.strokeDashoffset = f1(E1.flow); }
+  if(!S1.drag?.slider)$('#pos0').value=Math.round(S1.x);
+  E1.switchLine.setAttribute('d',ST[0].closed?'M306,550H366':'M306,550L359,532');
+  E1.switchText.textContent=ST[0].closed?'회로 닫힘':'회로 열림 · 전류 0';
   const m = S1.max, sg = S1.maxSign;
   $('#max0').innerHTML = (m < .05 ? '0' : (sg > 0 ? '오른쪽 ' : '왼쪽 ') + (S1.over ? '20' : m.toFixed(1))) + '<span class="u">' + (S1.over ? '칸 넘음' : '칸') + '</span>';
   const over = Math.abs(S1.needle) > 20.5;
-  const stt = S1.tw ? '자석이 움직이는 중' : S1.drag ? '자석을 손으로 움직이는 중' : over ? '바늘이 눈금을 넘었다. 조금 느리게 움직여 보자.' : S1.act && S1.over ? '바늘이 눈금 끝(20칸)을 넘었다. 이 기록은 그래프에 쓰지 않는다. 느리게 하거나 약한 조건으로 다시 해 보자.' : S1.act ? '측정이 끝났다. ‘기록하기’를 누르면 표에 남는다.' : '자석을 움직이면 그동안 바늘이 가장 많이 기운 눈금이 남는다.';
+  const stt = !ST[0].closed ? '회로가 열려 전류는 0이다. 자석을 움직이면 유도 기전력은 생길 수 있다.' : S1.tw ? '자석이 움직이는 중' : S1.drag ? '자석을 손으로 움직이는 중' : over ? '바늘이 눈금을 넘었다. 조금 느리게 움직여 보자.' : S1.act && S1.over ? '바늘이 눈금 끝(20칸)을 넘었다. 이 기록은 그래프에 쓰지 않는다. 느리게 하거나 약한 조건으로 다시 해 보자.' : S1.act ? '측정이 끝났다. ‘기록하기’를 누르면 표에 남는다.' : '자석을 움직이면 그동안 바늘이 가장 많이 기운 눈금이 남는다.';
   if ($('#st0').textContent !== stt) $('#st0').textContent = stt;
+}
+
+function drawLive1(){
+ const g=$('#live0');g.innerHTML='';
+ const label=(x,y,t)=>el('text',{x,y,text:t},g);
+ const hi=Math.max(8,liveTime1),lo=hi-8,range=Math.max(5,...LIVE1.map(p=>Math.abs(p[1])));
+ el('path',{d:'M48,25V135H660M48,80H660',stroke:'#839cab',fill:'none'},g);
+ label(8,25,range.toFixed(1));label(20,84,'0');label(3,135,(-range).toFixed(1));label(48,164,lo.toFixed(1)+' s');label(615,164,hi.toFixed(1)+' s');
+ let d='';for(const [t,v] of LIVE1)d+=(d?'L':'M')+(48+(t-lo)/8*612).toFixed(1)+','+(80-v/range*50).toFixed(1);
+ el('path',{d,fill:'none',stroke:'#c96a1a','stroke-width':2.5},g);label(150,20,'유도 전류 · 계기 눈금 대응 모형 값');
 }
 
 /* =================================================================
    2. falling magnet through a coil
    ================================================================= */
-const E2 = {}, S2 = { run: false, t: 0, z: -20, done: false, pts: [], a: 0, b: 0, ta: 0, tb: 0, zoom: false };
+const E2 = {}, S2 = { run: false, t: 0, z: -20, done: false, pts: [], a: 0, b: 0, ta: 0, tb: 0, zoom: false, paused: false, reviewT: null };
 const G2 = 980, W2 = 4, K2 = 0.15, PXCM = 5, CY2 = 330, WIN2 = 500;
 const zY = z => CY2 + z * PXCM;
 const GR = { x: 520, y: 70, w: 450, h: 380 };
@@ -664,13 +690,16 @@ function grX(t) { const [lo, hi] = window2(); return GR.x + 48 + (t - lo) / (hi 
 function grY(v) { return E2.gy0 - v * GR.h / 44; }
 function emf2(z, v) { const d = z / W2; return K2 * (ST[1].N / 100) * ST[1].pole * v * (-2 * z / (W2 * W2)) * Math.exp(-d * d); }
 function reset2() {
+  S2.paused=false;S2.reviewT=null;$('#pause1').disabled=true;$('#pause1').textContent='일시정지';$('#scrub1').disabled=true;$('#scrub1').value=0;
   S2.run = false; S2.done = false; S2.t = 0; S2.z = -ST[1].h; S2.pts = []; S2.a = 0; S2.b = 0; S2.ta = 0; S2.tb = 0; S2.zoom = false; drawAxes2();
   $('#zoom1').disabled = true; $('#zoom1').textContent = '코일 통과 구간 확대';
   E2.cursor.setAttribute('opacity', 0); E2.tip.setAttribute('opacity', 0); $('#clock1').textContent = '놓는 순간 = 0 ms · 기록 준비';
   E2.trace.setAttribute('d', ''); E2.mkA.style.display = E2.mkB.style.display = 'none';
   ['p1a', 'p1b', 'p1t'].forEach(id => $('#' + id).textContent = '–'); $('#rec1').disabled = true; $('#go1').textContent = '떨어뜨리기'; $('#go1').disabled = false;
 }
-$('#go1').onclick = () => { reset2(); S2.pts = [[0, 0]]; S2.run = true; $('#go1').disabled = true; };
+$('#go1').onclick = () => { reset2(); S2.pts = [[0, 0]]; S2.run = true; $('#pause1').disabled=false;$('#go1').disabled = true; };
+$('#pause1').onclick=()=>{S2.paused=!S2.paused;S2.reviewT=null;$('#pause1').textContent=S2.paused?'이어서 낙하':'일시정지';$('#scrub1').disabled=!S2.paused;};
+$('#scrub1').oninput=()=>{S2.reviewT=+$('#scrub1').value/1000;};
 $('#zoom1').onclick = () => { if (!S2.done) return; S2.zoom = !S2.zoom; $('#zoom1').textContent = S2.zoom ? '전체 시간 보기' : '코일 통과 구간 확대'; drawAxes2(); step2(0); };
 bindSeg(1, k => { if (k === 'slow') return; reset2(); });
 $('#rec1').onclick = () => {
@@ -680,7 +709,7 @@ $('#rec1').onclick = () => {
   $('#rec1').disabled = true; drawTable(1);
 };
 function step2(dt) {
-  if (S2.run) {
+  if (S2.run && !S2.paused) {
     const sim = dt * ST[1].slow, sub = Math.max(40, Math.ceil(sim / .0002));
     for (let i = 0; i < sub; i++) {
       S2.t = Math.min(S2.t + sim / sub, Math.sqrt(2 * (ST[1].h + 42) / G2));
@@ -692,7 +721,10 @@ function step2(dt) {
       if (Math.abs(e) > Math.abs(S2.b) && S2.z > 0) { S2.b = e; S2.tb = tm; }
       if (S2.t >= Math.sqrt(2 * (ST[1].h + 42) / G2)) { S2.z = 42; S2.run = false; S2.done = true; S2.pts.push([tm, e]); break; }
     }
+    $('#scrub1').max=Math.max(1,Math.round(S2.t*1000));
+    if(S2.reviewT===null)$('#scrub1').value=Math.round(S2.t*1000);
     if (S2.done) {
+      $('#pause1').disabled=true;$('#scrub1').disabled=false;
       $('#go1').disabled = false; $('#go1').textContent = '다시 떨어뜨리기'; $('#zoom1').disabled = false; $('#rec1').disabled = false;
       const sgn = v => (v > 0 ? '+' : '') + v.toFixed(1);
       $('#p1a').innerHTML = sgn(S2.a) + '<span class="u">mA</span>'; $('#p1b').innerHTML = sgn(S2.b) + '<span class="u">mA</span>';
@@ -705,20 +737,22 @@ function step2(dt) {
   let d = '';
   for (const [t, v] of S2.pts.filter(p => p[0] >= lo && p[0] <= hi)) d += (d ? 'L' : 'M') + f1(grX(t)) + ',' + f1(grY(v));
   E2.trace.setAttribute('d', d);
-  const tm = S2.t * 1000, tipVisible = S2.pts.length && tm >= lo && tm <= hi;
+  const displayT=S2.reviewT===null?S2.t:S2.reviewT;
+  const displayZ=-ST[1].h+.5*G2*displayT*displayT;
+  const tm = displayT * 1000, tipVisible = S2.pts.length && tm >= lo && tm <= hi;
   E2.cursor.setAttribute('opacity', tipVisible ? .7 : 0); E2.tip.setAttribute('opacity', tipVisible ? 1 : 0);
   E2.cursor.setAttribute('x1', grX(tm)); E2.cursor.setAttribute('x2', grX(tm));
-  E2.tip.setAttribute('cx', grX(tm)); E2.tip.setAttribute('cy', grY(emf2(S2.z, G2 * S2.t)));
-  $('#clock1').textContent = S2.run || S2.done ? '놓은 뒤 ' + Math.round(tm) + ' ms · ' + (S2.done ? '받침 도착 · 기록 종료' : '기록 중') + (S2.zoom ? ' · 확대해도 0 ms 기준은 같다' : '') : '놓는 순간 = 0 ms · 기록 준비';
-  E2.mag.setAttribute('transform', `translate(260,${f1(zY(S2.z))})`);
+  E2.tip.setAttribute('cx', grX(tm)); E2.tip.setAttribute('cy', grY(emf2(displayZ, G2 * displayT)));
+  $('#clock1').textContent = S2.run || S2.done ? '놓은 뒤 ' + Math.round(tm) + ' ms · ' + (S2.reviewT!==null?'기록 되짚기':S2.paused?'일시정지':S2.done ? '받침 도착 · 기록 종료' : '기록 중') + (S2.zoom ? ' · 확대해도 0 ms 기준은 같다' : '') : '놓는 순간 = 0 ms · 기록 준비';
+  E2.mag.setAttribute('transform', `translate(260,${f1(zY(displayZ))})`);
   const np = ST[1].pole > 0;
   E2.mN.setAttribute('fill', np ? '#c93a28' : '#2366ad'); E2.mS.setAttribute('fill', np ? '#2366ad' : '#c93a28');
   E2.tN.textContent = np ? 'N' : 'S'; E2.tS.textContent = np ? 'S' : 'N';
   E2.nlab.textContent = '코일 ' + ST[1].N + '회';
   const ry = zY(-ST[1].h);
   E2.ring.setAttribute('y1', ry); E2.ring.setAttribute('y2', ry); E2.ringL.setAttribute('y', ry + 5); E2.ringL.textContent = ST[1].h + ' cm · 0 ms';
-  const v = S2.run || S2.done ? G2 * S2.t / 100 : 0;
-  E2.speed.textContent = S2.run || S2.done ? (S2.done ? '받침에 닿기 직전 속력 ' : '자석의 속력 ') + v.toFixed(2) + ' m/s' : '';
+  const v = S2.run || S2.done ? G2 * displayT / 100 : 0;
+  E2.speed.textContent = S2.run || S2.done ? (S2.reviewT!==null ? '이 시점 속력 ' : S2.done ? '받침에 닿기 직전 속력 ' : '자석의 속력 ') + v.toFixed(2) + ' m/s' : '';
   E2.hint.textContent = ST[1].slow < 1 ? '화면은 실제보다 ' + (ST[1].slow === .04 ? '25' : '10') + '배 느리게 보여 준다. 시간 눈금은 실제 시간이다.' : '실제 빠르기로 보여 준다.';
 }
 
@@ -930,6 +964,8 @@ function step4(dt) {
 let CUR = 0;
 function tab(i) {
   CUR = i;
+  const motorFrame=$('#x4 iframe');if(i!==4&&motorFrame.contentWindow)motorFrame.contentWindow.postMessage({type:'KJE_MOTOR_VISIBILITY',active:false},location.origin);
+  if(i===4){const f=$('#x4 iframe');if(!f.getAttribute('src'))f.src=f.dataset.src;}
   document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', +b.dataset.x === i ? 'true' : 'false'));
   document.querySelectorAll('.exp').forEach((s, k) => s.classList.toggle('on', k === i));
   try { localStorage.setItem('emi-lab-tab', String(i)); } catch (e) {}
@@ -938,11 +974,11 @@ document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => tab(+b.
 build1(); bind1(); build2(); build3(); build4();
 reset2(); reset3(); look3(); ui1();
 [0, 1, 2, 3].forEach(drawTable);
-try { const t = +localStorage.getItem('emi-lab-tab'); if (t >= 0 && t <= 3) tab(t); } catch (e) {}
+try { const t = +localStorage.getItem('emi-lab-tab'); if (t >= 0 && t <= 4) tab(t); } catch (e) {}
 let last = performance.now();
 function frame(now) {
   let dt = Math.min(.05, Math.max(0, (now - last) / 1000)); last = now;
-  if (CUR === 0) step1(dt); else if (CUR === 1) step2(dt); else if (CUR === 2) step3(dt); else step4(dt);
+  if (CUR === 0) step1(dt); else if (CUR === 1) step2(dt); else if (CUR === 2) step3(dt); else if(CUR===3) step4(dt);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
